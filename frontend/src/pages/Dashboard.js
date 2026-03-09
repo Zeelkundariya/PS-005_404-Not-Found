@@ -110,15 +110,72 @@ import { agentsData } from "../data/agentsData"; export default function Dashboa
     solar: "Loom startup peak detected. Recommend shifting Loom 4 & 5 startup to 12:30 PM.",
     mahaparv: "Wedding season & Navratri scraping predicts 400% surge in specific design demand.",
     core: {
-      1: "Brahma Orchestrator is balancing 52 sub-agents.",
-      2: "Neuro-Sync: Neural pathways established with edge nodes.",
-      3: "Quantum-Swarm: Maintaining global optimum efficiency.",
-      4: "Maha-Orchestrator: Monitoring global market trends.",
-      5: "Edge Node: Bhilwara latency is < 2ms.",
-      6: "NLP Engine: Processing shop-floor voice-logs.",
-      7: "Conflict Resolver: Zero system-lock detected."
+      1: "INITIALIZING BRAHMA KERNEL...",
+      2: "ESTABLISHING NEURO-SYNC PATHWAYS...",
+      3: "CALCULATING QUANTUM PERMUTATIONS...",
+      4: "SYNCING MAHA-ORCHESTRATOR...",
+      5: "Pinging Edge Node Bhilwara...",
+      6: "Loading NLP Models...",
+      7: "Scanning for Resource Conflicts..."
     }
   });
+
+  // --- Dynamic Core Agent Data Engine (Realistic Simulation) ---
+  useEffect(() => {
+    const generateDynamicData = () => {
+      setLastAgentMsg(prev => {
+        const newCoreState = { ...prev.core };
+
+        // Only update if the agent is in the idle ("monitoring") state
+        if (coreStates[1] === 0) {
+          const cpuLoad = (Math.random() * (85 - 30) + 30).toFixed(1);
+          const activeNodes = Math.floor(Math.random() * (52 - 45) + 45);
+          newCoreState[1] = `[Brahma Kernel] Load: ${cpuLoad}%. Balancing ${activeNodes}/52 sub-agents. Active threads: ${Math.floor(Math.random() * 5000 + 1000)}.`;
+        }
+
+        if (coreStates[2] === 0) {
+          const packetLoss = (Math.random() * 0.05).toFixed(3);
+          const syncRate = Math.floor(Math.random() * (1200 - 800) + 800);
+          newCoreState[2] = `[Neuro-Sync] Edge telemetry sync rate: ${syncRate} ops/sec. Packet loss: ${packetLoss}%. Pathway integrity verified.`;
+        }
+
+        if (coreStates[3] === 0) {
+          const permutations = (Math.random() * (9.5 - 2.1) + 2.1).toFixed(2);
+          const currentEff = (Math.random() * (98.9 - 94.2) + 94.2).toFixed(1);
+          newCoreState[3] = `[Quantum-Swarm] Evaluating ${permutations}M schedule permutations. Current factory efficiency isolated at ${currentEff}%.`;
+        }
+
+        if (coreStates[4] === 0) {
+          const cottonIndex = (Math.random() * (102.5 - 98.1) + 98.1).toFixed(2);
+          const polyDemand = (Math.random() * (15 - 2) + 2).toFixed(1);
+          newCoreState[4] = `[Maha-Orch] Global Cotton Index: ${cottonIndex} (-0.2%). Poly-blend export demand rising by ${polyDemand}% in European markets.`;
+        }
+
+        if (coreStates[5] === 0) {
+          const latency = (Math.random() * (2.5 - 0.8) + 0.8).toFixed(1);
+          const temp = (Math.random() * (35.5 - 28.0) + 28.0).toFixed(1);
+          newCoreState[5] = `[Edge Node] Zero-latency safety override active. Floor Node 4 latency: ${latency}ms. Ambient server temp: ${temp}°C.`;
+        }
+
+        if (coreStates[6] === 0) {
+          const logs = Math.floor(Math.random() * (450 - 100) + 100);
+          const confidence = (Math.random() * (99.9 - 92.5) + 92.5).toFixed(1);
+          newCoreState[6] = `[NLP Engine] Processing ${logs} rolling Hindi/Mewari voice-logs from shop floor. Transcription confidence: ${confidence}%.`;
+        }
+
+        if (coreStates[7] === 0) {
+          const locksFree = Math.floor(Math.random() * (1024 - 900) + 900);
+          const resolveTime = (Math.random() * (15.5 - 2.1) + 2.1).toFixed(1);
+          newCoreState[7] = `[Conflict Resolver] ${locksFree} Mutex locks available. Last resource contention resolved in ${resolveTime}ms. Zero system-lock detected.`;
+        }
+
+        return { ...prev, core: newCoreState };
+      });
+    };
+
+    const interval = setInterval(generateDynamicData, 4500); // Update every 4.5 seconds
+    return () => clearInterval(interval);
+  }, [coreStates]);
 
   // --- Owner Approval Polling ---
   const [activeRequests, setActiveRequests] = useState([]);
