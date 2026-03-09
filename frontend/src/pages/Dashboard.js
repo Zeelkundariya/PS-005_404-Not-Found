@@ -533,6 +533,63 @@ import { agentsData } from "../data/agentsData"; export default function Dashboa
     </div>
   );
 
+  useEffect(() => {
+    // Generate contextual suggestions based on live dashboard state
+    const contextualPool = [];
+    const randomPool = [
+      "Approve overtime for Shift B (Weavers)",
+      "Sell 3,000m Navy Blue dead-stock for ₹4.25L",
+      "Reject 1500m Substandard Denim Batch #42",
+      "Re-program Looms 1-3 for Navratri design surge",
+      "Release quarterly bonus for Top 5% Operators",
+      "Request QA audit for incoming Cotton stock",
+      "Shift export focus to European Poly-blend market",
+      "Schedule complete factory deep-clean this Sunday",
+      "Release payment for pending Logistics Invoice #892"
+    ];
+
+    // Priority 1: Machine Health & Maintenance
+    if (machineVibration > 75) {
+      contextualPool.push(`Dispatch Tech-Team to Loom (Vib: ${machineVibration}Hz)`);
+      contextualPool.push("Approve ₹15k emergency parts for Loom Repair");
+    } else if (maintenanceScore < 85) {
+      contextualPool.push("Authorize preventative maintenance on Stenter #2");
+    }
+
+    // Priority 2: Inventory & Supply Chain
+    if (cottonYarnState === 0 || inventoryAlerts.length > 0) {
+      contextualPool.push("Order 500kg Cotton from Sharma Suppliers (Fastest)");
+      contextualPool.push("Expedite 200kg Poly-blend from RJ Textiles");
+    }
+
+    // Priority 3: Energy & Grid
+    const hour = new Date().getHours();
+    if (hour >= 13 && hour <= 15) { // Afternoon peak
+      contextualPool.push("Shift Looms 5-8 to Solar Grid to save power");
+      contextualPool.push("Pre-heat DG Sets for expected 2PM grid cut");
+    }
+
+    // Combine contextual (high priority) with random filler to always have 3-4 suggestions
+    const finalSuggestions = [...contextualPool];
+
+    // Shuffle randompool
+    for (let i = randomPool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [randomPool[i], randomPool[j]] = [randomPool[j], randomPool[i]];
+    }
+
+    // Fill the rest until we have exactly 3 suggestions
+    let i = 0;
+    while (finalSuggestions.length < 3 && i < randomPool.length) {
+      if (!finalSuggestions.includes(randomPool[i])) {
+        finalSuggestions.push(randomPool[i]);
+      }
+      i++;
+    }
+
+    setWhatsappSuggestions(finalSuggestions.slice(0, 3));
+  }, [machineVibration, cottonYarnState, maintenanceScore, inventoryAlerts]);
+
   return (
     <div className="dashboard-container" style={{ display: 'flex', background: '#070b14', minHeight: '100vh', color: 'white', overflow: 'hidden' }}>
       {/* Sidebar */}
