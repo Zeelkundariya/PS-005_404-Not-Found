@@ -70,6 +70,7 @@ import { agentsData } from "../data/agentsData"; export default function Dashboa
   // WhatsApp Chat Sequence State (0: Initial, 1: Owner Typing, 2: Owner Replied, 3: AI Processing, 4: Done)
   const [waStep, setWaStep] = useState(0);
   const [ownerReply, setOwnerReply] = useState('');
+  const [whatsappSuggestions, setWhatsappSuggestions] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [twilioPhone, setTwilioPhone] = useState('');
   const [twilioSent, setTwilioSent] = useState(false);
@@ -2068,7 +2069,7 @@ import { agentsData } from "../data/agentsData"; export default function Dashboa
                     <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>Detected price-drop in Turkish cotton yarn. Buy window open for next 3 hours.</p>
                   </div>
                   <div style={{ marginTop: 'auto' }}>
-                    <button className="btn-primary" style={{ width: '100%', background: '#3b82f6', border: 'none', color: 'white', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>Lock Arbitrage Window</button>
+                    <button className="btn-primary" style={{ width: '100%', background: '#3b82f6', border: 'none', color: 'white', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await fetch('http://localhost:3001/owner/arbitrage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ commodity: 'cotton', market: 'Bursa', volume: 500 }) }); const data = await res.json(); alert(data.message || 'Arbitrage locked successfully.'); } catch (err) { alert('Error: Could not reach the owner server at http://localhost:3001/owner/arbitrage. Please ensure the backend is running.'); } }}>Lock Arbitrage Window</button>
                   </div>
                 </div>
 
@@ -2082,7 +2083,7 @@ import { agentsData } from "../data/agentsData"; export default function Dashboa
                     <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>₹12 Lakh locked in unpaid invoices. Recommending immediate factoring.</p>
                   </div>
                   <div style={{ marginTop: 'auto' }}>
-                    <button className="btn-primary" style={{ width: '100%', background: '#10b981', border: 'none', color: 'black', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}><RefreshCcw size={14} style={{ display: 'inline', marginRight: '6px' }} /> Auto-Factor Unpaid Invoices</button>
+                    <button className="btn-primary" style={{ width: '100%', background: '#10b981', border: 'none', color: 'black', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await fetch('http://localhost:3001/owner/cash-crunch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ totalUnpaid: 1200000, deficitDays: 14 }) }); const data = await res.json(); alert(data.message || 'Invoice factoring initiated successfully.'); } catch (err) { alert('Error: Could not reach the owner server at http://localhost:3001/owner/cash-crunch. Please ensure the backend is running.'); } }}><RefreshCcw size={14} style={{ display: 'inline', marginRight: '6px' }} /> Auto-Factor Unpaid Invoices</button>
                   </div>
                 </div>
 
@@ -2096,7 +2097,7 @@ import { agentsData } from "../data/agentsData"; export default function Dashboa
                     <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>Detected handwritten Marwari/Hindi ledger entries in red 'Bahi-Khata'. Extraction is pending.</p>
                   </div>
                   <div style={{ marginTop: 'auto' }}>
-                    <button className="btn-primary" style={{ width: '100%', background: 'transparent', border: '1px solid #6366f1', color: '#a5b4fc', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}><FileScan size={14} style={{ display: 'inline', marginRight: '6px' }} /> Scan & Sync Traditional Ledger</button>
+                    <button className="btn-primary" style={{ width: '100%', background: 'transparent', border: '1px solid #6366f1', color: '#a5b4fc', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await fetch('http://localhost:3001/owner/ledger-scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ledgerType: 'Bahi-Khata', language: 'Marwari/Hindi' }) }); const data = await res.json(); alert(data.message || 'Ledger scanned and synced successfully.'); } catch (err) { alert('Error: Could not reach the owner server at http://localhost:3001/owner/ledger-scan. Please ensure the backend is running.'); } }}><FileScan size={14} style={{ display: 'inline', marginRight: '6px' }} /> Scan & Sync Traditional Ledger</button>
                   </div>
                 </div>
 
@@ -2110,7 +2111,7 @@ import { agentsData } from "../data/agentsData"; export default function Dashboa
                     <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>Peer-verified reputation for payment punctuality & quality consistency in Bhilwara.</p>
                   </div>
                   <div style={{ marginTop: 'auto' }}>
-                    <button className="btn-primary" style={{ width: '100%', background: '#eab308', border: 'none', color: 'black', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>Share Trust-Score with Suppliers</button>
+                    <button className="btn-primary" style={{ width: '100%', background: '#eab308', border: 'none', color: 'black', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await fetch('http://localhost:3001/owner/trust-score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ score: 'A+', trustIndex: 94, suppliers: 15 }) }); const data = await res.json(); alert(data.message || 'Trust-Score shared successfully.'); } catch (err) { alert('Error: Could not reach the owner server at http://localhost:3001/owner/trust-score. Please ensure the backend is running.'); } }}>Share Trust-Score with Suppliers</button>
                   </div>
                 </div>
               </div>

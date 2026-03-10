@@ -9,7 +9,7 @@ const OwnerPortal = () => {
 
     const fetchRequests = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/ai/requests');
+            const res = await axios.get('http://localhost:3001/api/ai/requests');
             setRequests(res.data.filter(r => r.status === 'Pending'));
             setLoading(false);
         } catch (err) {
@@ -30,7 +30,7 @@ const OwnerPortal = () => {
 
     const handleAction = async (id, status) => {
         try {
-            await axios.put(`http://localhost:5000/api/ai/request/${id}`, { status });
+            await axios.put(`http://localhost:3001/api/ai/request/${id}`, { status });
             fetchRequests();
         } catch (err) {
             console.error('Error updating request:', err);
@@ -293,8 +293,8 @@ const OwnerPortal = () => {
                     <div className="flex flex-col lg:flex-row justify-between items-center gap-12 opacity-20 hover:opacity-100 transition-opacity duration-700">
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-16 gap-y-8">
                             <div>
-                                <div className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-2">Gateway Hub</div>
-                                <div className="text-xs font-bold text-gray-400">Port 5000 (Neural Engine v4.2)</div>
+                                <div className="text-[10px] font-black tracking-widest text-gray-500 uppercase mb-1">Gateway Hub</div>
+                                <div className="text-xs font-bold text-gray-300 tracking-tight">Port 3001 (Neural Engine v4.2)</div>
                             </div>
                             <div>
                                 <div className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-2">Sovereign Layer</div>
@@ -323,40 +323,5 @@ const OwnerPortal = () => {
         </div>
     );
 };
-
-// Internal Components (Using icons already imported)
-const ArrowRight = ({ size, className }) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-    >
-        <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-    </svg>
-);
-
-const CheckCircle = ({ className, size }) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-    >
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-);
 
 export default OwnerPortal;

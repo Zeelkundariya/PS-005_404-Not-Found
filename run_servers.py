@@ -25,7 +25,7 @@ def run_server(name, directory, command, env_vars):
     return process
 
 # Env vars for backend
-backend_env = {"PORT": "5000"}
+backend_env = {"PORT": "3001"}
 # Env vars for frontend
 frontend_env = {"BROWSER": "none", "PORT": "3000"}
 

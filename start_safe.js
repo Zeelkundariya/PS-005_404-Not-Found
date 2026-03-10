@@ -16,7 +16,7 @@ function start(dir, cmd, args, env = {}) {
 }
 
 // Start backend
-start(backendDir, 'node', ['server.js'], { PORT: 5000 });
+start(backendDir, 'node', ['server.js'], { PORT: 3001 });
 
 // Start frontend
 start(frontendDir, 'npx', ['react-scripts', 'start'], { PORT: 3000, BROWSER: 'none' });

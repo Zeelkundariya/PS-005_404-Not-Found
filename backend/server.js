@@ -18,5 +18,6 @@ app.use("/api/inventory", require("./routes/inventoryRoutes"));
 app.use("/api/ai", require("./routes/aiRoutes"));
 app.use("/api/upload", require("./routes/uploadRoutes"));
 app.use("/api/whatsapp", require("./routes/whatsapp"));
+app.use("/owner", require("./routes/ownerRoutes"));
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+app.listen(3001, () => console.log("Owner Server running on port 3001"));

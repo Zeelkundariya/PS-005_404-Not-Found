@@ -37,16 +37,20 @@ const endpoints = [
     { method: 'post', url: '/ai/optimize-workflow' },
     { method: 'post', url: '/ai/executive-summary' },
     { method: 'post', url: '/ai/recommendations' },
+    { method: 'post', url: '/../owner/arbitrage', body: { commodity: 'cotton', market: 'Bursa', volume: 500 } },
+    { method: 'post', url: '/../owner/cash-crunch', body: { totalUnpaid: 1200000, deficitDays: 14 } },
+    { method: 'post', url: '/../owner/ledger-scan', body: { ledgerType: 'Bahi-Khata', language: 'Marwari/Hindi' } },
+    { method: 'post', url: '/../owner/trust-score', body: { score: 'A+', trustIndex: 94, suppliers: 15 } },
 ];
 
 async function testAll() {
-    const baseURL = 'http://localhost:5000/api';
+    const baseURL = 'http://localhost:3000/api';
     for (const ep of endpoints) {
         try {
             if (ep.method === 'get') {
                 await axios.get(baseURL + ep.url);
             } else {
-                await axios.post(baseURL + ep.url, {});
+                await axios.post(baseURL + ep.url, ep.body || {});
             }
             console.log(`[OK] ${ep.url}`);
         } catch (err) {
