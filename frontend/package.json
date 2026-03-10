@@ -14,11 +14,7 @@
         "recharts": "^2.5.0"
     },
     "scripts": {
-<<<<<<< HEAD
         "start": "react-scripts start",
-=======
-        "start": "set BROWSER=none && set PORT=3001 && react-scripts start",
->>>>>>> 6aa8a3c2829edf252ae079c51809166b33c83649
         "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject"
