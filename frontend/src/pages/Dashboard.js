@@ -104,7 +104,6 @@ import { agentsData } from "../data/agentsData"; export default function Dashboa
     1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0
   });
 
-  const [whatsappSuggestions, setWhatsappSuggestions] = useState([]);
 
   const [lastAgentMsg, setLastAgentMsg] = useState({
     yarn: "Expected 8% price hike in Bhilwara Mandi by Friday.",
