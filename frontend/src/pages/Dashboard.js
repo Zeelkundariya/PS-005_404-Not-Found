@@ -2845,7 +2845,15 @@ export default function Dashboard() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
                     {fleetData.map((m, i) => (
-                      <div key={i} className="ecosystem-item" style={{ border: `1px solid ${m.color}20`, padding: '1rem', background: 'rgba(132, 177, 121,0.01)' }}>
+                      <div
+                        key={i}
+                        className="ecosystem-item"
+                        onClick={() => {
+                          setSelectedMachineReport(m.name);
+                          document.querySelector('.section-title')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        style={{ border: `1px solid ${m.color}20`, padding: '1rem', background: 'rgba(132, 177, 121,0.01)', cursor: 'pointer' }}
+                      >
                         <div className="node-dot" style={{ background: m.color }}>
                           <div className="node-pulse" style={{ background: m.color }}></div>
                         </div>
