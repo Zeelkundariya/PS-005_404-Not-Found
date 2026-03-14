@@ -10,7 +10,8 @@ import {
   Cpu, TrendingUp, Droplets, Wind, Package, Plus, Award,
   ShieldAlert, BrainCircuit, Layers, CheckCircle, Thermometer, Globe, Building2, Database,
   MessageCircle, Video, Wand2, Smartphone, Bot,
-  Box, Network, Mic, Droplet, RefreshCcw, Fingerprint, MessageSquare, ArrowRight, Landmark, BookOpen, FileScan, Sparkles, Recycle, Flame
+  Box, Network, Mic, Droplet, RefreshCcw, Fingerprint, MessageSquare, ArrowRight, Landmark, BookOpen, FileScan, Sparkles, Recycle, Flame,
+  Waves, Clock, Map, Bell, History, X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
@@ -116,9 +117,9 @@ const AgentGrid = React.memo(({ categories, title, focusedAgent, setFocusedAgent
     </div>
   );
 }, (prevProps, nextProps) => {
-  return prevProps.title === nextProps.title && 
-         prevProps.focusedAgent?.id === nextProps.focusedAgent?.id &&
-         JSON.stringify(prevProps.categories) === JSON.stringify(nextProps.categories);
+  return prevProps.title === nextProps.title &&
+    prevProps.focusedAgent?.id === nextProps.focusedAgent?.id &&
+    JSON.stringify(prevProps.categories) === JSON.stringify(nextProps.categories);
 });
 
 export default function Dashboard() {
@@ -172,10 +173,10 @@ export default function Dashboard() {
   const [udyamFile, setUdyamFile] = useState(null);
   const [isOcrScanning, setIsOcrScanning] = useState(false);
   const [ocrData, setOcrData] = useState(null);
-  
+
   const [growthSliders, setGrowthSliders] = useState({ solar: 10, training: 20, automation: 5 });
   const [projectedRoi, setProjectedRoi] = useState(12.4);
-  
+
   const [isScanningTexture, setIsScanningTexture] = useState(false);
   const [textureHash, setTextureHash] = useState(null);
   const [showArbitrageTable, setShowArbitrageTable] = useState(false);
@@ -298,6 +299,96 @@ export default function Dashboard() {
   const [isSyncingGenerators, setIsSyncingGenerators] = useState(false);
   const [isOptimizingShift, setIsOptimizingShift] = useState(false);
   const [cvDefect, setCvDefect] = useState({ top: '40%', left: '45%', label: '1.2mm Yarn Breakage (97%)', color: '#f43f5e' });
+
+  // --- PdM Advanced States ---
+  const [currentShift, setCurrentShift] = useState("Day Shift (08:00 - 16:00)");
+  const [isScanning, setIsScanning] = useState(false);
+  const [showShiftModal, setShowShiftModal] = useState(false);
+  const [advancedPdM, setAdvancedPdM] = useState({
+    remainingLifeHours: 1930,
+    failureProbability: 30.2,
+    productionLossEstimate: "₹50,000",
+    healthScore: 82.5,
+    lastMaintenance: "12 MAR",
+    backlogItems: 4,
+    techAvailability: "75%",
+    downtimePrevented: "148 Hrs",
+    netSavingsPotential: "₹75,000"
+  });
+
+  const [strategicPdM, setStrategicPdM] = useState({
+    totalDepreciation: "₹1,42,000",
+    revenueAtRisk: "₹8,52,000",
+    netEbitdaImpact: "₹12,40,000",
+    pdmRoi: "340%",
+    capitalRecovery: "₹3,45,000",
+    portfolioHealth: 91.5
+  });
+  const [fleetData, setFleetData] = useState([
+    { id: 'Loom #1', name: 'Loom #1', type: 'WEAVING', score: 65, status: 'Warning', trend: 'Downward', color: '#f59e0b' },
+    { id: 'Loom #4', name: 'Loom #4', type: 'WEAVING', score: 92, status: 'Healthy', trend: 'Stable', color: '#10b981' },
+    { id: 'Loom #7', name: 'Loom #7', type: 'WEAVING', score: 40, status: 'Critical', trend: 'Downward', color: '#ef4444' },
+    { id: 'Stenter #1', name: 'Stenter #1', type: 'FINISHING', score: 88, status: 'Healthy', trend: 'Stable', color: '#10b981' },
+    { id: 'Dyeing #2', name: 'Dyeing #2', type: 'PROCESSING', score: 85, status: 'Healthy', trend: 'Improving', color: '#10b981' },
+    { id: 'Boiler #1', name: 'Boiler #1', type: 'UTILITY', score: 78, status: 'Healthy', trend: 'Stable', color: '#10b981' },
+  ]);
+  const [liveSensors, setLiveSensors] = useState({
+    temp: 42,
+    tempTrend: 1.5,
+    vibration: 4.8,
+    vibrationTrend: 0.8,
+    pressure: 120,
+    power: 12.4
+  });
+  const [failureTrend, setFailureTrend] = useState([
+    { time: '08:00', risk: 20 },
+    { time: '10:00', risk: 25 },
+    { time: '12:00', risk: 45 },
+    { time: '14:00', risk: 30 },
+    { time: '16:00', risk: 35 },
+    { time: '18:00', risk: 60 },
+    { time: '20:00', risk: 30 },
+  ]);
+  const [workOrderStep, setWorkOrderStep] = useState(0);
+  const [budgetApplied, setBudgetApplied] = useState(false);
+  const [isBudgeting, setIsBudgeting] = useState(false);
+  const [ledgerData, setLedgerData] = useState([
+    { date: '12 MAR', task: 'Hydraulic Seal Replacement', tech: 'Rahul S.', res: 'Complete' },
+    { date: '08 MAR', task: 'Motor Bearing Lubrication', tech: 'Amit K.', res: 'Complete' },
+    { date: '01 MAR', task: 'Sensor Calibration Cluster B', tech: 'System AI', res: 'Complete' }
+  ]);
+
+  // --- Financial Failure Reporting States ---
+  const [selectedMachineReport, setSelectedMachineReport] = useState(null);
+  const [failureReports, setFailureReports] = useState({
+    'Loom #1': {
+      analysis: "Spindle bearing friction anomaly detected at 8.2kHz. Lubrication film breakdown.",
+      costOfFailure: "₹1,50,000 (Reactive)",
+      depreciation: "₹12,000 (Accelerated due to heat stress)",
+      costRecover: "₹1,15,000 (Via Predictive Intervention)",
+      profitGain: "₹42,000 (Avoided downtime & emergency logistics)",
+      solution: "Apply high-temp lithium grease & recalibrate spindle alignment.",
+      lastResolved: "12 MAR"
+    },
+    'Loom #7': {
+      analysis: "Stalled motor logic detected. Potential capacitor leakage in control board.",
+      costOfFailure: "₹2,80,000 (Major PCB Replacement)",
+      depreciation: "₹25,000 (Critical Component Fatigue)",
+      costRecover: "₹2,10,000 (Part Refurbishment vs Replacement)",
+      profitGain: "₹65,000 (Zero-latency failover to Backup Section)",
+      solution: "Replace C42/C44 capacitors & update firmware to v2.1.4.",
+      lastResolved: "Pending"
+    },
+    'Loom #4': {
+      analysis: "Optimal performance. Harmonic signature within 0.2% variance.",
+      costOfFailure: "₹0",
+      depreciation: "₹4,500 (Standard)",
+      costRecover: "₹0",
+      profitGain: "₹18,000 (Over-performance optimization)",
+      solution: "Continue monitoring. Next audit in 450 hours.",
+      lastResolved: "08 MAR"
+    }
+  });
 
   // Camera States
   const videoRef = useRef(null);
@@ -477,7 +568,8 @@ export default function Dashboard() {
   // Interactive Machine Slider State
   const [machineVibration, setMachineVibration] = useState(45);
   const [ticketGenerated, setTicketGenerated] = useState(false);
-  const [userRole, setUserRole] = useState('Owner'); // Admin, Manager, Operator
+  const [userRole, setUserRole] = useState('Strategic Owner'); // Operator, Manager, Strategic Owner
+  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [isAiLearningMode, setIsAiLearningMode] = useState(true);
   const [lang, setLang] = useState('EN'); // EN, HI
   const [executiveSummary, setExecutiveSummary] = useState({});
@@ -876,7 +968,7 @@ export default function Dashboard() {
   const handleTextureScan = () => {
     setIsScanningTexture(true);
     setStrategicAiLogs(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: "Initializing Microscopic Texture Analysis...", type: "system" }, ...prev]);
-    
+
     setTimeout(() => {
       setTextureHash("BH-ROLL-902-X-CONFIRMED");
       setIsScanningTexture(false);
@@ -896,7 +988,7 @@ export default function Dashboard() {
     setIsScanningSchemes(true);
     setScanSteps([]);
     setGrantProbability(0);
-    
+
     const steps = [
       "Analyzing Factory Registration (Udyam Verified)",
       "Checking PEI (Production Effectiveness Index) Thresholds",
@@ -910,16 +1002,108 @@ export default function Dashboard() {
       if (currentStep < steps.length) {
         setScanSteps(prev => [...prev, steps[currentStep]]);
         setGrantProbability(prev => Math.min(85, prev + Math.floor(Math.random() * 20) + 10));
-        currentStep++;
-      } else {
-        clearInterval(interval);
-        setTimeout(() => {
-          setIsScanningSchemes(false);
-          setGrantProbability(88.4); // Final calculated score
-          setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: "AI Governance Scan: 88.4% Eligibility for RIPS-2022 Subsidy.", type: "success" }, ...prev]);
-        }, 1000);
       }
     }, 8000 / steps.length);
+  };
+
+  const renderFailureReportModal = () => {
+    if (!selectedMachineReport) return null;
+    const report = failureReports[selectedMachineReport];
+    if (!report) return null;
+
+    return (
+      <div className="modal-overlay" style={{ zIndex: 10000 }}>
+        <div className="premium-card animate-slide-up" style={{ width: '90%', maxWidth: '800px', maxHeight: '85vh', overflowY: 'auto', padding: '2.5rem', background: '#0f172a', border: '1px solid var(--accent)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div className="glass-icon" style={{ background: 'rgba(244, 63, 94, 0.1)', borderColor: 'rgba(244, 63, 94, 0.2)' }}>
+                <ShieldAlert size={28} color="var(--danger)" />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: 'white', margin: 0 }}>Failure Analysis: {selectedMachineReport}</h2>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Security Verified: Industrial Audit v4.1</div>
+              </div>
+            </div>
+            <button className="modal-close" onClick={() => setSelectedMachineReport(null)}><X size={20} /></button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
+            <div className="gov-section-card" style={{ borderLeft: '4px solid var(--primary)', background: 'rgba(15, 23, 42, 0.6)' }}>
+              <div style={{ color: 'var(--primary)', fontWeight: '800', fontSize: '0.75rem', marginBottom: '8px' }}>FINANCIAL IMPACT (REACTIVE)</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--danger)' }}>{report.costOfFailure}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Projected loss without AI intervention</div>
+            </div>
+            <div className="gov-section-card" style={{ borderLeft: '4px solid var(--accent)', background: 'rgba(15, 23, 42, 0.6)' }}>
+              <div style={{ color: 'var(--accent)', fontWeight: '800', fontSize: '0.75rem', marginBottom: '8px' }}>RECOVERY GAIN (PREDICTIVE)</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--accent)' }}>{report.costRecover}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Actual savings recorded via preventative fix</div>
+            </div>
+            <div className="gov-section-card" style={{ background: 'rgba(15, 23, 42, 0.6)' }}>
+              <div style={{ color: '#94a3b8', fontWeight: '800', fontSize: '0.75rem', marginBottom: '8px' }}>ASSET DEPRECIATION</div>
+              <div style={{ fontSize: '1.2rem', fontWeight: '800', color: '#e2e8f0' }}>{report.depreciation}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Value leakage due to machine wear</div>
+            </div>
+            <div className="gov-section-card" style={{ background: 'rgba(15, 23, 42, 0.6)', borderRight: '4px solid #FBC02D' }}>
+              <div style={{ color: '#FBC02D', fontWeight: '800', fontSize: '0.75rem', marginBottom: '8px' }}>NET PROFIT GAIN</div>
+              <div style={{ fontSize: '1.2rem', fontWeight: '800', color: '#FBC02D' }}>{report.profitGain}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Direct EBITDA impact from optimization</div>
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '2rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '2.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <BrainCircuit size={20} color="var(--primary)" /> Smart Analytics & Solution Solution
+            </h3>
+            <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: '#e2e8f0', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '10px' }}>
+              <strong>AI Root Cause:</strong> {report.analysis}
+            </p>
+            <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1.5rem', borderRadius: '15px', borderLeft: '4px solid var(--accent)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--accent)', marginBottom: '8px', letterSpacing: '1px' }}>PRO-INDUSTRIAL SOLUTION</div>
+              <div style={{ fontSize: '0.95rem', color: 'white', fontWeight: '600' }}>{report.solution}</div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '2.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', marginBottom: '1.5rem', textAlign: 'center' }}>Machine Cost Comparison (Financial Risk Index)</h3>
+            <div style={{ height: '250px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={Object.entries(failureReports).map(([name, data]) => ({
+                  name,
+                  cost: parseInt(data.costOfFailure.replace(/[^\d]/g, '') || 0),
+                  recovery: parseInt(data.costRecover.replace(/[^\d]/g, '') || 0)
+                }))}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} />
+                  <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} />
+                  <Tooltip
+                    contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                    itemStyle={{ fontSize: '12px' }}
+                  />
+                  <Bar dataKey="cost" fill="var(--danger)" radius={[4, 4, 0, 0]} name="Failure Cost" />
+                  <Bar dataKey="recovery" fill="var(--accent)" radius={[4, 4, 0, 0]} name="Recovery Gain" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '15px' }}>
+            <button
+              className="btn-primary"
+              style={{ flex: 1, padding: '15px', background: 'var(--primary)', border: 'none' }}
+              onClick={() => {
+                setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: `Maintenance Solution Applied for ${selectedMachineReport}.`, type: 'success' }, ...prev]);
+                setSelectedMachineReport(null);
+              }}
+            >
+              Authorize Immediate Solution
+            </button>
+            <button className="btn-primary" style={{ flex: 1, padding: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} onClick={() => setSelectedMachineReport(null)}>
+              Generate Full PDF Audit
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const handleGenAiSubsidy = () => {
@@ -932,7 +1116,7 @@ export default function Dashboard() {
       "Formatting Rajasthan RIPS 2022 XML...",
       "Generating final PDF draft..."
     ];
-    
+
     let currentStep = 0;
     const interval = setInterval(() => {
       currentStep++;
@@ -959,7 +1143,7 @@ export default function Dashboard() {
     setIsThermalScanning(true);
     setSpectralWave(true);
     setStrategicAiLogs(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: "Spectral Scan Initiated: Analyzing Loom-Motor Harmonics...", type: "system" }, ...prev]);
-    
+
     setTimeout(() => {
       setThermalMap({ loom4: 78.4, loom7: 92.1, stenter1: 65.2 });
       setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: "Thermal Scan Complete: Critical Heat Gradient detected on Motor B-7.", type: "warning" }, ...prev]);
@@ -1056,13 +1240,76 @@ export default function Dashboard() {
             Live: {typeof executiveSummary.pei === 'object' ? JSON.stringify(executiveSummary.pei) : executiveSummary.pei || 0}% Efficiency
           </div>
         </div>
+
+        {/* --- Role Switcher (Photo 2) --- */}
+        <div style={{ padding: '0 1rem 1.5rem 1rem', position: 'relative' }}>
+          <div
+            className="role-switcher-trigger"
+            onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              padding: '10px 15px',
+              borderRadius: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              cursor: 'pointer',
+              fontSize: '0.75rem',
+              fontWeight: '700',
+              color: 'var(--accent)'
+            }}
+          >
+            {userRole.toUpperCase()} VIEW
+            <TrendingUp size={14} style={{ transform: showRoleSwitcher ? 'rotate(180deg)' : 'none', transition: '0.3s' }} />
+          </div>
+
+          {showRoleSwitcher && (
+            <div className="role-dropdown animate-fade-in" style={{
+              position: 'absolute',
+              top: '100%',
+              left: '1rem',
+              right: '1rem',
+              background: '#0f172a',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              zIndex: 100,
+              overflow: 'hidden',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+              marginTop: '5px'
+            }}>
+              {['Operator', 'Manager', 'Strategic Owner'].map(role => (
+                <div
+                  key={role}
+                  className="role-option"
+                  onClick={() => {
+                    setUserRole(role);
+                    if (role === 'Operator') setActiveTab('overview');
+                    setShowRoleSwitcher(false);
+                  }}
+                  style={{
+                    padding: '12px 15px',
+                    fontSize: '0.7rem',
+                    fontWeight: '800',
+                    color: userRole === role ? 'white' : 'rgba(255,255,255,0.6)',
+                    background: userRole === role ? 'var(--primary)' : 'transparent',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  {role} VIEW
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <ul className="nav-links">
           <li className={`sidebar-link ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
             <LayoutDashboard size={18} />
             {lang === 'EN' ? 'SME Command Center' : ''}
           </li>
 
-          {(userRole === 'Operator' || userRole === 'Manager' || userRole === 'Owner') && (
+          {(userRole === 'Manager' || userRole === 'Owner') && (
             <li className={`sidebar-link ${activeTab === 'operations' ? 'active' : ''}`} onClick={() => setActiveTab('operations')}>
               <Cpu size={18} />
               {lang === 'EN' ? 'Plant Floor' : ' '}
@@ -1072,7 +1319,7 @@ export default function Dashboard() {
 
 
 
-          {(userRole === 'Operator' || userRole === 'Manager' || userRole === 'Owner') && (
+          {(userRole === 'Manager' || userRole === 'Owner') && (
             <li className={`sidebar-link ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>
               <Settings size={18} />
               {lang === 'EN' ? 'Predictive Maintenance' : ''}
@@ -1089,7 +1336,7 @@ export default function Dashboard() {
             </li>
           )}
 
-          {(userRole === 'Operator' || userRole === 'Manager' || userRole === 'Owner') && (
+          {(userRole === 'Manager' || userRole === 'Owner') && (
             <li className={`sidebar-link ${activeTab === 'textile' ? 'active' : ''}`} onClick={() => setActiveTab('textile')}>
               <Briefcase size={18} />
               {lang === 'EN' ? 'Textile Operations' : ' '}
@@ -1137,29 +1384,6 @@ export default function Dashboard() {
             <option value="Owner"> STRATEGIC OWNER</option>
           </select>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>{lang === 'EN' ? 'AI Learning' : 'AI '}</span>
-            <div
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-              onClick={() => setIsAiLearningMode(!isAiLearningMode)}
-            >
-              <div className={`learning-dot ${isAiLearningMode ? 'active' : ''}`} />
-              <div style={{ width: '32px', height: '18px', background: isAiLearningMode ? 'var(--primary)' : '#334155', borderRadius: '10px', position: 'relative', transition: '0.3s' }}>
-                <div style={{ width: '14px', height: '14px', background: 'white', borderRadius: '50%', position: 'absolute', top: '2px', left: isAiLearningMode ? '16px' : '2px', transition: '0.3s' }} />
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>{lang === 'EN' ? 'Interface' : ''}</span>
-            <button
-              onClick={() => setLang(lang === 'EN' ? 'HI' : 'EN')}
-              className="lang-indicator"
-              style={{ cursor: 'pointer', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.65rem' }}
-            >
-              {lang}
-            </button>
-          </div>
         </div>
       </nav>
 
@@ -1549,7 +1773,7 @@ export default function Dashboard() {
                   </div>
                   <span className="badge" style={{ background: 'rgba(14, 165, 233, 0.15)', color: '#38bdf8', fontSize: '0.65rem', fontWeight: '800', border: '1px solid #0ea5e9' }}>VERIFIED</span>
                 </div>
-                
+
                 {isSyncingBlockchain ? (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
                     <div className="spin" style={{ width: '40px', height: '40px', border: '3px solid rgba(14, 165, 233, 0.1)', borderTopColor: '#0ea5e9', borderRadius: '50%' }}></div>
@@ -2023,7 +2247,7 @@ export default function Dashboard() {
                     <Factory size={18} /> Live Loom Floor Map \u2014 Section A & B
                   </h3>
                   <div style={{ display: 'flex', gap: '12px', fontSize: '0.6rem', color: '#64748b' }}>
-                    {[['#10b981','RUNNING'],['#f59e0b','MAINTENANCE'],['#ef4444','ALERT'],['#334155','IDLE']].map(([c,l]) => (
+                    {[['#10b981', 'RUNNING'], ['#f59e0b', 'MAINTENANCE'], ['#ef4444', 'ALERT'], ['#334155', 'IDLE']].map(([c, l]) => (
                       <span key={l} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: c, display: 'inline-block' }} />{l}
                       </span>
@@ -2033,40 +2257,40 @@ export default function Dashboard() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '6px', marginBottom: '8px' }}>
                   {Array.isArray(machineStatus) && machineStatus.length > 0
                     ? machineStatus.map((m, i) => (
-                        <div key={m.id} title={`${m.name} | Temp: ${m.temp}\u00B0C | RPM: ${m.rpm} | ${m.status}`} style={{
+                      <div key={m.id} title={`${m.name} | Temp: ${m.temp}\u00B0C | RPM: ${m.rpm} | ${m.status}`} style={{
+                        height: '42px', borderRadius: '6px', cursor: 'pointer',
+                        background: m.status === 'Running' ? (m.temp > 85 ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.25)') : m.status === 'Maintenance' ? 'rgba(245,158,11,0.25)' : 'rgba(30,41,59,0.8)',
+                        border: `1px solid ${m.status === 'Running' ? (m.temp > 85 ? '#ef4444' : '#10b981') : m.status === 'Maintenance' ? '#f59e0b' : '#1e293b'}`,
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '0.55rem', color: '#94a3b8', transition: 'all 0.3s',
+                        boxShadow: m.status === 'Running' ? `0 0 8px ${m.temp > 85 ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.2)'}` : 'none',
+                        position: 'relative', overflow: 'hidden'
+                      }}>
+                        {m.status === 'Running' && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, transparent, ${m.temp > 85 ? '#ef4444' : '#10b981'}, transparent)`, animation: 'scan 2s infinite' }} />}
+                        <span style={{ fontWeight: '700', color: 'white', fontSize: '0.6rem' }}>{m.name?.replace('Loom ', 'L').replace(' Machine', '')}</span>
+                        <span style={{ color: m.temp > 85 ? '#ef4444' : '#10b981', fontSize: '0.55rem' }}>{m.temp}\u00B0C</span>
+                      </div>
+                    ))
+                    : [...Array(20)].map((_, i) => {
+                      const statuses = ['Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Running', 'Maintenance', 'Running', 'Alert'];
+                      const st = statuses[i];
+                      const temp = Math.floor(Math.random() * 30) + 55;
+                      return (
+                        <div key={i} title={`Loom ${i + 1}`} style={{
                           height: '42px', borderRadius: '6px', cursor: 'pointer',
-                          background: m.status === 'Running' ? (m.temp > 85 ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.25)') : m.status === 'Maintenance' ? 'rgba(245,158,11,0.25)' : 'rgba(30,41,59,0.8)',
-                          border: `1px solid ${m.status === 'Running' ? (m.temp > 85 ? '#ef4444' : '#10b981') : m.status === 'Maintenance' ? '#f59e0b' : '#1e293b'}`,
+                          background: st === 'Running' ? 'rgba(16,185,129,0.25)' : st === 'Maintenance' ? 'rgba(245,158,11,0.25)' : 'rgba(239,68,68,0.25)',
+                          border: `1px solid ${st === 'Running' ? '#10b981' : st === 'Maintenance' ? '#f59e0b' : '#ef4444'}`,
                           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '0.55rem', color: '#94a3b8', transition: 'all 0.3s',
-                          boxShadow: m.status === 'Running' ? `0 0 8px ${m.temp > 85 ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.2)'}` : 'none',
+                          fontSize: '0.55rem', color: '#94a3b8',
+                          boxShadow: st === 'Running' ? '0 0 8px rgba(16,185,129,0.2)' : 'none',
                           position: 'relative', overflow: 'hidden'
                         }}>
-                          {m.status === 'Running' && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, transparent, ${m.temp > 85 ? '#ef4444' : '#10b981'}, transparent)`, animation: 'scan 2s infinite' }} />}
-                          <span style={{ fontWeight: '700', color: 'white', fontSize: '0.6rem' }}>{m.name?.replace('Loom ', 'L').replace(' Machine', '')}</span>
-                          <span style={{ color: m.temp > 85 ? '#ef4444' : '#10b981', fontSize: '0.55rem' }}>{m.temp}\u00B0C</span>
+                          {st === 'Running' && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent, #10b981, transparent)', animation: 'scan 2s infinite' }} />}
+                          <span style={{ fontWeight: '700', color: 'white', fontSize: '0.6rem' }}>L-{i + 1}</span>
+                          <span style={{ color: '#10b981', fontSize: '0.55rem' }}>{temp}\u00B0C</span>
                         </div>
-                      ))
-                    : [...Array(20)].map((_, i) => {
-                        const statuses = ['Running','Running','Running','Running','Running','Running','Running','Running','Running','Running','Running','Running','Running','Running','Running','Running','Running','Maintenance','Running','Alert'];
-                        const st = statuses[i];
-                        const temp = Math.floor(Math.random() * 30) + 55;
-                        return (
-                          <div key={i} title={`Loom ${i+1}`} style={{
-                            height: '42px', borderRadius: '6px', cursor: 'pointer',
-                            background: st === 'Running' ? 'rgba(16,185,129,0.25)' : st === 'Maintenance' ? 'rgba(245,158,11,0.25)' : 'rgba(239,68,68,0.25)',
-                            border: `1px solid ${st === 'Running' ? '#10b981' : st === 'Maintenance' ? '#f59e0b' : '#ef4444'}`,
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '0.55rem', color: '#94a3b8',
-                            boxShadow: st === 'Running' ? '0 0 8px rgba(16,185,129,0.2)' : 'none',
-                            position: 'relative', overflow: 'hidden'
-                          }}>
-                            {st === 'Running' && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent, #10b981, transparent)', animation: 'scan 2s infinite' }} />}
-                            <span style={{ fontWeight: '700', color: 'white', fontSize: '0.6rem' }}>L-{i+1}</span>
-                            <span style={{ color: '#10b981', fontSize: '0.55rem' }}>{temp}\u00B0C</span>
-                          </div>
-                        );
-                      })
+                      );
+                    })
                   }
                 </div>
                 <div style={{ fontSize: '0.65rem', color: '#475569', textAlign: 'center', letterSpacing: '1px' }}>HOVER LOOM FOR TELEMETRY &#x2014; CLICK TO DISPATCH MAINTENANCE</div>
@@ -2184,11 +2408,11 @@ export default function Dashboard() {
                       <div style={{ width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%', animation: 'pulse 1s infinite' }} />
                       <span style={{ fontSize: '0.55rem', color: 'white', fontWeight: 'bold', letterSpacing: '1px' }}>{isCameraActive ? 'LIVE' : 'SIM'}</span>
                     </div>
-                    {cameraError && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: '0.75rem', fontWeight: 'bold', textAlign: 'center', padding: '1rem', zIndex: 30 }}>{cameraError}<br/><span style={{ color: '#64748b', fontSize: '0.65rem', marginTop: '4px', display: 'block' }}>Simulated feed active</span></div>}
+                    {cameraError && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: '0.75rem', fontWeight: 'bold', textAlign: 'center', padding: '1rem', zIndex: 30 }}>{cameraError}<br /><span style={{ color: '#64748b', fontSize: '0.65rem', marginTop: '4px', display: 'block' }}>Simulated feed active</span></div>}
                   </div>
                   {/* Defect Stats */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '6px', marginTop: '10px' }}>
-                    {[['DEFECTS/HR', '3'], ['CONFIDENCE', '97.2%'], ['FPS', '24']].map(([l,v]) => (
+                    {[['DEFECTS/HR', '3'], ['CONFIDENCE', '97.2%'], ['FPS', '24']].map(([l, v]) => (
                       <div key={l} style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '6px', padding: '6px', textAlign: 'center' }}>
                         <div style={{ fontSize: '0.95rem', fontWeight: '800', color: '#a78bfa' }}>{v}</div>
                         <div style={{ fontSize: '0.5rem', color: '#475569', letterSpacing: '1px' }}>{l}</div>
@@ -2204,7 +2428,7 @@ export default function Dashboard() {
                       <Cpu size={14} /> AI System Console
                     </h3>
                     <div style={{ display: 'flex', gap: '4px' }}>
-                      {['#ef4444','#f59e0b','#10b981'].map(c => <div key={c} style={{ width: '8px', height: '8px', borderRadius: '50%', background: c }} />)}
+                      {['#ef4444', '#f59e0b', '#10b981'].map(c => <div key={c} style={{ width: '8px', height: '8px', borderRadius: '50%', background: c }} />)}
                     </div>
                   </div>
                   <div style={{ maxHeight: '230px', overflowY: 'auto', fontSize: '0.65rem', lineHeight: '1.8' }}>
@@ -2239,8 +2463,8 @@ export default function Dashboard() {
                   </p>
                   {isVoiceActive && (
                     <div style={{ display: 'flex', gap: '3px', height: '30px', alignItems: 'flex-end', marginBottom: '10px' }}>
-                      {[...Array(12)].map((_,i) => (
-                        <div key={i} style={{ flex: 1, background: '#3b82f6', borderRadius: '2px', animation: `pulse ${0.3 + i * 0.07}s infinite alternate`, height: `${20 + Math.random() * 80}%`, opacity: 0.7+i/20 }} />
+                      {[...Array(12)].map((_, i) => (
+                        <div key={i} style={{ flex: 1, background: '#3b82f6', borderRadius: '2px', animation: `pulse ${0.3 + i * 0.07}s infinite alternate`, height: `${20 + Math.random() * 80}%`, opacity: 0.7 + i / 20 }} />
                       ))}
                     </div>
                   )}
@@ -2263,9 +2487,9 @@ export default function Dashboard() {
                   </p>
                   {isTwinLoading && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '3px', marginBottom: '10px' }}>
-                      {[...Array(20)].map((_,i) => {
+                      {[...Array(20)].map((_, i) => {
                         const heat = Math.random();
-                        return <div key={i} style={{ height: '12px', borderRadius: '2px', background: heat > 0.7 ? '#ef4444' : heat > 0.4 ? '#f59e0b' : '#10b981', opacity: 0.6 + heat * 0.4, animation: `pulse ${0.5+Math.random()}s infinite` }} />;
+                        return <div key={i} style={{ height: '12px', borderRadius: '2px', background: heat > 0.7 ? '#ef4444' : heat > 0.4 ? '#f59e0b' : '#10b981', opacity: 0.6 + heat * 0.4, animation: `pulse ${0.5 + Math.random()}s infinite` }} />;
                       })}
                     </div>
                   )}
@@ -2281,7 +2505,7 @@ export default function Dashboard() {
                   ))}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                     <div>
-                       <div style={{ fontSize: '0.65rem', color: '#60a5fa', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '4px' }}>QUANTUM SWARM {'\u2014'} 28 AGENTS</div>
+                      <div style={{ fontSize: '0.65rem', color: '#60a5fa', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '4px' }}>QUANTUM SWARM {'\u2014'} 28 AGENTS</div>
                       <h4 style={{ margin: 0, color: 'white', fontSize: '0.95rem' }}>Omni-Orchestrator</h4>
                     </div>
                     <Network size={20} color="#3b82f6" />
@@ -2293,7 +2517,7 @@ export default function Dashboard() {
                   <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 1rem', lineHeight: '1.5' }}>
                     Micro-adjusts all 28 looms 100\u00D7/sec simultaneously {'\u2014'} balancing Speed vs Energy vs Quality in real-time.
                   </p>
-                  <button onClick={() => { if (isOrchestrating) return; setIsOrchestrating(true); setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: 'Quantum-Swarm: Engaging Universal Orchestration across Cluster B...', type: 'info' }, ...prev]); const adj = setInterval(() => { const labels = ['SPD +0.2%','TEN -1.5g','LUB ON','VOLT ADJ','SYNC OK','RPM +3','TMP OK']; setMicroAdjustments(prev => [...prev, { id: Date.now(), text: labels[Math.floor(Math.random()*labels.length)], top: `${Math.random()*70}%`, left: `${Math.random()*70}%` }].slice(-6)); }, 600); setTimeout(() => { clearInterval(adj); setIsOrchestrating(false); setMicroAdjustments([]); setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: 'Quantum-Swarm: Global Optimum achieved. All looms synchronized.', type: 'success' }, ...prev]); }, 6000); }} style={{ width: '100%', background: isOrchestrating ? '#1e3a5f' : 'linear-gradient(90deg, #3b82f6, #6366f1)', color: 'white', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: isOrchestrating ? 'default' : 'pointer', fontSize: '0.8rem', transition: 'all 0.3s' }}>
+                  <button onClick={() => { if (isOrchestrating) return; setIsOrchestrating(true); setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: 'Quantum-Swarm: Engaging Universal Orchestration across Cluster B...', type: 'info' }, ...prev]); const adj = setInterval(() => { const labels = ['SPD +0.2%', 'TEN -1.5g', 'LUB ON', 'VOLT ADJ', 'SYNC OK', 'RPM +3', 'TMP OK']; setMicroAdjustments(prev => [...prev, { id: Date.now(), text: labels[Math.floor(Math.random() * labels.length)], top: `${Math.random() * 70}%`, left: `${Math.random() * 70}%` }].slice(-6)); }, 600); setTimeout(() => { clearInterval(adj); setIsOrchestrating(false); setMicroAdjustments([]); setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: 'Quantum-Swarm: Global Optimum achieved. All looms synchronized.', type: 'success' }, ...prev]); }, 6000); }} style={{ width: '100%', background: isOrchestrating ? '#1e3a5f' : 'linear-gradient(90deg, #3b82f6, #6366f1)', color: 'white', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: isOrchestrating ? 'default' : 'pointer', fontSize: '0.8rem', transition: 'all 0.3s' }}>
                     {isOrchestrating ? '\u26A1 OPTIMIZING ALL LOOMS...' : '\uD83D\uDD17 Engage Universal Orchestration'}
                   </button>
                 </div>
@@ -2351,7 +2575,7 @@ export default function Dashboard() {
                     <Flame size={20} color="#ef4444" />
                   </div>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                    {[['42\u00B0C','Sec A','#10b981'],['47\u00B0C','Sec B','#f59e0b'],['39\u00B0C','Sec C','#10b981'],['52\u00B0C','Sec D','#ef4444']].map(([t,s,c]) => (
+                    {[['42\u00B0C', 'Sec A', '#10b981'], ['47\u00B0C', 'Sec B', '#f59e0b'], ['39\u00B0C', 'Sec C', '#10b981'], ['52\u00B0C', 'Sec D', '#ef4444']].map(([t, s, c]) => (
                       <div key={s} style={{ flex: 1, background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
                         <div style={{ fontSize: '0.9rem', fontWeight: '800', color: c }}>{t}</div>
                         <div style={{ fontSize: '0.5rem', color: '#64748b' }}>{s}</div>
@@ -2376,7 +2600,7 @@ export default function Dashboard() {
                     <Users size={20} color="#f97316" />
                   </div>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', fontSize: '0.7rem' }}>
-                    {[['Shift A', '8', '#10b981'],['Shift B', '\u26A0 6h+', '#ef4444'],['Relief', '4 avail', '#6366f1']].map(([l,v,c]) => (
+                    {[['Shift A', '8', '#10b981'], ['Shift B', '\u26A0 6h+', '#ef4444'], ['Relief', '4 avail', '#6366f1']].map(([l, v, c]) => (
                       <div key={l} style={{ flex: 1, background: 'rgba(0,0,0,0.3)', borderRadius: '6px', padding: '6px', textAlign: 'center' }}>
                         <div style={{ fontWeight: '800', color: c }}>{v}</div>
                         <div style={{ color: '#64748b', fontSize: '0.55rem' }}>{l}</div>
@@ -2413,7 +2637,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px' }}>
-                        {[['TEMP', `${m.temp}\u00B0C`, m.temp > 85 ? '#ef4444' : '#94a3b8'], ['RPM', m.rpm, '#6366f1'], ['VIB', m.vibration, m.vibration === 'High' ? '#ef4444' : '#10b981']].map(([l,v,c]) => (
+                        {[['TEMP', `${m.temp}\u00B0C`, m.temp > 85 ? '#ef4444' : '#94a3b8'], ['RPM', m.rpm, '#6366f1'], ['VIB', m.vibration, m.vibration === 'High' ? '#ef4444' : '#10b981']].map(([l, v, c]) => (
                           <div key={l} style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '6px', padding: '5px', textAlign: 'center' }}>
                             <div style={{ fontSize: '0.7rem', fontWeight: '800', color: c }}>{v}</div>
                             <div style={{ fontSize: '0.45rem', color: '#334155', letterSpacing: '0.5px' }}>{l}</div>
@@ -2426,7 +2650,7 @@ export default function Dashboard() {
               </div>
 
               <AgentGrid categories={['Operations', 'Quality Control', 'Labor & HR']} title="Production & Operations AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
-              
+
               {/* HACKATHON WINNER: Computer Vision Mockup */}
               <div className="stat-card" style={{ marginTop: '1.5rem', background: 'linear-gradient(rgba(139, 92, 246, 0.15), transparent)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -2472,112 +2696,509 @@ export default function Dashboard() {
 
         {
           activeTab === 'maintenance' && (
-            <div className="maintenance-panel animate-fade-in">
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-header"><span className="stat-label">Next Service In</span><Activity size={20} color="var(--primary)" /></div>
-                  <div className="stat-value">{renderSafeValue(downtimePrediction.daysToNextService, '15')} Days</div>
-                  <div className="stat-label">Failure Risk: <span style={{ color: downtimePrediction.failureRisk === 'CRITICAL' ? 'var(--danger)' : 'var(--accent)' }}>{renderSafeValue(downtimePrediction.failureRisk, 'Low')}</span></div>
-                  <div style={{ marginTop: '1rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--primary)' }}>
-                    <BrainCircuit size={14} /> Powered by LSTM Time-Series Algortihm
+            <div className="maintenance-panel animate-fade-in mesh-bg" style={{ padding: '2rem', borderRadius: '30px', minHeight: '100vh' }}>
+
+              {/* 1. Header & Navigation */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+                <div>
+                  <h1 className="text-gradient-primary" style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '0.5rem' }}>Predictive Maintenance</h1>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div className="pulse" style={{ width: '8px', height: '8px', background: '#A2CB8B', borderRadius: '50%' }}></div> Live Telemetry Active</div>
+                    <span>•</span>
+                    <div>Factory: <strong>Bhilwara Cluster - A</strong></div>
+                    <span>•</span>
+                    <div>Shift: <strong style={{ color: 'var(--accent)' }}>{currentShift}</strong></div>
                   </div>
                 </div>
-                <div className="stat-card" style={{ border: downtimePrediction.failureRisk === 'CRITICAL' ? '1px solid var(--danger)' : 'none' }}>
-                  <div className="stat-header"><span className="stat-label">Downtime Loss Risk</span><Zap size={20} color="var(--danger)" /></div>
-                  <div className="stat-value">{renderSafeValue(downtimePrediction.potentialLoss, '0')}</div>
-                  <div className="stat-label">Projected Revenue Impact/Day</div>
+                <div style={{ display: 'flex', gap: '12px' }}>
                   <button
-                    className="btn-primary"
-                    style={{ width: '100%', marginTop: '1rem', background: downtimePrediction.failureRisk === 'CRITICAL' ? 'var(--danger)' : 'rgba(255,255,255,0.05)', fontSize: '0.75rem', padding: '0.5rem', border: 'none', color: 'white', cursor: 'pointer', borderRadius: '4px' }}
+                    className={`btn-primary ${isScanning ? 'pulse' : ''}`}
+                    style={{ background: 'rgba(132, 177, 121,0.05)', border: '1px solid rgba(132, 177, 121,0.1)', backdropFilter: 'blur(10px)', color: '#fff' }}
                     onClick={() => {
-                      alert('Maintenance Team Dispatched! Risk levels resetting...');
-                      setDowntimePrediction(prev => ({ ...prev, failureRisk: 'Low', daysToNextService: '30+', potentialLoss: '0' }));
+                      setIsScanning(true);
+                      setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: 'Full System Scan Initiated...', type: 'info' }, ...prev]);
+                      setTimeout(() => {
+                        setIsScanning(false);
+                        setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: 'System integrity verified. All nodes responding.', type: 'success' }, ...prev]);
+                      }, 3000);
                     }}
                   >
-                    Dispatch Maintenance Team
+                    <BrainCircuit size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> {isScanning ? 'Scanning...' : 'Full System Scan'}
                   </button>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-header"><span className="stat-label">System Health</span><ShieldCheck size={20} color="var(--accent)" /></div>
-                  <div className="stat-value">{renderSafeValue(maintenanceScore, '100')}%</div>
-                  <div className="stat-label">Overall Plant Condition</div>
-                </div>
-              </div>
-
-              <div className="chart-container" style={{ marginTop: '1.5rem' }}>
-                <h3 className="section-title">AI Maintenance Recommendations</h3>
-                <div className="recommendations-list">
-                  {Array.isArray(recommendations) && recommendations.length > 0 ? recommendations.map((rec, i) => (
-                    <div key={i} className="alert alert-info" style={{ marginBottom: '1rem', borderLeft: '4px solid var(--primary)' }}>
-                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                        <Settings size={18} style={{ marginTop: '2px' }} />
-                        <div>
-                          <div style={{ fontWeight: '700', marginBottom: '4px' }}>Recommendation #{i + 1}</div>
-                          <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>{rec}</div>
-                        </div>
-                      </div>
-                    </div>
-                  )) : (
-                    <p style={{ opacity: 0.6 }}>Running deep diagnostics... No immediate actions required.</p>
+                  <button className="btn-primary" onClick={() => setShowShiftModal(true)}>
+                    <Zap size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> {userRole === 'Strategic Owner' ? 'Strategy Hub' : 'Optimize Power'}
+                  </button>
+                  {userRole !== 'Operator' && (
+                    <button
+                      className="btn-primary"
+                      style={{ background: 'var(--accent)', color: 'black' }}
+                      onClick={() => setSelectedMachineReport('Loom #1')}
+                    >
+                      <FileScan size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Financial Reports
+                    </button>
                   )}
                 </div>
               </div>
 
-              {/* RESTORED: Acoustic Bearing & Lube-Pulse */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
-                <div className="stat-card" style={{ background: 'linear-gradient(90deg, rgba(236, 72, 153, 0.05) 0%, transparent 100%)', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ flex: 1, paddingRight: '20px' }}>
-                      <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#ec4899', margin: '0 0 10px 0' }}><Mic size={20} /> Acoustic Bearing AI & Spectral Harmonics</h3>
-                      <p style={{ opacity: 0.8, fontSize: '0.9rem', margin: 0 }}>Uses floor microphones to analyze motor "hum" frequencies. Detects microscopic bearing wear and pits by identifying 4kHz ultrasonic resonance signatures.</p>
+              {/* 2. Advanced KPI Dashboard (Role-Differentiated) */}
+              <div className="stats-grid" style={{ gap: '1.5rem', marginBottom: '2rem' }}>
+                {userRole === 'Strategic Owner' ? (
+                  <>
+                    {/* OWNER VIEW: Financial Metrics */}
+                    <div className="premium-card" style={{ padding: '1.5rem', borderBottom: '3px solid #84B179' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div className="glass-icon"><DollarSign size={24} color="#84B179" /></div>
+                        <div className="badge badge-success">Strategy Active</div>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Portfolio Asset Depreciation</div>
+                      <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>{strategicPdM.totalDepreciation}</div>
+                      <div style={{ marginTop: '15px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Factory-wide asset value leakage control</div>
                     </div>
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                      {spectralWave ? (
-                        <div style={{ display: 'flex', gap: '3px', height: '40px', alignItems: 'center' }}>
-                          {[...Array(10)].map((_, i) => (
-                            <div key={i} className="spectral-bar" style={{ width: '4px', background: '#ec4899', height: `${20 + Math.random() * 60}%`, animationDelay: `${i * 0.1}s` }}></div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ height: '40px', width: '60px', borderBottom: '1px solid #ec4899', display: 'flex', alignItems: 'flex-end', gap: '2px' }}>
-                          {[40, 60, 30, 80, 50, 90, 40, 60, 100, 30].map((h, i) => (
-                            <div key={i} style={{ width: '4px', height: `${h}%`, background: h > 70 ? '#f43f5e' : '#ec4899', opacity: 0.8 }}></div>
-                          ))}
+
+                    <div className="premium-card" style={{ padding: '1.5rem', borderBottom: '3px solid #F43F5E' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div className="glass-icon" style={{ background: 'rgba(244, 63, 94, 0.1)' }}><Zap size={24} color="#F43F5E" /></div>
+                        <div className="badge badge-danger">High Risk</div>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Revenue-at-Risk Forecast</div>
+                      <div style={{ fontSize: '2.2rem', fontWeight: '900', color: '#F43F5E' }}>{strategicPdM.revenueAtRisk}</div>
+                      <div style={{ marginTop: '15px', fontSize: '0.8rem', color: 'rgba(244, 63, 94, 0.8)', fontWeight: 'bold' }}>Unplanned downtime threat detected</div>
+                    </div>
+
+                    <div className="premium-card" style={{ padding: '1.5rem', borderBottom: '3px solid var(--accent)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div className="glass-icon" style={{ background: 'rgba(162, 203, 139, 0.1)' }}><TrendingUp size={24} color="var(--accent)" /></div>
+                        <div className="badge" style={{ background: 'rgba(162, 203, 139, 0.1)', color: 'var(--accent)' }}>+14.2% ROI</div>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Net EBITDA Recovery Gain</div>
+                      <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>{strategicPdM.netEbitdaImpact}</div>
+                      <div style={{ marginTop: '15px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Profit gained via PdM interventions</div>
+                    </div>
+
+                    <div className="premium-card" style={{ padding: '1.5rem', borderBottom: '3px solid var(--primary)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div className="glass-icon" style={{ background: 'rgba(99, 102, 241, 0.1)' }}><Award size={24} color="var(--primary)" /></div>
+                        <div className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)' }}>Mastery</div>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Portfolio Health Index</div>
+                      <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>{strategicPdM.portfolioHealth}%</div>
+                      <div className="maturity-bar-bg"><div className="maturity-bar-fill" style={{ width: `${strategicPdM.portfolioHealth}%`, background: 'var(--primary)' }}></div></div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* MANAGER/OPERATOR VIEW: Operational Metrics */}
+                    <div className="premium-card" style={{ padding: '1.5rem', borderBottom: '3px solid #A2CB8B' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div className="glass-icon"><Clock size={24} color="#A2CB8B" /></div>
+                        <div className="badge badge-success">Optimal</div>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Remaining Useful Life</div>
+                      <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>{advancedPdM.remainingLifeHours}<span style={{ fontSize: '1rem', color: 'var(--text-muted)', marginLeft: '4px' }}>Hrs</span></div>
+                      <div className="maturity-bar-bg"><div className="maturity-bar-fill" style={{ width: '92%', background: '#A2CB8B' }}></div></div>
+                    </div>
+
+                    <div className="premium-card" style={{ padding: '1.5rem', borderBottom: '3px solid #84B179', position: 'relative' }}>
+                      {(userRole === 'Operator') && (
+                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '20px' }}>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#fff', textAlign: 'center', padding: '10px' }}>Manager Authorization Required</div>
                         </div>
                       )}
-                      <button className="btn-primary" style={{ background: '#ec4899', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }} onClick={handleThermalScan}>{isThermalScanning ? 'ANALYZING HARMONICS...' : 'Listen for Bearing Wear'}</button>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div className="glass-icon"><ShieldAlert size={24} color="#84B179" /></div>
+                        <div className="badge badge-warning" style={{ color: '#1E1E1E' }}>Attention</div>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Cumulative Failure Risk</div>
+                      <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>{advancedPdM.failureProbability}%</div>
+                      <div style={{ marginTop: '15px', fontSize: '0.85rem', color: 'var(--danger)', fontWeight: '800' }}>
+                        {advancedPdM.productionLossEstimate} potential loss
+                      </div>
                     </div>
+
+                    <div className="premium-card" style={{ padding: '1.5rem', borderBottom: '3px solid #A2CB8B' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div className="glass-icon"><Activity size={24} color="#A2CB8B" /></div>
+                        <div className="badge badge-success">Live Sync</div>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Fleet Health Score</div>
+                      <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>{advancedPdM.healthScore}%</div>
+                      <div className="maturity-bar-bg"><div className="maturity-bar-fill" style={{ width: `${advancedPdM.healthScore}%`, background: '#A2CB8B' }}></div></div>
+                    </div>
+
+                    <div className="premium-card" style={{ padding: '1.5rem', borderBottom: '3px solid var(--primary)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div className="glass-icon"><Users size={24} color="var(--primary)" /></div>
+                        <div className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)' }}>Active</div>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Tech Team Availability</div>
+                      <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>{advancedPdM.techAvailability}</div>
+                      <div style={{ marginTop: '15px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        {advancedPdM.backlogItems} pending work orders
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* 3. Fleet Analytics & Live Sensors (Show only key highlights for Operator) */}
+              <div className="charts-grid" style={{ gap: '1.5rem', marginBottom: '2rem', gridTemplateColumns: userRole === 'Operator' ? '1fr' : 'minmax(0, 1fr) 400px' }}>
+                <div className="premium-card" style={{ padding: '2rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                    <h3 className="section-title"><LayoutDashboard size={20} color="var(--primary)" /> Machine Fleet Intelligence</h3>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', gap: '15px' }}>
+                      <span>🟢 Healthy: 4</span>
+                      <span>🟡 Warning: 1</span>
+                      <span>🔴 Critical: 1</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                    {fleetData.map((m, i) => (
+                      <div key={i} className="ecosystem-item" style={{ border: `1px solid ${m.color}20`, padding: '1rem', background: 'rgba(132, 177, 121,0.01)' }}>
+                        <div className="node-dot" style={{ background: m.color }}>
+                          <div className="node-pulse" style={{ background: m.color }}></div>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>{m.name}</span>
+                            <span style={{ color: m.color, fontWeight: '900' }}>{m.score}%</span>
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>{m.status}</span>
+                            <span>{m.trend}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="stat-card" style={{ background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#10b981', margin: '0 0 10px 0' }}><Flame size={20} /> AI 'Thermal-Scan' Motor Gradient</h3>
-                      <p style={{ opacity: 0.8, fontSize: '0.9rem', margin: 0 }}>Real-time infrared telemetry. Monitors motor winding temperatures to detect heat-bloom before insulator failure occurs. Extends motor life by 400% through optimized cooling.</p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-                      {isThermalScanning && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                          {['L4', 'L7', 'S1'].map(id => (
-                            <div key={id} className="thermal-active" style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ef4444', textAlign: 'center' }}>
-                              <div style={{ fontSize: '0.6rem', color: '#ef4444' }}>{id}</div>
-                              <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{thermalMap ? `${thermalMap[id === 'L4' ? 'loom4' : id === 'L7' ? 'loom7' : 'stenter1']}°C` : '--'}</div>
+                {userRole !== 'Operator' && (
+                  <div className="premium-card" style={{ padding: '2rem' }}>
+                    <h3 className="section-title"><Waves size={20} color="#84B179" /> Real-Time Telemetry</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                      {[
+                        { icon: <Thermometer size={18} />, label: 'Chasis Temperature', value: liveSensors.temp, unit: ' °C', color: '#1E1E1E', trend: liveSensors.tempTrend },
+                        { icon: <Activity size={18} />, label: 'Spindle Vibration', value: liveSensors.vibration, unit: ' mm/s', color: '#1E1E1E', trend: liveSensors.vibrationTrend },
+                        { icon: <Wind size={18} />, label: 'Hydraulic Pressure', value: liveSensors.pressure, unit: ' PSI', color: '#1E1E1E', trend: 2 },
+                        { icon: <Zap size={18} />, label: 'Bus Power Consumption', value: liveSensors.power, unit: ' kW', color: '#A2CB8B', trend: -0.5 },
+                      ].map((s, i) => (
+                        <div key={i} style={{ background: 'rgba(132, 177, 121,0.03)', padding: '1.2rem', borderRadius: '15px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                              <div style={{ color: s.color }}>{s.icon}</div> {s.label}
                             </div>
-                          ))}
+                            <div style={{ fontSize: '1.2rem', fontWeight: '900' }}>{s.value}<span style={{ fontSize: '0.8rem', opacity: 0.5 }}>{s.unit}</span></div>
+                          </div>
+                          <div style={{ position: 'relative', height: '30px' }}>
+                            <svg width="100%" height="30" viewBox="0 0 200 30" preserveAspectRatio="none">
+                              <path d={`M 0 15 Q 25 ${15 - s.trend * 10} 50 15 T 100 15 T 150 15 T 200 15`} fill="none" stroke={s.color} strokeWidth="2" strokeLinecap="round">
+                                <animate attributeName="d" dur="3s" repeatCount="indefinite" values={`M 0 15 Q 25 ${15 - s.trend * 10} 50 15 T 100 15 T 150 15 T 200 15; M 0 15 Q 25 ${15 + s.trend * 10} 50 15 T 100 15 T 150 15 T 200 15; M 0 15 Q 25 ${15 - s.trend * 10} 50 15 T 100 15 T 150 15 T 200 15`} />
+                              </path>
+                            </svg>
+                          </div>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {userRole !== 'Operator' && (
+                <>
+                  {/* 4. Failure Prediction & Smart Recommendations (Role-Differentiated) */}
+                  <div className="charts-grid" style={{ gap: '1.5rem', marginBottom: '2rem' }}>
+                    <div className="premium-card" style={{ padding: '2rem' }}>
+                      <h3 className="section-title"><TrendingUp size={20} color="#84B179" /> Failure Probability Waveform</h3>
+                      <div style={{ height: '300px', width: '100%' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={failureTrend}>
+                            <defs>
+                              <linearGradient id="premiumFailColor" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#84B179" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#84B179" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(132, 177, 121,0.05)" vertical={false} />
+                            <XAxis dataKey="time" stroke="#64748b" fontSize={11} axisLine={false} tickLine={false} />
+                            <YAxis stroke="#64748b" fontSize={11} axisLine={false} tickLine={false} domain={[0, 100]} />
+                            <Tooltip
+                              contentStyle={{ background: 'rgba(199, 234, 187, 0.9)', border: '1px solid rgba(132, 177, 121,0.1)', borderRadius: '12px', backdropFilter: 'blur(10px)' }}
+                              itemStyle={{ color: '#fff' }}
+                            />
+                            <Area type="monotone" dataKey="risk" stroke="#84B179" strokeWidth={3} fillOpacity={1} fill="url(#premiumFailColor)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div className="premium-card" style={{ padding: '2rem', background: userRole === 'Strategic Owner' ? 'radial-gradient(circle at top right, rgba(99, 102, 241, 0.2), transparent)' : 'radial-gradient(circle at top right, rgba(132, 177, 121, 0.2), transparent)' }}>
+                      <div style={{ display: 'flex', gap: '15px', marginBottom: '2rem' }}>
+                        <div className="glass-icon" style={{ background: userRole === 'Strategic Owner' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(132, 177, 121, 0.2)', borderColor: 'var(--primary)' }}>
+                          {userRole === 'Strategic Owner' ? <Landmark size={28} color="var(--primary)" /> : <BrainCircuit size={28} color="var(--primary)" />}
+                        </div>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900' }}>{userRole === 'Strategic Owner' ? 'Executive AI Brief' : 'Maintenance AI Advisory'}</h3>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>{userRole === 'Strategic Owner' ? 'EBITDA Protection Log' : 'Neural Health Diagnostics'}</div>
+                        </div>
+                      </div>
+
+                      {userRole === 'Strategic Owner' ? (
+                        <>
+                          <div style={{ borderLeft: '2px solid var(--primary)', paddingLeft: '20px', marginBottom: '2.5rem' }}>
+                            <h4 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '10px' }}>Revenue Recovery Pipeline: Loom #7</h4>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                              Strategic risk indexing identifies <span style={{ color: '#fff', fontWeight: 'bold' }}>₹1.2L</span> in at-risk output for the next 48 hours. Predictive intervention on Loom #7 spindle will secure <span style={{ color: '#A2CB8B', fontWeight: 'bold' }}>98.5%</span> of targeted quarterly EBITDA.
+                            </p>
+                          </div>
+
+                          <div style={{ background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.1)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 'bold' }}>
+                              <CheckCircle size={16} /> Asset CAPEX Protection
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '5px' }}>
+                              Early servicing extends machine lifecycle by <span style={{ color: '#fff' }}>14.2 months</span>, conserving <span style={{ color: '#fff' }}>₹4.5L</span> in capital expenditure.
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ borderLeft: '2px solid var(--primary)', paddingLeft: '20px', marginBottom: '2.5rem' }}>
+                            <h4 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '10px' }}>Urgent Lubrication Required: Loom #1</h4>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                              Diagnostic resonance detected at <span style={{ color: '#fff', fontWeight: 'bold' }}>8.2kHz</span>. High friction on spindle drive assembly. Estimated failure window: <span style={{ color: '#f43f5e', fontWeight: 'bold' }}>36-48 Hrs</span>.
+                            </p>
+                          </div>
+
+                          <div style={{ background: 'rgba(162, 203, 139, 0.05)', border: '1px solid rgba(162, 203, 139, 0.1)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: '#A2CB8B', fontWeight: 'bold' }}>
+                              <CheckCircle size={16} /> Operational Outcome
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '5px' }}>
+                              Immediate intervention saves <span style={{ color: '#fff' }}>₹42,000</span> in emergency repair logistics and prevents shift stalling.
+                            </div>
+                          </div>
+                        </>
                       )}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
-                        <span style={{ fontSize: '0.7rem', color: '#cbd5e1', fontWeight: 'bold', letterSpacing: '1px' }}>THERMAL STRESS</span>
-                        <span style={{ fontSize: '1.8rem', fontWeight: '900', color: thermalMap?.loom7 > 90 ? '#ef4444' : '#10b981' }}>{thermalMap ? 'HIGH' : 'LOW'}</span>
+
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                          className="btn-primary"
+                          style={{
+                            flex: 1,
+                            boxShadow: '0 0 20px rgba(132, 177, 121, 0.4)',
+                            background: workOrderStep === 2 ? '#A2CB8B' : 'var(--primary)',
+                            borderColor: workOrderStep === 2 ? '#A2CB8B' : 'var(--primary)'
+                          }}
+                          onClick={async () => {
+                            if (workOrderStep === 2) return;
+                            setWorkOrderStep(1);
+                            const msg = userRole === 'Strategic Owner' ? 'Approve Revenue Recovery Protocol' : 'Emergency Repair Authorization';
+                            const req = await triggerOwnerRequest('Maintenance AI', msg, `Urgent: Machine friction threshold exceeded. Requires immediate ${userRole === 'Strategic Owner' ? 'strategic servicing' : 'lubrication'}.`);
+                            if (req?._id) {
+                              setActiveRequestIds(p => ({ ...p, machineHealth: req._id }));
+                              setMachineHealthState(1);
+                              setWorkOrderStep(2);
+                            }
+                          }}
+                        >
+                          {workOrderStep === 0 ? (userRole === 'Strategic Owner' ? 'Authorize Recovery' : 'Initiate Work Order') : workOrderStep === 1 ? 'Dispatching...' : 'Approved & Logged'}
+                        </button>
+                        <button
+                          className="btn-primary"
+                          style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', boxShadow: 'none' }}
+                          onClick={() => alert(userRole === 'Strategic Owner' ? "Downloading Financial Risk Model... (XLSX/12.4MB)" : "Downloading Neural Diagnostic Logs... (CSV/8.4MB)")}
+                        >
+                          {userRole === 'Strategic Owner' ? 'Risk Model' : 'Diagnostic Logs'}
+                        </button>
                       </div>
                     </div>
                   </div>
-                  <button className="btn-primary" style={{ width: '100%', background: '#10b981', color: 'black', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }} onClick={handleThermalScan}>{isThermalScanning ? 'SCANNING HEAT GRADIENTS...' : 'Run Infrared Thermal Audit'}</button>
-                </div>
-              </div>
 
-              <AgentGrid categories={['Predictive Maintenance']} title="Predictive Diagnostics AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
+                  {/* 5. Factory Floor Digital Twin (High-Tech Version) */}
+                  <div className="premium-card" style={{ padding: '2.5rem', marginBottom: '2rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                      <h3 className="section-title" style={{ fontSize: '1.4rem' }}><Map size={24} color="var(--primary)" /> Shop Floor Digital Twin (Edge Sync)</h3>
+                      <div style={{ background: 'rgba(132, 177, 121,0.05)', padding: '8px 16px', borderRadius: '10px', fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="pulse" style={{ width: '8px', height: '8px', background: 'var(--primary)', borderRadius: '50%' }}></div>
+                        15ms Edge Latency | Bhilwara Hub
+                      </div>
+                    </div>
+
+                    <div style={{
+                      height: '450px',
+                      background: 'rgba(199, 234, 187, 0.5)',
+                      borderRadius: '24px',
+                      border: '1px solid rgba(132, 177, 121,0.08)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(132, 177, 121,0.05) 1px, transparent 1px)', backgroundSize: '30px 30px', pointerEvents: 'none' }}></div>
+                      <div className="animate-scan" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(rgba(132, 177, 121, 0.05) 0%, transparent 100%)', opacity: 0.3 }}></div>
+
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gridTemplateRows: 'repeat(2, 1fr)',
+                        gap: '4rem',
+                        padding: '3rem',
+                        width: '100%',
+                        height: '100%'
+                      }}>
+                        {fleetData.map((m, i) => (
+                          <div key={i} className="premium-card"
+                            onClick={() => {
+                              if (userRole !== 'Operator') {
+                                setSelectedMachineReport(m.id === 'MOT-782' ? 'Loom #7' : m.id === 'MOT-102' ? 'Loom #1' : 'Loom #4');
+                              } else {
+                                alert("Access Restricted: Operator-level clearance cannot access financial failure audits.");
+                              }
+                            }}
+                            style={{
+                              background: 'rgba(199, 234, 187, 0.8)',
+                              border: `1px solid ${m.color}40`,
+                              padding: '1.2rem',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              gap: '12px',
+                              cursor: userRole !== 'Operator' ? 'pointer' : 'default',
+                              transform: (m.status === 'Critical') ? 'scale(1.05)' : 'none',
+                              boxShadow: (m.status === 'Critical') ? `0 0 30px ${m.color}30` : 'none',
+                              transition: 'all 0.3s'
+                            }}>
+                            <div style={{ fontSize: '0.65rem', color: m.color, fontWeight: '900', letterSpacing: '2px' }}>{m.type}</div>
+                            <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#fff' }}>{m.id}</div>
+
+                            <div style={{ position: 'relative', width: '60px', height: '60px' }}>
+                              <svg width="60" height="60" viewBox="0 0 60 60">
+                                <circle cx="30" cy="30" r="25" fill="none" stroke="rgba(132, 177, 121,0.05)" strokeWidth="4" />
+                                <circle cx="30" cy="30" r="25" fill="none" stroke={m.color} strokeWidth="4"
+                                  strokeDasharray={`${(m.score / 100) * 157}, 157`}
+                                  strokeLinecap="round"
+                                  transform="rotate(-90 30 30)" />
+                              </svg>
+                              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>{m.score}%</div>
+                            </div>
+
+                            <div className="badge" style={{ background: `${m.color}15`, color: m.color }}>{m.status}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 6. Lower Dashboard (Alerts & Timeline Mix) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                    <div className="premium-card" style={{ padding: '2rem' }}>
+                      <h3 className="section-title"><Bell size={20} color="#84B179" /> System Events & Security</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {systemEvents.slice(0, 4).map((e, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'rgba(132, 177, 121,0.02)', borderRadius: '10px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: e.type === 'critical' || e.type === 'danger' ? '#84B179' : e.type === 'warning' ? '#84B179' : '#84B179' }}></div>
+                              <span style={{ fontSize: '0.85rem' }}>{e.msg}</span>
+                            </div>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{e.time}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="premium-card" style={{ padding: '2rem' }}>
+                      <h3 className="section-title"><History size={20} color="var(--primary)" /> Service Ledger</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        {ledgerData.map((s, i) => (
+                          <div key={i} style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                            <div style={{ textAlign: 'center', minWidth: '50px' }}>
+                              <div style={{ fontSize: '1.2rem', fontWeight: '900', color: 'var(--primary)' }}>{s.date.split(' ')[0]}</div>
+                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{s.date.split(' ')[1]}</div>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>{s.task}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Technician: {s.tech} • Status: <span style={{ color: '#A2CB8B' }}>{s.res}</span></div>
+                            </div>
+                          </div>
+                        ))}
+                        <button style={{ background: 'transparent', border: 'none', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer', textAlign: 'left', padding: 0 }}>+ View Archive Ledger</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 7. Strategic Maintenance Metrics */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) 1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+                    <div className="premium-card" style={{ padding: '2rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                        <h3 className="section-title"><Package size={20} color="var(--accent)" /> Maintenance-Production Link</h3>
+                        <div className="badge badge-success">Live: +3.1% Output</div>
+                      </div>
+
+                      <div style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', display: 'grid' }}>
+                        <div style={{ padding: '1.2rem', background: 'rgba(132, 177, 121,0.02)', borderRadius: '15px', borderLeft: '3px solid var(--primary)' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Units Produced</div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: '900' }}>{Math.floor((manualData.actualOutput || 960) * 1.03)} <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>/ 1200</span></div>
+                          <div className="maturity-bar-bg" style={{ height: '4px', marginTop: '10px' }}><div className="maturity-bar-fill" style={{ width: '82%', background: 'var(--primary)' }}></div></div>
+                        </div>
+                        <div style={{ padding: '1.2rem', background: 'rgba(132, 177, 121,0.02)', borderRadius: '15px', borderLeft: '3px solid var(--accent)' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>PdM Efficiency</div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: '900' }}>98.4%</div>
+                          <div className="maturity-bar-bg" style={{ height: '4px', marginTop: '10px' }}><div className="maturity-bar-fill" style={{ width: '98%', background: 'var(--accent)' }}></div></div>
+                        </div>
+                        <div style={{ padding: '1.2rem', background: 'rgba(132, 177, 121,0.02)', borderRadius: '15px', borderLeft: '3px solid #84B179' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Downtime Prevented</div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: '900' }}>12.5 <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>Hrs</span></div>
+                          <div className="maturity-bar-bg" style={{ height: '4px', marginTop: '10px' }}><div className="maturity-bar-fill" style={{ width: '75%', background: '#84B179' }}></div></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="premium-card" style={{ padding: '2rem', background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, transparent 100%)', borderLeft: '4px solid #84B179' }}>
+                      <h3 className="section-title"><DollarSign size={20} color="#84B179" /> Cost Interference Simulation</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Reactive Repair Cost</span>
+                          <span style={{ fontWeight: 'bold' }}>₹{advancedPdM.reactiveCostEstimate || '1,50,000'}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                          <span style={{ color: '#A2CB8B' }}>PdM Intervention Cost</span>
+                          <span style={{ fontWeight: 'bold' }}>₹{advancedPdM.pdmInterventionCost || '35,000'}</span>
+                        </div>
+                        <div style={{ height: '1px', background: 'rgba(132, 177, 121,0.1)', margin: '5px 0' }}></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: '900', color: 'var(--accent)' }}>Net ROI Potential</span>
+                          <span style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--accent)' }}>₹{budgetApplied ? (parseInt((String(advancedPdM.netSavingsPotential || '115000')).replace(/[^\d]/g, '')) + 12500).toLocaleString('en-IN') : (advancedPdM.netSavingsPotential || '1,15,000')}</span>
+                        </div>
+                        <button
+                          className={`btn-primary ${isBudgeting ? 'pulse' : ''}`}
+                          style={{
+                            marginTop: '10px',
+                            background: budgetApplied ? 'rgba(162, 203, 139, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+                            border: `1px solid ${budgetApplied ? '#A2CB8B' : '#84B179'}`,
+                            color: budgetApplied ? '#A2CB8B' : '#84B179'
+                          }}
+                          onClick={() => {
+                            if (budgetApplied) return;
+                            setIsBudgeting(true);
+                            setTimeout(() => {
+                              setIsBudgeting(false);
+                              setBudgetApplied(true);
+                              setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: 'Neural Budgeting Applied: Maintenance ROI optimized.', type: 'success' }, ...prev]);
+                            }, 2000);
+                          }}
+                        >
+                          {isBudgeting ? 'Calculating Assets...' : budgetApplied ? 'Budget Optimized' : 'Apply Neural Budgeting'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <AgentGrid categories={['Predictive Maintenance']} title="Maintenance Execution AI Library (52 Agents)" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
+                </>
+              )}
             </div>
           )
         }
@@ -2899,7 +3520,7 @@ export default function Dashboard() {
                     <h4 style={{ margin: 0, color: '#93c5fd', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}><Globe size={16} /> Global Price Arbitrage</h4>
                     <span style={{ fontSize: '0.6rem', color: '#60a5fa', fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase' }}>Live Market Sync: TURKEY - INDIA</span>
                   </div>
-                  
+
                   <div style={{ overflowX: 'auto', marginBottom: '8px' }}>
                     <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse', textAlign: 'left' }}>
                       <thead>
@@ -2937,7 +3558,7 @@ export default function Dashboard() {
                     <div style={{ fontSize: '1.2rem', fontWeight: '800', color: '#3b82f6', marginBottom: '4px' }}>Arbitrage Gap: +₹14.2/m</div>
                     <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>Detected price-drop in Turkish cotton yarn. 5,000kg window open for 2h 42m.</p>
                   </div>
-                  
+
                   <div style={{ marginTop: 'auto' }}>
                     <button className="btn-primary" style={{ width: '100%', background: '#3b82f6', border: 'none', color: 'white', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await api.post('/owner/arbitrage', { commodity: 'cotton', market: 'Bursa', volume: 500 }); alert(res.data.message || 'Arbitrage locked successfully.'); } catch (err) { alert('Error: Could not reach the API. Please ensure the backend is running.'); console.error(err); } }}>Lock Arbitrage Window</button>
                   </div>
@@ -2984,7 +3605,7 @@ export default function Dashboard() {
                     <button className="btn-primary" style={{ width: '100%', background: '#eab308', border: 'none', color: 'black', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await api.post('/owner/trust-score', { score: 'A+', trustIndex: 94, suppliers: 15 }); alert(res.data.message || 'Trust-Score shared successfully.'); } catch (err) { alert('Error: Could not reach the API. Please ensure the backend is running.'); console.error(err); } }}>Share Trust-Score with Suppliers</button>
                   </div>
                 </div>
-                </div>
+              </div>
 
               <div className="charts-grid" style={{ marginTop: '1.5rem' }}>
                 <div className="stat-card">
@@ -3017,7 +3638,7 @@ export default function Dashboard() {
                       <YAxis stroke="#94a3b8" />
                       <Tooltip contentStyle={{ background: '#1e293b', border: 'none' }} />
                       <Bar dataKey="actual" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="target" fill="rgba(255,255,255,0.1)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="target" fill="rgba(255,255,255,0.1)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -3186,172 +3807,172 @@ export default function Dashboard() {
                       </div>
                       <input type="range" min="0" max="100" value={growthSliders.training} onChange={(e) => updateStrategyRoi('training', parseInt(e.target.value))} style={{ width: '100%', accentColor: '#f59e0b' }} />
                     </div>
-                    
+
                     <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
                       <div style={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: '1px' }}>Simulation Impact</div>
                       <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', lineHeight: '1.5' }}>
                         Increasing **Automation** to {growthSliders.automation}% while maintaining **Solar** at {growthSliders.solar}% will yield a net margin improvement of ₹{(projectedRoi * 2.5).toFixed(2)} Lakh/Year.
                       </p>
-                    <div style={{ marginTop: '1.5rem' }}>
-                      <h4 style={{ fontSize: '0.85rem', color: '#a5b4fc', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Strategic High-Impact Reports</h4>
+                      <div style={{ marginTop: '1.5rem' }}>
+                        <h4 style={{ fontSize: '0.85rem', color: '#a5b4fc', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Strategic High-Impact Reports</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
-                    <div style={{ padding: '1rem', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }} onClick={() => {
-                      alert("Simulating Solar Transition... Projected break-even reduced from 2.5 years to 1.8 years using AI load-balancing. Click OK to download ROI Report.");
+                          <div style={{ padding: '1rem', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }} onClick={() => {
+                            alert("Simulating Solar Transition... Projected break-even reduced from 2.5 years to 1.8 years using AI load-balancing. Click OK to download ROI Report.");
 
-                      const doc = new jsPDF();
-                      doc.setFillColor(252, 211, 77); // Amber/Yellow
-                      doc.rect(0, 0, 210, 35, 'F');
-                      doc.setTextColor(30, 41, 59);
-                      doc.setFontSize(22);
-                      doc.setFont("helvetica", "bold");
-                      doc.text('SOLAR TRANSITION ROI SIMULATION', 105, 20, { align: 'center' });
-                      doc.setFontSize(12);
-                      doc.setFont("helvetica", "normal");
-                      doc.text('Financial & Energy Impact Projection', 105, 30, { align: 'center' });
+                            const doc = new jsPDF();
+                            doc.setFillColor(252, 211, 77); // Amber/Yellow
+                            doc.rect(0, 0, 210, 35, 'F');
+                            doc.setTextColor(30, 41, 59);
+                            doc.setFontSize(22);
+                            doc.setFont("helvetica", "bold");
+                            doc.text('SOLAR TRANSITION ROI SIMULATION', 105, 20, { align: 'center' });
+                            doc.setFontSize(12);
+                            doc.setFont("helvetica", "normal");
+                            doc.text('Financial & Energy Impact Projection', 105, 30, { align: 'center' });
 
-                      doc.setTextColor(30, 41, 59);
-                      doc.setFontSize(14);
-                      doc.setFont("helvetica", "bold");
-                      doc.text('1. Existing Metrics', 14, 50);
-                      doc.setFontSize(11);
-                      doc.setFont("helvetica", "normal");
-                      doc.text(`Current Solar Dependence: ${typeof solar.solarPercentage === 'object' ? JSON.stringify(solar.solarPercentage) : solar.solarPercentage || 0}%`, 14, 60);
-                      doc.text('Current Average Monthly Energy Bill: INR 2.3 Lakhs', 14, 68);
+                            doc.setTextColor(30, 41, 59);
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "bold");
+                            doc.text('1. Existing Metrics', 14, 50);
+                            doc.setFontSize(11);
+                            doc.setFont("helvetica", "normal");
+                            doc.text(`Current Solar Dependence: ${typeof solar.solarPercentage === 'object' ? JSON.stringify(solar.solarPercentage) : solar.solarPercentage || 0}%`, 14, 60);
+                            doc.text('Current Average Monthly Energy Bill: INR 2.3 Lakhs', 14, 68);
 
-                      doc.setFontSize(14);
-                      doc.setFont("helvetica", "bold");
-                      doc.text('2. Proposed Upgrade: 40% Solar Dependence', 14, 85);
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "bold");
+                            doc.text('2. Proposed Upgrade: 40% Solar Dependence', 14, 85);
 
-                      autoTable(doc, {
-                        startY: 90,
-                        head: [['Financial Metric', 'Current State', 'Projected State']],
-                        body: [
-                          ['Monthly Energy Bill', 'INR 2,30,000', 'INR 1,45,000'],
-                          ['Monthly Savings', '-', 'INR 85,000'],
-                          ['Annual Savings', '-', 'INR 10,20,000'],
-                          ['Initial System Cost', '-', 'INR 18,36,000'],
-                          ['Estimated Break-Even', 'N/A', '1.8 Years']
-                        ],
-                        headStyles: { fillColor: [99, 102, 241] },
-                        theme: 'striped'
-                      });
+                            autoTable(doc, {
+                              startY: 90,
+                              head: [['Financial Metric', 'Current State', 'Projected State']],
+                              body: [
+                                ['Monthly Energy Bill', 'INR 2,30,000', 'INR 1,45,000'],
+                                ['Monthly Savings', '-', 'INR 85,000'],
+                                ['Annual Savings', '-', 'INR 10,20,000'],
+                                ['Initial System Cost', '-', 'INR 18,36,000'],
+                                ['Estimated Break-Even', 'N/A', '1.8 Years']
+                              ],
+                              headStyles: { fillColor: [99, 102, 241] },
+                              theme: 'striped'
+                            });
 
-                      const finalY = doc.lastAutoTable.finalY + 20;
-                      doc.setFontSize(12);
-                      doc.setTextColor(16, 185, 129);
-                      doc.setFont("helvetica", "bold");
-                      doc.text('✓ AI Insights: Smart Machine Load Balancing will reduce the actual break-even time from 2.5 years to 1.8 years.', 14, finalY);
+                            const finalY = doc.lastAutoTable.finalY + 20;
+                            doc.setFontSize(12);
+                            doc.setTextColor(16, 185, 129);
+                            doc.setFont("helvetica", "bold");
+                            doc.text('✓ AI Insights: Smart Machine Load Balancing will reduce the actual break-even time from 2.5 years to 1.8 years.', 14, finalY);
 
-                      doc.save('Solar_Transition_ROI.pdf');
-                    }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                      <p style={{ fontWeight: '700', marginBottom: '5px' }}>Solar Transition ROI</p>
-                      <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>Current solar at {typeof solar.solarPercentage === 'object' ? JSON.stringify(solar.solarPercentage) : solar.solarPercentage || 0}%. Increasing to 40% will save ₹85,000/month in power costs.</p>
-                    </div>
-                    <div style={{ padding: '1rem', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }} onClick={() => {
-                      alert("Allocating 10 training hours to weavers... Projected Production Efficiency Index (PEI) increase to 89%. Click OK to download Report.");
+                            doc.save('Solar_Transition_ROI.pdf');
+                          }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                            <p style={{ fontWeight: '700', marginBottom: '5px' }}>Solar Transition ROI</p>
+                            <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>Current solar at {typeof solar.solarPercentage === 'object' ? JSON.stringify(solar.solarPercentage) : solar.solarPercentage || 0}%. Increasing to 40% will save ₹85,000/month in power costs.</p>
+                          </div>
+                          <div style={{ padding: '1rem', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }} onClick={() => {
+                            alert("Allocating 10 training hours to weavers... Projected Production Efficiency Index (PEI) increase to 89%. Click OK to download Report.");
 
-                      const doc = new jsPDF();
-                      doc.setFillColor(56, 189, 248); // Sky Blue
-                      doc.rect(0, 0, 210, 35, 'F');
-                      doc.setTextColor(15, 23, 42);
-                      doc.setFontSize(22);
-                      doc.setFont("helvetica", "bold");
-                      doc.text('LABOR SKILL IMPACT SIMULATION', 105, 20, { align: 'center' });
-                      doc.setFontSize(12);
-                      doc.setFont("helvetica", "normal");
-                      doc.text('Workforce Intelligence & AI Training Projections', 105, 30, { align: 'center' });
+                            const doc = new jsPDF();
+                            doc.setFillColor(56, 189, 248); // Sky Blue
+                            doc.rect(0, 0, 210, 35, 'F');
+                            doc.setTextColor(15, 23, 42);
+                            doc.setFontSize(22);
+                            doc.setFont("helvetica", "bold");
+                            doc.text('LABOR SKILL IMPACT SIMULATION', 105, 20, { align: 'center' });
+                            doc.setFontSize(12);
+                            doc.setFont("helvetica", "normal");
+                            doc.text('Workforce Intelligence & AI Training Projections', 105, 30, { align: 'center' });
 
-                      doc.setTextColor(30, 41, 59);
-                      doc.setFontSize(14);
-                      doc.setFont("helvetica", "bold");
-                      doc.text('1. Current Workforce Status', 14, 50);
-                      doc.setFontSize(11);
-                      doc.setFont("helvetica", "normal");
-                      doc.text(`Current Workforce Proficiency: ${typeof laborSkill.overallScore === 'object' ? JSON.stringify(laborSkill.overallScore) : laborSkill.overallScore || 0}%`, 14, 60);
-                      doc.text('Current Production Efficiency Index (PEI): 85%', 14, 68);
+                            doc.setTextColor(30, 41, 59);
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "bold");
+                            doc.text('1. Current Workforce Status', 14, 50);
+                            doc.setFontSize(11);
+                            doc.setFont("helvetica", "normal");
+                            doc.text(`Current Workforce Proficiency: ${typeof laborSkill.overallScore === 'object' ? JSON.stringify(laborSkill.overallScore) : laborSkill.overallScore || 0}%`, 14, 60);
+                            doc.text('Current Production Efficiency Index (PEI): 85%', 14, 68);
 
-                      doc.setFontSize(14);
-                      doc.setFont("helvetica", "bold");
-                      doc.text('2. Proposed Intervention', 14, 85);
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "bold");
+                            doc.text('2. Proposed Intervention', 14, 85);
 
-                      autoTable(doc, {
-                        startY: 90,
-                        head: [['Target Resource', 'Training Allocation', 'Projected Impact']],
-                        body: [
-                          ['Weavers (Grade B)', '10 Hours / Week', '+4% General Machine Speed'],
-                          ['Machine Technicians', '5 Hours / Week', '-12% Machine Downtime'],
-                          ['Floor Supervisors', '2 Hours AI Dashboard', '+8% Quality Control']
-                        ],
-                        headStyles: { fillColor: [14, 165, 233] },
-                        theme: 'grid'
-                      });
+                            autoTable(doc, {
+                              startY: 90,
+                              head: [['Target Resource', 'Training Allocation', 'Projected Impact']],
+                              body: [
+                                ['Weavers (Grade B)', '10 Hours / Week', '+4% General Machine Speed'],
+                                ['Machine Technicians', '5 Hours / Week', '-12% Machine Downtime'],
+                                ['Floor Supervisors', '2 Hours AI Dashboard', '+8% Quality Control']
+                              ],
+                              headStyles: { fillColor: [14, 165, 233] },
+                              theme: 'grid'
+                            });
 
-                      const finalY = doc.lastAutoTable.finalY + 20;
-                      doc.setFontSize(12);
-                        doc.setTextColor(234, 88, 12);
-                      doc.setFont("helvetica", "bold");
-                      doc.text('✓ Executive Summary: Adding just 10 hours of training raises PEI to 89%, effectively reducing late deliveries by 14%.', 14, finalY, { maxWidth: 180 });
+                            const finalY = doc.lastAutoTable.finalY + 20;
+                            doc.setFontSize(12);
+                            doc.setTextColor(234, 88, 12);
+                            doc.setFont("helvetica", "bold");
+                            doc.text('✓ Executive Summary: Adding just 10 hours of training raises PEI to 89%, effectively reducing late deliveries by 14%.', 14, finalY, { maxWidth: 180 });
 
-                      doc.save('Labor_Skill_Impact_Report.pdf');
-                    }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                      <p style={{ fontWeight: '700', marginBottom: '5px' }}>Labor Skill Impact</p>
-                      <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>Workers are {typeof laborSkill.overallScore === 'object' ? JSON.stringify(laborSkill.overallScore) : laborSkill.overallScore || 0}% proficient. 10 hours of extra training will boost PEI by 4%.</p>
+                            doc.save('Labor_Skill_Impact_Report.pdf');
+                          }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                            <p style={{ fontWeight: '700', marginBottom: '5px' }}>Labor Skill Impact</p>
+                            <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>Workers are {typeof laborSkill.overallScore === 'object' ? JSON.stringify(laborSkill.overallScore) : laborSkill.overallScore || 0}% proficient. 10 hours of extra training will boost PEI by 4%.</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+              <AgentGrid categories={['Core Systems', 'Finance']} title="Strategic Intelligence AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
             </div>
-          </div>
-        </div>
-        <AgentGrid categories={['Core Systems', 'Finance']} title="Strategic Intelligence AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
-      </div>
-    )
-  }
+          )
+        }
 
         {activeTab === 'agents' && (
-            <div className="agents-panel animate-fade-in" style={{ paddingBottom: '2rem' }}>
-              <div className="stat-card" style={{ marginBottom: '1.5rem', background: 'linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <div style={{ padding: '12px', background: 'var(--primary)', borderRadius: '12px' }}>
-                    <Bot size={32} color="#fff" />
-                  </div>
-                  <div>
-                    <h2 style={{ fontSize: '1.5rem', margin: 0 }}>SmartFactory AI: The Power of 52</h2>
-                    <p style={{ opacity: 0.6, margin: 0, marginTop: '4px' }}>Browse the complete directory of 52 specialized autonomous agents powering the Nirvana factory.</p>
-                  </div>
+          <div className="agents-panel animate-fade-in" style={{ paddingBottom: '2rem' }}>
+            <div className="stat-card" style={{ marginBottom: '1.5rem', background: 'linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div style={{ padding: '12px', background: 'var(--primary)', borderRadius: '12px' }}>
+                  <Bot size={32} color="#fff" />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: '1.5rem', margin: 0 }}>SmartFactory AI: The Power of 52</h2>
+                  <p style={{ opacity: 0.6, margin: 0, marginTop: '4px' }}>Browse the complete directory of 52 specialized autonomous agents powering the Nirvana factory.</p>
                 </div>
               </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                {Array.isArray(agentsData) && agentsData.map(agent => (
-                  <div key={agent.id} style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    transition: 'all 0.2s',
-                    cursor: 'default'
-                  }}
-                    onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'; }}
-                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{agent.category}</span>
-                      {agent.status === 'Active' ? <span style={{ color: 'var(--accent)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 1.5s infinite' }}></div> Active</span> : <span style={{ color: 'var(--warning)', fontSize: '0.7rem' }}>Learning Mode</span>}
-                    </div>
-                    <div style={{ fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', lineHeight: 1.3 }}>{agent.id}. {agent.name}</div>
-
-                    {agent.risk !== 'Low' && agent.risk !== 'N/A' && (
-                      <div style={{ fontSize: '0.75rem', color: agent.risk?.includes('Critical') ? 'var(--danger)' : 'var(--warning)' }}>
-                        Alert Policy: <strong>{agent.risk}</strong>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
-          )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+              {Array.isArray(agentsData) && agentsData.map(agent => (
+                <div key={agent.id} style={{
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  transition: 'all 0.2s',
+                  cursor: 'default'
+                }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{agent.category}</span>
+                    {agent.status === 'Active' ? <span style={{ color: 'var(--accent)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 1.5s infinite' }}></div> Active</span> : <span style={{ color: 'var(--warning)', fontSize: '0.7rem' }}>Learning Mode</span>}
+                  </div>
+                  <div style={{ fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', lineHeight: 1.3 }}>{agent.id}. {agent.name}</div>
+
+                  {agent.risk !== 'Low' && agent.risk !== 'N/A' && (
+                    <div style={{ fontSize: '0.75rem', color: agent.risk?.includes('Critical') ? 'var(--danger)' : 'var(--warning)' }}>
+                      Alert Policy: <strong>{agent.risk}</strong>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {showTwinModal && (
           <div className="glass-modal animate-fade-in" style={{ textAlign: 'center' }}>
@@ -3398,7 +4019,7 @@ export default function Dashboard() {
             </div>
 
             {!udyamFile ? (
-              <div 
+              <div
                 style={{ border: '2px dashed rgba(14, 165, 233, 0.3)', borderRadius: '12px', padding: '3rem 1rem', textAlign: 'center', background: 'rgba(14, 165, 233, 0.05)', cursor: 'pointer' }}
                 onClick={() => setUdyamFile("udyam_certificate_final.pdf")}
               >
@@ -3411,7 +4032,7 @@ export default function Dashboard() {
                 <div style={{ padding: '15px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
                   <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 'bold' }}>FILE ATTACHED: {udyamFile}</div>
                 </div>
-                
+
                 {isOcrScanning ? (
                   <div style={{ marginBottom: '1.5rem' }}>
                     <div style={{ fontSize: '0.75rem', color: '#0ea5e9', fontWeight: 'bold', marginBottom: '8px', letterSpacing: '1px' }}>AI NEURAL OCR SCANNING...</div>
@@ -3440,10 +4061,10 @@ export default function Dashboard() {
         {activeTab === 'gov' && (
           <div className="gov-panel animate-fade-in">
             {/* 🏛️ PREMIUM HERO SECTION WITH LIVE KPI TICKER */}
-            <div className="gov-hero-section" style={{ 
-              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', 
-              borderRadius: '24px', 
-              padding: '2.5rem', 
+            <div className="gov-hero-section" style={{
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              borderRadius: '24px',
+              padding: '2.5rem',
               marginBottom: '2rem',
               border: '1px solid rgba(14, 165, 233, 0.2)',
               position: 'relative',
@@ -3451,7 +4072,7 @@ export default function Dashboard() {
               boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
             }}>
               <div style={{ position: 'absolute', top: 0, right: 0, width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(14, 165, 233, 0.08) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
-              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                   <div style={{ padding: '18px', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '20px', border: '1px solid rgba(14, 165, 233, 0.3)', boxShadow: '0 0 20px rgba(14, 165, 233, 0.2)' }}>
@@ -3468,7 +4089,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Cluster Connectivity</div>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -3539,7 +4160,7 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     <div style={{ textAlign: 'center' }}>
-                       <p style={{ fontSize: '0.85rem', opacity: 0.8, marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                      <p style={{ fontSize: '0.85rem', opacity: 0.8, marginBottom: '1.5rem', lineHeight: '1.5' }}>
                         Based on your **PEI ({renderSafeValue(executiveSummary.pei)}%)**, **ZLD Compliance**, and **Solar Offset**, you are in the top 5% of eligible factories for the **Textile Excellence Subsidy**.
                       </p>
                       <button className="btn-primary" style={{ width: '100%', background: '#10b981', color: 'black', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }} onClick={handleSchemeScan}>RERUN ELIGIBILITY DEEP-SCAN</button>
@@ -3582,7 +4203,7 @@ export default function Dashboard() {
                   <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 'bold' }}>COMPLETED!</div>
                 )}
               </div>
-              
+
               {subsidyDraftStatus === 'drafting' ? (
                 <div style={{ width: '100%', height: '4px', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '2px', overflow: 'hidden', marginBottom: '1.5rem' }}>
                   <div style={{ width: `${draftProgress}%`, height: '100%', background: '#ec4899', transition: 'width 0.3s' }}></div>
@@ -3594,7 +4215,7 @@ export default function Dashboard() {
               )}
 
               <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
-                 {subsidyDraftStatus !== 'completed' ? (
+                {subsidyDraftStatus !== 'completed' ? (
                   <button
                     className="btn-primary"
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ec4899', color: 'white', fontWeight: 'bold', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: subsidyDraftStatus === 'drafting' ? 'not-allowed' : 'pointer', opacity: subsidyDraftStatus === 'drafting' ? 0.7 : 1 }}
@@ -3603,7 +4224,7 @@ export default function Dashboard() {
                   >
                     <Bot size={18} /> {subsidyDraftStatus === 'drafting' ? 'PROCESSING DATA...' : 'GENERATE RIPS APPLICATION'}
                   </button>
-                 ) : (
+                ) : (
                   <button
                     className="btn-primary"
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#10b981', color: 'white', fontWeight: 'bold', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
@@ -3611,322 +4232,322 @@ export default function Dashboard() {
                   >
                     <CheckCircle2 size={18} /> SUBMIT TO RAJASTHAN GOV PORTAL
                   </button>
-                 )}
+                )}
               </div>
             </div>
 
-              {/* ═══════════════════════════════════════════════════════════
+            {/* ═══════════════════════════════════════════════════════════
                    ADVANCED INDUSTRY-GRADE SECTIONS — MASSIVE UPGRADE
               ═══════════════════════════════════════════════════════════ */}
 
-              {/* SECTION: Application Pipeline Tracker */}
-              <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
-                <div className="gov-section-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div className="gov-icon-badge" style={{ background: 'rgba(99,102,241,0.15)', color: '#6366f1' }}>
-                      <TrendingUp size={20} />
-                    </div>
-                    <div>
-                      <div className="gov-section-title">Application Pipeline Tracker</div>
-                      <div className="gov-section-subtitle">Real-time status across all submitted schemes</div>
-                    </div>
+            {/* SECTION: Application Pipeline Tracker */}
+            <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
+              <div className="gov-section-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div className="gov-icon-badge" style={{ background: 'rgba(99,102,241,0.15)', color: '#6366f1' }}>
+                    <TrendingUp size={20} />
                   </div>
-                  <div className="gov-live-badge">● LIVE</div>
+                  <div>
+                    <div className="gov-section-title">Application Pipeline Tracker</div>
+                    <div className="gov-section-subtitle">Real-time status across all submitted schemes</div>
+                  </div>
                 </div>
+                <div className="gov-live-badge">● LIVE</div>
+              </div>
 
-                {/* Pipeline Status Bar */}
-                <div className="pipeline-container">
-                  {[
-                    { label: 'Applied', count: 3, color: '#6366f1', icon: '📋' },
-                    { label: 'Under Review', count: 2, color: '#f59e0b', icon: '🔍' },
-                    { label: 'Field Verification', count: 1, color: '#0ea5e9', icon: '🏭' },
-                    { label: 'Approved', count: 1, color: '#10b981', icon: '✅' },
-                    { label: 'Disbursed', count: 1, color: '#34d399', icon: '💰' }
-                  ].map((stage, i) => (
-                    <div key={i} className="pipeline-stage">
-                      <div className="pipeline-bubble" style={{ background: `rgba(${stage.color === '#6366f1' ? '99,102,241' : stage.color === '#f59e0b' ? '245,158,11' : stage.color === '#0ea5e9' ? '14,165,233' : stage.color === '#10b981' ? '16,185,129' : '52,211,153'},0.15)`, border: `1px solid ${stage.color}`, color: stage.color }}>
-                        <span style={{ fontSize: '1.2rem' }}>{stage.icon}</span>
-                        <span className="pipeline-count" style={{ color: stage.color }}>{stage.count}</span>
-                      </div>
-                      <div className="pipeline-label">{stage.label}</div>
-                      {i < 4 && <div className="pipeline-connector" style={{ background: `linear-gradient(90deg, ${stage.color}, ${['#6366f1', '#f59e0b', '#0ea5e9', '#10b981', '#34d399'][i + 1]})` }}></div>}
+              {/* Pipeline Status Bar */}
+              <div className="pipeline-container">
+                {[
+                  { label: 'Applied', count: 3, color: '#6366f1', icon: '📋' },
+                  { label: 'Under Review', count: 2, color: '#f59e0b', icon: '🔍' },
+                  { label: 'Field Verification', count: 1, color: '#0ea5e9', icon: '🏭' },
+                  { label: 'Approved', count: 1, color: '#10b981', icon: '✅' },
+                  { label: 'Disbursed', count: 1, color: '#34d399', icon: '💰' }
+                ].map((stage, i) => (
+                  <div key={i} className="pipeline-stage">
+                    <div className="pipeline-bubble" style={{ background: `rgba(${stage.color === '#6366f1' ? '99,102,241' : stage.color === '#f59e0b' ? '245,158,11' : stage.color === '#0ea5e9' ? '14,165,233' : stage.color === '#10b981' ? '16,185,129' : '52,211,153'},0.15)`, border: `1px solid ${stage.color}`, color: stage.color }}>
+                      <span style={{ fontSize: '1.2rem' }}>{stage.icon}</span>
+                      <span className="pipeline-count" style={{ color: stage.color }}>{stage.count}</span>
                     </div>
-                  ))}
-                </div>
+                    <div className="pipeline-label">{stage.label}</div>
+                    {i < 4 && <div className="pipeline-connector" style={{ background: `linear-gradient(90deg, ${stage.color}, ${['#6366f1', '#f59e0b', '#0ea5e9', '#10b981', '#34d399'][i + 1]})` }}></div>}
+                  </div>
+                ))}
+              </div>
 
-                {/* Application Table */}
-                <div className="gov-table-wrap">
-                  <table className="gov-table">
-                    <thead>
-                      <tr>
-                        <th>Scheme Name</th>
-                        <th>Application ID</th>
-                        <th>Applied Date</th>
-                        <th>Scheme Value</th>
-                        <th>Stage</th>
-                        <th>Est. Disbursal</th>
-                        <th>Action</th>
+              {/* Application Table */}
+              <div className="gov-table-wrap">
+                <table className="gov-table">
+                  <thead>
+                    <tr>
+                      <th>Scheme Name</th>
+                      <th>Application ID</th>
+                      <th>Applied Date</th>
+                      <th>Scheme Value</th>
+                      <th>Stage</th>
+                      <th>Est. Disbursal</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'RIPS 2022 Interest Subvention', id: 'APP1024', date: '01-Mar-2026', value: '₹18.5L', stage: 'Under Review', stageColor: '#f59e0b', disbursal: 'Apr 2026' },
+                      { name: 'Solar Grid Subsidy (Phase 1)', id: 'APP1055', date: '15-Feb-2026', value: '₹12.0L', stage: 'Approved', stageColor: '#10b981', disbursal: 'Mar 2026' },
+                      { name: 'ZED Certification Grant', id: 'APP1067', date: '10-Feb-2026', value: '₹3.6L', stage: 'Field Verification', stageColor: '#0ea5e9', disbursal: 'May 2026' },
+                      { name: 'CLCSS Machinery Upgrade', id: 'APP1078', date: '20-Jan-2026', value: '₹28.0L', stage: 'Applied', stageColor: '#6366f1', disbursal: 'Jun 2026' },
+                      { name: 'Textile Skill Dev. Fund', id: 'APP0998', date: '05-Jan-2026', value: '₹4.5L', stage: 'Disbursed', stageColor: '#34d399', disbursal: 'Completed ✓' },
+                    ].map((row, i) => (
+                      <tr key={i} className="gov-table-row">
+                        <td style={{ fontWeight: '600', color: '#e2e8f0' }}>{row.name}</td>
+                        <td><span className="gov-id-badge">{row.id}</span></td>
+                        <td style={{ color: '#94a3b8' }}>{row.date}</td>
+                        <td style={{ fontWeight: '700', color: '#34d399' }}>{row.value}</td>
+                        <td><span className="gov-status-pill" style={{ background: `${row.stageColor}20`, color: row.stageColor, border: `1px solid ${row.stageColor}40` }}>{row.stage}</span></td>
+                        <td style={{ color: '#94a3b8' }}>{row.disbursal}</td>
+                        <td>
+                          <button className="gov-action-btn" onClick={() => alert(`Viewing details for ${row.id}`)}>View →</button>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { name: 'RIPS 2022 Interest Subvention', id: 'APP1024', date: '01-Mar-2026', value: '₹18.5L', stage: 'Under Review', stageColor: '#f59e0b', disbursal: 'Apr 2026' },
-                        { name: 'Solar Grid Subsidy (Phase 1)', id: 'APP1055', date: '15-Feb-2026', value: '₹12.0L', stage: 'Approved', stageColor: '#10b981', disbursal: 'Mar 2026' },
-                        { name: 'ZED Certification Grant', id: 'APP1067', date: '10-Feb-2026', value: '₹3.6L', stage: 'Field Verification', stageColor: '#0ea5e9', disbursal: 'May 2026' },
-                        { name: 'CLCSS Machinery Upgrade', id: 'APP1078', date: '20-Jan-2026', value: '₹28.0L', stage: 'Applied', stageColor: '#6366f1', disbursal: 'Jun 2026' },
-                        { name: 'Textile Skill Dev. Fund', id: 'APP0998', date: '05-Jan-2026', value: '₹4.5L', stage: 'Disbursed', stageColor: '#34d399', disbursal: 'Completed ✓' },
-                      ].map((row, i) => (
-                        <tr key={i} className="gov-table-row">
-                          <td style={{ fontWeight: '600', color: '#e2e8f0' }}>{row.name}</td>
-                          <td><span className="gov-id-badge">{row.id}</span></td>
-                          <td style={{ color: '#94a3b8' }}>{row.date}</td>
-                          <td style={{ fontWeight: '700', color: '#34d399' }}>{row.value}</td>
-                          <td><span className="gov-status-pill" style={{ background: `${row.stageColor}20`, color: row.stageColor, border: `1px solid ${row.stageColor}40` }}>{row.stage}</span></td>
-                          <td style={{ color: '#94a3b8' }}>{row.disbursal}</td>
-                          <td>
-                            <button className="gov-action-btn" onClick={() => alert(`Viewing details for ${row.id}`)}>View →</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* SECTION: Subsidy Savings Dashboard */}
-              <div className="gov-section-card gov-savings-card" style={{ marginTop: '1.5rem' }}>
-                <div className="gov-section-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div className="gov-icon-badge" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}>
-                      <Award size={20} />
-                    </div>
-                    <div>
-                      <div className="gov-section-title">Subsidy Savings Impact Dashboard</div>
-                      <div className="gov-section-subtitle">Total government benefit unlocked for your factory</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="savings-kpi-grid">
-                  {[
-                    { label: 'Total Applied Value', value: '₹66.6L', sub: 'Across 5 active schemes', color: '#6366f1', icon: '📊' },
-                    { label: 'Confirmed Savings', value: '₹16.5L', sub: 'Approved + Disbursed', color: '#10b981', icon: '✅' },
-                    { label: 'Pending Benefit', value: '₹50.1L', sub: 'Under review / Processing', color: '#f59e0b', icon: '⏳' },
-                    { label: 'Electricity Duty Saved', value: '₹8.2L/yr', sub: 'RIPS 2022 exemption', color: '#0ea5e9', icon: '⚡' },
-                  ].map((kpi, i) => (
-                    <div key={i} className="savings-kpi-card" style={{ borderTop: `3px solid ${kpi.color}` }}>
-                      <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>{kpi.icon}</div>
-                      <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{kpi.label}</div>
-                      <div style={{ fontSize: '1.6rem', fontWeight: '900', color: kpi.color }}>{kpi.value}</div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>{kpi.sub}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Savings Breakdown Bar */}
-                <div style={{ marginTop: '1.5rem' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase' }}>Scheme-wise Benefit Allocation</div>
-                  <div style={{ height: '28px', borderRadius: '14px', overflow: 'hidden', display: 'flex', gap: '2px' }}>
-                    {[
-                      { pct: 28, color: '#6366f1', label: 'RIPS' },
-                      { pct: 18, color: '#0ea5e9', label: 'Solar' },
-                      { pct: 42, color: '#8b5cf6', label: 'CLCSS' },
-                      { pct: 5, color: '#10b981', label: 'ZED' },
-                      { pct: 7, color: '#34d399', label: 'Skill' },
-                    ].map((seg, i) => (
-                      <div key={i} style={{ flex: seg.pct, background: seg.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: '700', color: 'white', minWidth: '30px', transition: 'flex 0.8s ease', cursor: 'default' }} title={`${seg.label}: ${seg.pct}%`}>
-                        {seg.pct > 10 ? `${seg.label} ${seg.pct}%` : ''}
-                      </div>
                     ))}
-                  </div>
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '8px', flexWrap: 'wrap' }}>
-                    {[{ label: 'RIPS 2022', color: '#6366f1' }, { label: 'Solar', color: '#0ea5e9' }, { label: 'CLCSS', color: '#8b5cf6' }, { label: 'ZED', color: '#10b981' }, { label: 'Skill Fund', color: '#34d399' }].map((l, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#94a3b8' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: l.color }}></div>
-                        {l.label}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                  </tbody>
+                </table>
               </div>
-
-              {/* SECTION: Compliance Calendar */}
-              <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
-                <div className="gov-section-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div className="gov-icon-badge" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
-                      <Activity size={20} />
-                    </div>
-                    <div>
-                      <div className="gov-section-title">Compliance & Deadline Calendar</div>
-                      <div className="gov-section-subtitle">AI-monitored critical dates for your registered schemes</div>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: '700', background: 'rgba(245,158,11,0.1)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(245,158,11,0.3)' }}>⚠ 2 URGENT</div>
-                </div>
-
-                <div className="calendar-grid">
-                  {[
-                    { date: '31 Mar', scheme: 'RIPS 2022 – Annual Return Submission', urgency: 'CRITICAL', daysLeft: 17, color: '#ef4444', action: 'File Now' },
-                    { date: '10 Apr', scheme: 'ZED Audit Documentation Upload', urgency: 'URGENT', daysLeft: 27, color: '#f59e0b', action: 'Prepare' },
-                    { date: '30 Apr', scheme: 'Solar Subsidy Phase 1 – Equipment Invoice', urgency: 'UPCOMING', daysLeft: 47, color: '#0ea5e9', action: 'Review' },
-                    { date: '31 May', scheme: 'CLCSS – Progress Report Submission', urgency: 'SCHEDULED', daysLeft: 78, color: '#6366f1', action: 'Schedule' },
-                    { date: '31 Oct', scheme: 'SITP Interest Subvention Deadline', urgency: 'SCHEDULED', daysLeft: 231, color: '#94a3b8', action: 'Noted' },
-                  ].map((item, i) => (
-                    <div key={i} className="calendar-item" style={{ borderLeft: `3px solid ${item.color}` }}>
-                      <div className="calendar-date-box" style={{ background: `${item.color}15`, border: `1px solid ${item.color}40` }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: '900', color: item.color }}>{item.date.split(' ')[0]}</div>
-                        <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{item.date.split(' ')[1]}</div>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '600', fontSize: '0.88rem', marginBottom: '4px', color: '#e2e8f0' }}>{item.scheme}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: '700', color: item.color, background: `${item.color}15`, padding: '2px 6px', borderRadius: '4px' }}>{item.urgency}</span>
-                          <span style={{ fontSize: '0.65rem', color: '#64748b' }}>{item.daysLeft} days remaining</span>
-                        </div>
-                      </div>
-                      <button className="gov-action-btn" style={{ background: `${item.color}15`, color: item.color, border: `1px solid ${item.color}30` }} onClick={() => alert(`Action: ${item.action} for ${item.scheme}`)}>{item.action}</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* SECTION: Premium Policy Matrix */}
-              <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
-                <div className="gov-section-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div className="gov-icon-badge" style={{ background: 'rgba(139,92,246,0.15)', color: '#8b5cf6' }}>
-                      <Factory size={20} />
-                    </div>
-                    <div>
-                      <div className="gov-section-title">Rajasthan Scheme Eligibility Matrix</div>
-                      <div className="gov-section-subtitle">AI-scored suitability for your factory profile</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="policy-matrix-grid">
-                  {[
-                    { name: 'RIPS 2022', fullName: 'Rajasthan Investment Promotion Scheme', eligibility: 95, category: 'Capital Subsidy', benefit: '₹18–25L', status: 'Active', color: '#6366f1', features: ['Electricity Duty Waiver', 'Land Tax Exemption', 'Interest Subvention @5%', 'Employment Incentive'] },
-                    { name: 'CLCSS', fullName: 'Credit Linked Capital Subsidy Scheme', eligibility: 88, category: 'Machinery Upgrade', benefit: '₹28L', status: 'Applied', color: '#0ea5e9', features: ['15% Capital Subsidy', 'Up to ₹15L ceiling', 'SIDBI Nodal Agency', 'Textile Focus Priority'] },
-                    { name: 'PMEGP', fullName: 'Prime Minister Employment Generation', eligibility: 92, category: 'Enterprise Subsidy', benefit: '₹35%', status: 'Eligible', color: '#10b981', features: ['35% Urban Subsidy', 'Credit facility via Banks', 'KVIC Implementation', 'SC/ST Priority'] },
-                    { name: 'ZED', fullName: 'Zero Defect Zero Effect Scheme', eligibility: 78, category: 'Quality Certification', benefit: '₹3.6L', status: 'In Progress', color: '#f59e0b', features: ['90% Cost Refund', 'Quality Stamp', 'Export Market Access', 'Rating Certificate'] },
-                    { name: 'SITP', fullName: 'Scheme for Integrated Textile Parks', eligibility: 65, category: 'Cluster Development', benefit: 'Infrastructure', status: 'Available', color: '#ec4899', features: ['Plug & Play Factory', 'Common Infrastructure', 'Logistics Support', 'Skill Centre Access'] },
-                    { name: 'TSDF', fullName: 'Textile Skill Development Fund', eligibility: 99, category: 'Worker Upskilling', benefit: '₹15K/Worker', status: 'Approved', color: '#34d399', features: ['₹15,000 per Karigar', 'Govt Certified Training', 'Digital Skill Modules', 'Attendance Incentive'] },
-                  ].map((policy, i) => (
-                    <div key={i} className="policy-card" style={{ borderTop: `3px solid ${policy.color}` }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                        <div>
-                          <div style={{ fontSize: '1.1rem', fontWeight: '900', color: policy.color }}>{policy.name}</div>
-                          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>{policy.fullName}</div>
-                        </div>
-                        <span style={{ fontSize: '0.6rem', fontWeight: '700', padding: '3px 8px', borderRadius: '20px', background: `${policy.color}20`, color: policy.color, border: `1px solid ${policy.color}40`, whiteSpace: 'nowrap' }}>{policy.status}</span>
-                      </div>
-
-                      {/* Eligibility Score Bar */}
-                      <div style={{ marginBottom: '12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginBottom: '4px' }}>
-                          <span style={{ color: '#94a3b8' }}>AI Eligibility Score</span>
-                          <span style={{ color: policy.color, fontWeight: '700' }}>{policy.eligibility}%</span>
-                        </div>
-                        <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
-                          <div style={{ width: `${policy.eligibility}%`, height: '100%', background: `linear-gradient(90deg, ${policy.color}, ${policy.color}aa)`, borderRadius: '3px', boxShadow: `0 0 8px ${policy.color}60`, transition: 'width 1s ease' }}></div>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.75rem' }}>
-                        <div>
-                          <div style={{ color: '#64748b' }}>Category</div>
-                          <div style={{ color: '#e2e8f0', fontWeight: '600' }}>{policy.category}</div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ color: '#64748b' }}>Max Benefit</div>
-                          <div style={{ color: policy.color, fontWeight: '800' }}>{policy.benefit}</div>
-                        </div>
-                      </div>
-
-                      <div style={{ marginBottom: '14px' }}>
-                        {policy.features.map((f, fi) => (
-                          <div key={fi} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: '#94a3b8', marginBottom: '3px' }}>
-                            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: policy.color, flexShrink: 0 }}></div>
-                            {f}
-                          </div>
-                        ))}
-                      </div>
-
-                      <button className="gov-apply-btn" style={{ background: `linear-gradient(135deg, ${policy.color}20, ${policy.color}10)`, border: `1px solid ${policy.color}50`, color: policy.color }} onClick={() => alert(`Initiating application for ${policy.name}`)}>
-                        {policy.status === 'Applied' || policy.status === 'In Progress' ? '📋 Track Application' : policy.status === 'Approved' ? '✅ Download Sanction Letter' : '⚡ Apply Now'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* SECTION: Gov Contacts & Fast Track */}
-              <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
-                <div className="gov-section-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div className="gov-icon-badge" style={{ background: 'rgba(14,165,233,0.15)', color: '#0ea5e9' }}>
-                      <Landmark size={20} />
-                    </div>
-                    <div>
-                      <div className="gov-section-title">Bhilwara Gov. Contact Directory & Fast-Track Portals</div>
-                      <div className="gov-section-subtitle">Direct access to district offices and online government portals</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="contacts-grid">
-                  {[
-                    { name: 'District Industries Centre', short: 'DIC Bhilwara', phone: '01482-230710', email: 'dic.bhilwara@rajasthan.gov.in', role: 'RIPS, PMEGP, CLCSS Nodal Office', color: '#6366f1', link: 'https://industries.rajasthan.gov.in' },
-                    { name: 'MSME Development Institute', short: 'MSME-DI Jaipur', phone: '0141-2390557', email: 'msmedi-jaipur@dcmsme.gov.in', role: 'Technology & Capacity Building', color: '#0ea5e9', link: 'https://msme.gov.in' },
-                    { name: 'Rajasthan RCSS Portal', short: 'Single Window', phone: '0141-2385562', email: 'helpdesk.rajnivesh@rajasthan.gov.in', role: 'All Clearances & NOC Gateway', color: '#10b981', link: 'https://rajnivesh.rajasthan.gov.in' },
-                    { name: 'ZED Certification Authority', short: 'QCI–ZED', phone: '011-23357820', email: 'zed@qcin.org', role: 'Zero Defect Certification Body', color: '#f59e0b', link: 'https://zed.org.in' },
-                  ].map((c, i) => (
-                    <div key={i} className="contact-card" style={{ borderLeft: `3px solid ${c.color}` }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#e2e8f0' }}>{c.name}</div>
-                          <div style={{ fontSize: '0.7rem', color: c.color, fontWeight: '600' }}>{c.short}</div>
-                        </div>
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '10px', fontStyle: 'italic' }}>{c.role}</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px' }}>
-                        <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>📞 {c.phone}</div>
-                        <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>✉️ {c.email}</div>
-                      </div>
-                      <button className="gov-apply-btn" style={{ background: `${c.color}15`, border: `1px solid ${c.color}40`, color: c.color, width: '100%' }} onClick={() => window.open(c.link, '_blank')}>
-                        🌐 Open Portal →
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Quick Links Row */}
-                <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(14,165,233,0.05)', borderRadius: '12px', border: '1px solid rgba(14,165,233,0.15)' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>⚡ Fast-Track Direct Links</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {[
-                      { label: 'Udyam Registration', url: 'https://udyamregistration.gov.in' },
-                      { label: 'RIPS 2022 Portal', url: 'https://invest.rajasthan.gov.in' },
-                      { label: 'SIDBI CLCSS', url: 'https://www.sidbi.in' },
-                      { label: 'GST E-Invoice', url: 'https://einvoice1.gst.gov.in' },
-                      { label: 'TReDS Platform', url: 'https://www.m1xchange.com' },
-                      { label: 'NSIC Tender Portal', url: 'https://nsic.co.in' },
-                    ].map((link, i) => (
-                      <button key={i} onClick={() => window.open(link.url, '_blank')} style={{ background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.2)', color: '#0ea5e9', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
-                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.2)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                        onMouseOut={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                      >
-                        {link.label} ↗
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <AgentGrid categories={['Finance']} title="Finance & Sector Analytics AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
             </div>
+
+            {/* SECTION: Subsidy Savings Dashboard */}
+            <div className="gov-section-card gov-savings-card" style={{ marginTop: '1.5rem' }}>
+              <div className="gov-section-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div className="gov-icon-badge" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}>
+                    <Award size={20} />
+                  </div>
+                  <div>
+                    <div className="gov-section-title">Subsidy Savings Impact Dashboard</div>
+                    <div className="gov-section-subtitle">Total government benefit unlocked for your factory</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="savings-kpi-grid">
+                {[
+                  { label: 'Total Applied Value', value: '₹66.6L', sub: 'Across 5 active schemes', color: '#6366f1', icon: '📊' },
+                  { label: 'Confirmed Savings', value: '₹16.5L', sub: 'Approved + Disbursed', color: '#10b981', icon: '✅' },
+                  { label: 'Pending Benefit', value: '₹50.1L', sub: 'Under review / Processing', color: '#f59e0b', icon: '⏳' },
+                  { label: 'Electricity Duty Saved', value: '₹8.2L/yr', sub: 'RIPS 2022 exemption', color: '#0ea5e9', icon: '⚡' },
+                ].map((kpi, i) => (
+                  <div key={i} className="savings-kpi-card" style={{ borderTop: `3px solid ${kpi.color}` }}>
+                    <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>{kpi.icon}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{kpi.label}</div>
+                    <div style={{ fontSize: '1.6rem', fontWeight: '900', color: kpi.color }}>{kpi.value}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>{kpi.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Savings Breakdown Bar */}
+              <div style={{ marginTop: '1.5rem' }}>
+                <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase' }}>Scheme-wise Benefit Allocation</div>
+                <div style={{ height: '28px', borderRadius: '14px', overflow: 'hidden', display: 'flex', gap: '2px' }}>
+                  {[
+                    { pct: 28, color: '#6366f1', label: 'RIPS' },
+                    { pct: 18, color: '#0ea5e9', label: 'Solar' },
+                    { pct: 42, color: '#8b5cf6', label: 'CLCSS' },
+                    { pct: 5, color: '#10b981', label: 'ZED' },
+                    { pct: 7, color: '#34d399', label: 'Skill' },
+                  ].map((seg, i) => (
+                    <div key={i} style={{ flex: seg.pct, background: seg.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: '700', color: 'white', minWidth: '30px', transition: 'flex 0.8s ease', cursor: 'default' }} title={`${seg.label}: ${seg.pct}%`}>
+                      {seg.pct > 10 ? `${seg.label} ${seg.pct}%` : ''}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '8px', flexWrap: 'wrap' }}>
+                  {[{ label: 'RIPS 2022', color: '#6366f1' }, { label: 'Solar', color: '#0ea5e9' }, { label: 'CLCSS', color: '#8b5cf6' }, { label: 'ZED', color: '#10b981' }, { label: 'Skill Fund', color: '#34d399' }].map((l, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#94a3b8' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: l.color }}></div>
+                      {l.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION: Compliance Calendar */}
+            <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
+              <div className="gov-section-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div className="gov-icon-badge" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
+                    <Activity size={20} />
+                  </div>
+                  <div>
+                    <div className="gov-section-title">Compliance & Deadline Calendar</div>
+                    <div className="gov-section-subtitle">AI-monitored critical dates for your registered schemes</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: '700', background: 'rgba(245,158,11,0.1)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(245,158,11,0.3)' }}>⚠ 2 URGENT</div>
+              </div>
+
+              <div className="calendar-grid">
+                {[
+                  { date: '31 Mar', scheme: 'RIPS 2022 – Annual Return Submission', urgency: 'CRITICAL', daysLeft: 17, color: '#ef4444', action: 'File Now' },
+                  { date: '10 Apr', scheme: 'ZED Audit Documentation Upload', urgency: 'URGENT', daysLeft: 27, color: '#f59e0b', action: 'Prepare' },
+                  { date: '30 Apr', scheme: 'Solar Subsidy Phase 1 – Equipment Invoice', urgency: 'UPCOMING', daysLeft: 47, color: '#0ea5e9', action: 'Review' },
+                  { date: '31 May', scheme: 'CLCSS – Progress Report Submission', urgency: 'SCHEDULED', daysLeft: 78, color: '#6366f1', action: 'Schedule' },
+                  { date: '31 Oct', scheme: 'SITP Interest Subvention Deadline', urgency: 'SCHEDULED', daysLeft: 231, color: '#94a3b8', action: 'Noted' },
+                ].map((item, i) => (
+                  <div key={i} className="calendar-item" style={{ borderLeft: `3px solid ${item.color}` }}>
+                    <div className="calendar-date-box" style={{ background: `${item.color}15`, border: `1px solid ${item.color}40` }}>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '900', color: item.color }}>{item.date.split(' ')[0]}</div>
+                      <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{item.date.split(' ')[1]}</div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', fontSize: '0.88rem', marginBottom: '4px', color: '#e2e8f0' }}>{item.scheme}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.65rem', fontWeight: '700', color: item.color, background: `${item.color}15`, padding: '2px 6px', borderRadius: '4px' }}>{item.urgency}</span>
+                        <span style={{ fontSize: '0.65rem', color: '#64748b' }}>{item.daysLeft} days remaining</span>
+                      </div>
+                    </div>
+                    <button className="gov-action-btn" style={{ background: `${item.color}15`, color: item.color, border: `1px solid ${item.color}30` }} onClick={() => alert(`Action: ${item.action} for ${item.scheme}`)}>{item.action}</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SECTION: Premium Policy Matrix */}
+            <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
+              <div className="gov-section-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div className="gov-icon-badge" style={{ background: 'rgba(139,92,246,0.15)', color: '#8b5cf6' }}>
+                    <Factory size={20} />
+                  </div>
+                  <div>
+                    <div className="gov-section-title">Rajasthan Scheme Eligibility Matrix</div>
+                    <div className="gov-section-subtitle">AI-scored suitability for your factory profile</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="policy-matrix-grid">
+                {[
+                  { name: 'RIPS 2022', fullName: 'Rajasthan Investment Promotion Scheme', eligibility: 95, category: 'Capital Subsidy', benefit: '₹18–25L', status: 'Active', color: '#6366f1', features: ['Electricity Duty Waiver', 'Land Tax Exemption', 'Interest Subvention @5%', 'Employment Incentive'] },
+                  { name: 'CLCSS', fullName: 'Credit Linked Capital Subsidy Scheme', eligibility: 88, category: 'Machinery Upgrade', benefit: '₹28L', status: 'Applied', color: '#0ea5e9', features: ['15% Capital Subsidy', 'Up to ₹15L ceiling', 'SIDBI Nodal Agency', 'Textile Focus Priority'] },
+                  { name: 'PMEGP', fullName: 'Prime Minister Employment Generation', eligibility: 92, category: 'Enterprise Subsidy', benefit: '₹35%', status: 'Eligible', color: '#10b981', features: ['35% Urban Subsidy', 'Credit facility via Banks', 'KVIC Implementation', 'SC/ST Priority'] },
+                  { name: 'ZED', fullName: 'Zero Defect Zero Effect Scheme', eligibility: 78, category: 'Quality Certification', benefit: '₹3.6L', status: 'In Progress', color: '#f59e0b', features: ['90% Cost Refund', 'Quality Stamp', 'Export Market Access', 'Rating Certificate'] },
+                  { name: 'SITP', fullName: 'Scheme for Integrated Textile Parks', eligibility: 65, category: 'Cluster Development', benefit: 'Infrastructure', status: 'Available', color: '#ec4899', features: ['Plug & Play Factory', 'Common Infrastructure', 'Logistics Support', 'Skill Centre Access'] },
+                  { name: 'TSDF', fullName: 'Textile Skill Development Fund', eligibility: 99, category: 'Worker Upskilling', benefit: '₹15K/Worker', status: 'Approved', color: '#34d399', features: ['₹15,000 per Karigar', 'Govt Certified Training', 'Digital Skill Modules', 'Attendance Incentive'] },
+                ].map((policy, i) => (
+                  <div key={i} className="policy-card" style={{ borderTop: `3px solid ${policy.color}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                      <div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: '900', color: policy.color }}>{policy.name}</div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>{policy.fullName}</div>
+                      </div>
+                      <span style={{ fontSize: '0.6rem', fontWeight: '700', padding: '3px 8px', borderRadius: '20px', background: `${policy.color}20`, color: policy.color, border: `1px solid ${policy.color}40`, whiteSpace: 'nowrap' }}>{policy.status}</span>
+                    </div>
+
+                    {/* Eligibility Score Bar */}
+                    <div style={{ marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginBottom: '4px' }}>
+                        <span style={{ color: '#94a3b8' }}>AI Eligibility Score</span>
+                        <span style={{ color: policy.color, fontWeight: '700' }}>{policy.eligibility}%</span>
+                      </div>
+                      <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${policy.eligibility}%`, height: '100%', background: `linear-gradient(90deg, ${policy.color}, ${policy.color}aa)`, borderRadius: '3px', boxShadow: `0 0 8px ${policy.color}60`, transition: 'width 1s ease' }}></div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.75rem' }}>
+                      <div>
+                        <div style={{ color: '#64748b' }}>Category</div>
+                        <div style={{ color: '#e2e8f0', fontWeight: '600' }}>{policy.category}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ color: '#64748b' }}>Max Benefit</div>
+                        <div style={{ color: policy.color, fontWeight: '800' }}>{policy.benefit}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '14px' }}>
+                      {policy.features.map((f, fi) => (
+                        <div key={fi} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: '#94a3b8', marginBottom: '3px' }}>
+                          <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: policy.color, flexShrink: 0 }}></div>
+                          {f}
+                        </div>
+                      ))}
+                    </div>
+
+                    <button className="gov-apply-btn" style={{ background: `linear-gradient(135deg, ${policy.color}20, ${policy.color}10)`, border: `1px solid ${policy.color}50`, color: policy.color }} onClick={() => alert(`Initiating application for ${policy.name}`)}>
+                      {policy.status === 'Applied' || policy.status === 'In Progress' ? '📋 Track Application' : policy.status === 'Approved' ? '✅ Download Sanction Letter' : '⚡ Apply Now'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SECTION: Gov Contacts & Fast Track */}
+            <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
+              <div className="gov-section-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div className="gov-icon-badge" style={{ background: 'rgba(14,165,233,0.15)', color: '#0ea5e9' }}>
+                    <Landmark size={20} />
+                  </div>
+                  <div>
+                    <div className="gov-section-title">Bhilwara Gov. Contact Directory & Fast-Track Portals</div>
+                    <div className="gov-section-subtitle">Direct access to district offices and online government portals</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="contacts-grid">
+                {[
+                  { name: 'District Industries Centre', short: 'DIC Bhilwara', phone: '01482-230710', email: 'dic.bhilwara@rajasthan.gov.in', role: 'RIPS, PMEGP, CLCSS Nodal Office', color: '#6366f1', link: 'https://industries.rajasthan.gov.in' },
+                  { name: 'MSME Development Institute', short: 'MSME-DI Jaipur', phone: '0141-2390557', email: 'msmedi-jaipur@dcmsme.gov.in', role: 'Technology & Capacity Building', color: '#0ea5e9', link: 'https://msme.gov.in' },
+                  { name: 'Rajasthan RCSS Portal', short: 'Single Window', phone: '0141-2385562', email: 'helpdesk.rajnivesh@rajasthan.gov.in', role: 'All Clearances & NOC Gateway', color: '#10b981', link: 'https://rajnivesh.rajasthan.gov.in' },
+                  { name: 'ZED Certification Authority', short: 'QCI–ZED', phone: '011-23357820', email: 'zed@qcin.org', role: 'Zero Defect Certification Body', color: '#f59e0b', link: 'https://zed.org.in' },
+                ].map((c, i) => (
+                  <div key={i} className="contact-card" style={{ borderLeft: `3px solid ${c.color}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                      <div>
+                        <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#e2e8f0' }}>{c.name}</div>
+                        <div style={{ fontSize: '0.7rem', color: c.color, fontWeight: '600' }}>{c.short}</div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '10px', fontStyle: 'italic' }}>{c.role}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px' }}>
+                      <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>📞 {c.phone}</div>
+                      <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>✉️ {c.email}</div>
+                    </div>
+                    <button className="gov-apply-btn" style={{ background: `${c.color}15`, border: `1px solid ${c.color}40`, color: c.color, width: '100%' }} onClick={() => window.open(c.link, '_blank')}>
+                      🌐 Open Portal →
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quick Links Row */}
+              <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(14,165,233,0.05)', borderRadius: '12px', border: '1px solid rgba(14,165,233,0.15)' }}>
+                <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>⚡ Fast-Track Direct Links</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { label: 'Udyam Registration', url: 'https://udyamregistration.gov.in' },
+                    { label: 'RIPS 2022 Portal', url: 'https://invest.rajasthan.gov.in' },
+                    { label: 'SIDBI CLCSS', url: 'https://www.sidbi.in' },
+                    { label: 'GST E-Invoice', url: 'https://einvoice1.gst.gov.in' },
+                    { label: 'TReDS Platform', url: 'https://www.m1xchange.com' },
+                    { label: 'NSIC Tender Portal', url: 'https://nsic.co.in' },
+                  ].map((link, i) => (
+                    <button key={i} onClick={() => window.open(link.url, '_blank')} style={{ background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.2)', color: '#0ea5e9', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.2)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                    >
+                      {link.label} ↗
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <AgentGrid categories={['Finance']} title="Finance & Sector Analytics AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
+          </div>
         )}
 
       </main>
@@ -4487,8 +5108,9 @@ export default function Dashboard() {
           </div>
         )
       }
+      {renderFailureReportModal()}
     </div>
   );
-}
+};
 
 
