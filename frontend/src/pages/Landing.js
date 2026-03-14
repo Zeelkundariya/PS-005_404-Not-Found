@@ -4,7 +4,7 @@ import {
     ArrowRight, Factory, Zap, ShieldCheck,
     MessageCircle, Globe, Layers,
     Sparkles, Award, CheckCircle2,
-    TrendingUp
+    TrendingUp, Clock
 } from 'lucide-react';
 
 const Landing = () => {
@@ -19,11 +19,11 @@ const Landing = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const features = [
+const features = [
         {
-            icon: <Infinity size={24} />,
-            title: "'Brahma' Core AI",
-            desc: "Centralized industrial brain orchestrating 52 specialized agents with 99.9% factory sync."
+            icon: <Clock size={24} />,
+            title: "'EM4' Scheduler",
+            desc: "Dynamic production scheduling optimizer using RL to plan jobs across machines and staff."
         },
         {
             icon: <MessageCircle size={24} />,

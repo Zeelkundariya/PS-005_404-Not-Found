@@ -9,8 +9,8 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, "../frontend/build")));
+// app.use(express.static(path.join(__dirname, "../frontend/build")));
+app.get("/", (req, res) => res.json({ status: "SmartFactory API Running", time: new Date() }));
 
 app.get("/test", (req, res) => res.json({ message: "Server is alive" }));
 
@@ -23,12 +23,11 @@ app.use("/api/ai", require("./routes/aiRoutes"));
 app.use("/api/upload", require("./routes/uploadRoutes"));
 app.use("/api/whatsapp", require("./routes/whatsapp"));
 app.use("/api/owner", require("./routes/ownerRoutes"));
+app.use("/api/fyp", require("./routes/fypRoutes"));
 
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
-});
+// app.get("*", (req, res) => {
+//     res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
+// });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Owner Server running on port ${PORT}`));

@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { agentsData } from "../data/agentsData";
+import FYPOptimizer from "./FYPOptimizer";
 
 // --- High-Fidelity Styles ---
 const industrialStyles = `
@@ -122,16 +123,16 @@ const AgentGrid = React.memo(({ categories, title, focusedAgent, setFocusedAgent
     JSON.stringify(prevProps.categories) === JSON.stringify(nextProps.categories);
 });
 
-export default function Dashboard() {
+export default function Dashboard({ defaultTab = 'overview' }) {
   const navigate = useNavigate();
   // --- AI States ---
   const [delay, setDelay] = useState("");
   const [agentMessage, setAgentMessage] = useState("Monitoring... Ready for Owner Command.");
-  const [pei, setPei] = useState(0);
-  const [peiTrend, setPeiTrend] = useState([]);
-  const [maintenanceScore, setMaintenanceScore] = useState(0);
-  const [reliability, setReliability] = useState(0);
-  const [digitalMaturity, setDigitalMaturity] = useState(0);
+  const [pei, setPei] = useState(82.4);
+  const [peiTrend, setPeiTrend] = useState([78, 80, 79, 81, 82, 82.4]);
+  const [maintenanceScore, setMaintenanceScore] = useState(91.2);
+  const [reliability, setReliability] = useState(94.5);
+  const [digitalMaturity, setDigitalMaturity] = useState(72);
   const [benchmark, setBenchmark] = useState({});
   const [solar, setSolar] = useState({});
   const [workforce, setWorkforce] = useState({});
@@ -283,6 +284,32 @@ export default function Dashboard() {
     }
   });
 
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [scheduleData, setScheduleData] = useState([]);
+  const [schedulerStats, setSchedulerStats] = useState({ makespan: 0, machineUtilization: {}, jobCompletionTimes: [] });
+  const [pendingJobs, setPendingJobs] = useState([]);
+
+  const addPendingJob = () => {
+    if (!fleetData || fleetData.length === 0) {
+      alert("No machines available in cluster. Please sync assets first.");
+      return;
+    }
+    const newId = `JOB-${100 + pendingJobs.length + 1}`;
+    // Safer selection: pick from any available machine
+    const randomIndex = Math.floor(Math.random() * fleetData.length);
+    const randomMachine = fleetData[randomIndex].id;
+    
+    setPendingJobs([...pendingJobs, {
+      id: newId,
+      name: "New Batch Order",
+      priority: 1,
+      color: ["#f59e0b", "#ec4899", "#8b5cf6", "#0ea5e9"][Math.floor(Math.random() * 4)],
+      operations: [
+        { machineId: randomMachine, duration: 5, task: "Standard Process" }
+      ]
+    }]);
+  };
+
   // --- New Overhaul States ---
   const [strategicAiLogs, setStrategicAiLogs] = useState([
     { id: 1, time: new Date().toLocaleTimeString(), msg: "SYSTEM INITIALIZED: Brahma Kernel v2.1.0", type: "system" },
@@ -324,14 +351,7 @@ export default function Dashboard() {
     capitalRecovery: "₹3,45,000",
     portfolioHealth: 91.5
   });
-  const [fleetData, setFleetData] = useState([
-    { id: 'Loom #1', name: 'Loom #1', type: 'WEAVING', score: 65, status: 'Warning', trend: 'Downward', color: '#f59e0b' },
-    { id: 'Loom #4', name: 'Loom #4', type: 'WEAVING', score: 92, status: 'Healthy', trend: 'Stable', color: '#10b981' },
-    { id: 'Loom #7', name: 'Loom #7', type: 'WEAVING', score: 40, status: 'Critical', trend: 'Downward', color: '#ef4444' },
-    { id: 'Stenter #1', name: 'Stenter #1', type: 'FINISHING', score: 88, status: 'Healthy', trend: 'Stable', color: '#10b981' },
-    { id: 'Dyeing #2', name: 'Dyeing #2', type: 'PROCESSING', score: 85, status: 'Healthy', trend: 'Improving', color: '#10b981' },
-    { id: 'Boiler #1', name: 'Boiler #1', type: 'UTILITY', score: 78, status: 'Healthy', trend: 'Stable', color: '#10b981' },
-  ]);
+  const [fleetData, setFleetData] = useState([]);
   const [liveSensors, setLiveSensors] = useState({
     temp: 42,
     tempTrend: 1.5,
@@ -509,7 +529,7 @@ export default function Dashboard() {
               Object.keys(coreRequestIds).forEach(agentId => {
                 if (req._id === coreRequestIds[agentId] && coreStates[agentId] === 2) {
                   setCoreStates(prev => ({ ...prev, [agentId]: 3 }));
-                  setSystemEvents(prev => {
+                  setStrategicAiLogs(prev => {
                     const newId = Date.now() + Math.random();
                     return [{ id: newId, time: new Date().toLocaleTimeString(), msg: `Core AI: Request Approved. Optimization complete.`, type: 'success' }, ...prev];
                   });
@@ -562,7 +582,7 @@ export default function Dashboard() {
   const [isMsmeModalOpen, setIsMsmeModalOpen] = useState(false);
   const [isClusterModalOpen, setIsClusterModalOpen] = useState(false);
   const [isSubsidyModalOpen, setIsSubsidyModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [showNotification, setShowNotification] = useState(false);
 
   // Interactive Machine Slider State
@@ -572,7 +592,7 @@ export default function Dashboard() {
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [isAiLearningMode, setIsAiLearningMode] = useState(true);
   const [lang, setLang] = useState('EN'); // EN, HI
-  const [executiveSummary, setExecutiveSummary] = useState({});
+  const [executiveSummary, setExecutiveSummary] = useState({ summary: "Analyzing plant telemetry... Overall production is stable with a 12% projected growth in net margin this month. Workforce skill index in Bhilwara cluster is up by 4%." });
   const [recommendations, setRecommendations] = useState([]);
   const [machineStatus, setMachineStatus] = useState([]);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -586,7 +606,7 @@ export default function Dashboard() {
   ]);
 
   // --- Consolidated Data Fetching Engine ---
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -602,13 +622,19 @@ export default function Dashboard() {
 
       try {
         // Essential Data First
-        const [mStatus, iAlerts] = await Promise.all([
+        const [mStatus, iAlerts, fJobs, fMachines, fSchedule] = await Promise.all([
           api.get("/machine/status"),
-          api.get("/inventory/alerts")
+          api.get("/inventory/alerts"),
+          api.get("/fyp/jobs"),
+          api.get("/fyp/machines"),
+          api.get("/fyp/schedule")
         ]);
         if (isMounted) {
           setMachineStatus(mStatus.data);
           setInventoryAlerts(iAlerts.data);
+          setPendingJobs(fJobs.data.map(j => ({ id: j.jobId, name: j.jobName, priority: j.priority, color: j.color, operations: j.operations })));
+          setFleetData(fMachines.data.map(m => ({ id: m.machineId, name: m.machineName, status: m.status, color: m.color || '#3b82f6' })));
+          setScheduleData(fSchedule.data);
         }
 
         // Prepare standardized payloads
@@ -847,7 +873,7 @@ export default function Dashboard() {
       setVoiceStep(2);
       setTimeout(() => {
         setVoiceStep(3);
-        setSystemEvents(prev => [{
+        setStrategicAiLogs(prev => [{
           id: Date.now(),
           time: new Date().toLocaleTimeString(),
           msg: "Voice Assistant: 'Loom 4 thread-break logged. Requesting maintenance.'",
@@ -1340,6 +1366,27 @@ export default function Dashboard() {
             <li className={`sidebar-link ${activeTab === 'textile' ? 'active' : ''}`} onClick={() => setActiveTab('textile')}>
               <Briefcase size={18} />
               {lang === 'EN' ? 'Textile Operations' : ' '}
+            </li>
+          )}
+
+          {(userRole === 'Manager' || userRole === 'Owner') && (
+            <li className={`sidebar-link ${activeTab === 'scheduler' ? 'active' : ''}`} onClick={() => setActiveTab('scheduler')} style={{ color: 'var(--accent)' }}>
+              <Clock size={18} />
+              {lang === 'EN' ? 'Production Scheduler' : ' '}
+            </li>
+          )}
+
+          {(userRole === 'Manager' || userRole === 'Owner' || userRole === 'Strategic Owner') && (
+            <li className={`sidebar-link ${activeTab === 'fyp' ? 'active' : ''}`} 
+              onClick={() => setActiveTab('fyp')} 
+              style={{ 
+                color: activeTab === 'fyp' ? '#60a5fa' : '#3b82f6',
+                borderLeft: activeTab === 'fyp' ? '3px solid #3b82f6' : 'none',
+                background: activeTab === 'fyp' ? 'linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)' : 'transparent'
+              }}>
+              <Zap size={18} className={activeTab === 'fyp' ? 'pulse-slow text-blue-400' : ''} />
+              {lang === 'EN' ? 'FYP Optimizer' : ' '}
+              {activeTab !== 'fyp' && <div className="ml-auto w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_#3b82f6]"></div>}
             </li>
           )}
 
@@ -4034,6 +4081,239 @@ export default function Dashboard() {
             </div>
           )
         }
+
+        {activeTab === 'scheduler' && (
+          <div className="scheduler-panel animate-fade-in" style={{ padding: '0 1rem' }}>
+            <div className="industrial-panel" style={{ padding: '2.5rem', marginBottom: '2.5rem', borderRadius: '1rem', border: '1px solid var(--primary-20)', background: 'rgba(15, 23, 42, 0.5)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <div>
+                  <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Clock className="pulse-slow" size={32} color="var(--accent)" />
+                    AI Production Scheduling Optimizer (EM4)
+                  </h2>
+                  <p style={{ opacity: 0.6, marginTop: '8px', fontSize: '1.1rem' }}>Dynamically planning jobs across {fleetData.length} machines and {workforce.activeWorkers || 42} staff members using Reinforcement Learning.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span style={{ fontSize: '0.65rem', opacity: 0.6, letterSpacing: '1px' }}>ALGORITHM STATUS</span>
+                    <span style={{ color: '#10b981', fontWeight: '900', fontSize: '1rem' }}>ACTIVE RL-SYNC</span>
+                  </div>
+                  <button
+                    className={`btn-primary ${isOptimizing ? 'pulse-heavy' : ''}`}
+                    onClick={async () => {
+                      setIsOptimizing(true);
+                      setStrategicAiLogs(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: "SCHEDULER: Initiating Genetic Algorithm Optimization...", type: "system" }, ...prev]);
+                      
+                      try {
+                        const res = await api.post("/ai/scheduler/optimize", {
+                          jobs: pendingJobs,
+                          machines: fleetData.map(m => ({ id: m.id, name: m.name, color: m.color }))
+                        });
+                        
+                        if (res.data && res.data.schedule) {
+                          setScheduleData(res.data.schedule);
+                          setSchedulerStats({
+                            makespan: res.data.makespan,
+                            machineUtilization: res.data.machineUtilization,
+                            jobCompletionTimes: res.data.jobCompletionTimes
+                          });
+                          setStrategicAiLogs(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: `SCHEDULER: Optimization complete. Makespan: ${res.data.makespan}h. ${res.data.optimizationLog}`, type: "success" }, ...prev]);
+                        } else if (res.data && res.data.error) {
+                          setStrategicAiLogs(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: `SCHEDULER ERROR: ${res.data.error}. Ensure backend is running.`, type: "system" }, ...prev]);
+                        }
+                      } catch (err) {
+                        console.error("Scheduling failed:", err);
+                        setStrategicAiLogs(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: `SCHEDULER: Critical failure. check console.`, type: "system" }, ...prev]);
+                      } finally {
+                        setIsOptimizing(false);
+                      }
+                    }}
+                    disabled={isOptimizing}
+                    style={{ background: 'var(--primary)', color: 'white', padding: '0 2rem', fontWeight: 'bold', fontSize: '0.9rem' }}
+                  >
+                    {isOptimizing ? 'EVOLVING GENERATIONS...' : 'OPTIMIZE SCHEDULE'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Interactive Gantt Chart */}
+              <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '20px', padding: '2rem', border: '1px solid rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
+                <div className="micro-grid" style={{ position: 'absolute', inset: 0, opacity: 0.1 }}></div>
+                <div style={{ position: 'relative', zIndex: 1, minWidth: '900px' }}>
+                  {/* Timeline Ruler */}
+                  <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{ width: '250px', fontWeight: '900', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px' }}>Resources & Staff</div>
+                    <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#94a3b8', padding: '0 10px' }}>
+                      {Array.from({ length: 9 }).map((_, i) => <span key={i}>{i * 4}:00</span>)}
+                    </div>
+                  </div>
+
+                  {/* Machine Tracks */}
+                  {fleetData.map((machine, idx) => (
+                    <div key={machine.id} style={{ display: 'flex', alignItems: 'center', height: '70px', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      <div style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '800', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Cpu size={14} color={machine.color} /> {machine.name}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>
+                          Utilization: <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{schedulerStats.machineUtilization[machine.id] || 0}%</span>
+                        </div>
+                      </div>
+                      <div style={{ flex: 1, position: 'relative', height: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.5)' }}>
+                        {scheduleData && scheduleData.filter(s => s.machineId === machine.id).map((task, tIdx) => (
+                          <div
+                            key={tIdx}
+                            style={{
+                              position: 'absolute',
+                              left: `${(task.start / 32) * 100}%`,
+                              width: `${(task.duration / 32) * 100}%`,
+                              height: '100%',
+                              background: isOptimizing ? 'rgba(99, 102, 241, 0.3)' : task.color,
+                              borderRadius: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.7rem',
+                              fontWeight: '900',
+                              color: 'white',
+                              boxShadow: isOptimizing ? '0 0 20px rgba(99, 102, 241, 0.5)' : `0 4px 15px ${task.color}33`,
+                              transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                              cursor: 'pointer',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              overflow: 'hidden',
+                              whiteSpace: 'nowrap',
+                              padding: '0 5px'
+                            }}
+                            title={`${task.jobName} | Task: ${task.task} | Start: ${task.start}h | End: ${task.end}h`}
+                          >
+                            {!isOptimizing && task.task}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  {(!scheduleData || scheduleData.length === 0) && !isOptimizing && (
+                    <div style={{ textAlign: 'center', padding: '3rem', opacity: 0.5 }}>
+                      No active schedule. Click "OPTIMIZE SCHEDULE" to run the Genetic Algorithm.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Job Configuration Input Section */}
+              <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '2rem', marginTop: '2.5rem' }}>
+                <div className="industrial-panel" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: '800', margin: 0 }}>Input Job Queue</h3>
+                    <button onClick={addPendingJob} style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '4px', padding: '4px 8px', fontSize: '0.7rem', cursor: 'pointer' }}>+ ADD JOB</button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
+                    {pendingJobs.map((job, idx) => (
+                      <div key={idx} style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '0.8rem', color: job.color }}>{job.id}</span>
+                          <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>Priority: {job.priority}</span>
+                        </div>
+                        <input 
+                          value={job.name} 
+                          onChange={(e) => {
+                            const newJobs = [...pendingJobs];
+                            newJobs[idx].name = e.target.value;
+                            setPendingJobs(newJobs);
+                          }}
+                          style={{ background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.85rem', width: '100%', marginBottom: '8px' }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.65rem', opacity: 0.5 }}>Durations:</span>
+                          {job.operations.map((op, oIdx) => (
+                            <input 
+                              key={oIdx}
+                              type="number"
+                              value={op.duration}
+                              onChange={(e) => {
+                                const newJobs = [...pendingJobs];
+                                newJobs[idx].operations[oIdx].duration = parseInt(e.target.value) || 0;
+                                setPendingJobs(newJobs);
+                              }}
+                              style={{ width: '35px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.7rem', textAlign: 'center', borderRadius: '4px' }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: '0.65rem', opacity: 0.4, marginTop: '1rem' }}>* Adjust priorities (1-5) and processing times (hours) to see how the Genetic Algorithm evolves the makespan.</p>
+                </div>
+
+                <div className="industrial-panel" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: '800', marginBottom: '1.5rem' }}>Optimization Diagnostics</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px' }}>
+                      <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginBottom: '5px' }}>BOTTLENECK ANALYSIS</div>
+                      <div style={{ color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                        {Object.entries(schedulerStats.machineUtilization).sort((a,b) => b[1]-a[1])[0]?.[0] || "Calculating..."} 
+                        <span style={{ marginLeft: '10px', fontSize: '0.7rem', opacity: 0.6 }}>@ {Object.entries(schedulerStats.machineUtilization).sort((a,b) => b[1]-a[1])[0]?.[1] || 0}% load</span>
+                      </div>
+                    </div>
+                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px' }}>
+                      <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginBottom: '5px' }}>ALGORITHM SYNC</div>
+                      <div style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.9rem' }}>Genetic v4.2</div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '10px' }}>JOB COMPLETION PREDICTIONS</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {schedulerStats.jobCompletionTimes.map((j, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', background: 'rgba(255,255,255,0.03)', padding: '5px 10px', borderRadius: '4px' }}>
+                          <span style={{ opacity: 0.8 }}>{j.jobName}</span>
+                          <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>T+{j.completionTime}h</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance Impact Metrics */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginTop: '2.5rem' }}>
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '8px' }}>TOTAL MAKESPAN</div>
+                  <div style={{ fontSize: '2rem', fontWeight: '900', color: 'white' }}>{schedulerStats.makespan}h</div>
+                  <div style={{ fontSize: '0.7rem', color: '#10b981', marginTop: '4px' }}>Minimal path found.</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '8px' }}>AVG. UTILIZATION</div>
+                  <div style={{ fontSize: '2rem', fontWeight: '900', color: 'white' }}>
+                    {Object.values(schedulerStats.machineUtilization || {}).length > 0
+                      ? (Object.values(schedulerStats.machineUtilization || {}).reduce((a, b) => a + parseFloat(b || 0), 0) / Object.values(schedulerStats.machineUtilization || {}).length).toFixed(1)
+                      : "0"}%
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#10b981', marginTop: '4px' }}>Machine sync active.</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--warning)', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '8px' }}>JOBS OPTIMIZED</div>
+                  <div style={{ fontSize: '2rem', fontWeight: '900', color: 'white' }}>{schedulerStats.jobCompletionTimes.length}</div>
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>Full factory load.</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ fontSize: '0.65rem', color: '#ec4899', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '8px' }}>IDLE TIME COST</div>
+                  <div style={{ fontSize: '2rem', fontWeight: '900', color: 'white' }}>₹{(Math.max(0, 100 - (Object.values(schedulerStats.machineUtilization || {}).length > 0 ? (Object.values(schedulerStats.machineUtilization).reduce((a, b) => a + parseFloat(b || 0), 0) / Object.values(schedulerStats.machineUtilization).length) : 100)) * 150).toFixed(0)}</div>
+                  <div style={{ fontSize: '0.7rem', color: '#34d399', marginTop: '4px' }}>Minimized loss.</div>
+                </div>
+              </div>
+            </div>
+            
+            <AgentGrid categories={['Core Systems']} title="Scheduling Optimization Agents" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
+          </div>
+        )
+      }
+
+      {activeTab === 'fyp' && (
+        <div className="fyp-panel p-4 animate-fade-in" style={{ paddingBottom: '3rem' }}>
+          <FYPOptimizer />
+        </div>
+      )}
+
 
         {activeTab === 'agents' && (
           <div className="agents-panel animate-fade-in" style={{ paddingBottom: '2rem' }}>

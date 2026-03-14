@@ -34,15 +34,16 @@ const endpoints = [
     { url: '/ai/export-score', data: {} },
     { url: '/ai/cluster', data: {} },
     { url: '/ai/profit', data: {} },
-    { url: '/ai/buyer-risk', data: {} }
+    { url: '/ai/buyer-risk', data: {} },
+    { url: '/ai/scheduler/optimize', data: { machines: [{id: 'M1', name: 'Test Machine'}] } }
 ];
 
 async function verifyAll() {
-    console.log('Starting AI Endpoint Verification...');
+    console.log('Starting AI Endpoint Verification on Port 3001...');
     let successCount = 0;
     for (const endpoint of endpoints) {
         try {
-            const res = await axios.post(`http://localhost:5000/api${endpoint.url}`, endpoint.data);
+            const res = await axios.post(`http://localhost:3001/api${endpoint.url}`, endpoint.data);
             console.log(`✅ ${endpoint.url}: OK`);
             successCount++;
         } catch (err) {

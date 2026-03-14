@@ -49,6 +49,7 @@ const { calculateClusterEfficiency } = require("../ai/clusterIntelligence");
 const { projectProfitMargin } = require("../ai/profitProjection");
 const { evaluateBuyerRisk } = require("../ai/creditInsurance");
 const { calculateSafetyScore } = require("../ai/safetyCompliance");
+const { optimizeScheduling } = require("../ai/schedulerOptimizer");
 
 
 
@@ -779,6 +780,72 @@ router.put("/request/:id", async (req, res) => {
     const request = RequestStore.updateStatus(req.params.id, status);
     if (!request) return res.status(404).json({ error: "Request not found" });
     res.json(request);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Production Scheduling Optimizer ---
+router.post("/scheduler/optimize", async (req, res) => {
+  try {
+    const { jobs, machines } = req.body;
+
+    // Use default machines if none provided
+    const defaultMachines = await Machine.find();
+    const formattedMachines = (machines && machines.length > 0) ? machines : defaultMachines.map(m => ({
+      id: m._id.toString(),
+      name: m.name,
+      color: m.color || "#6366f1"
+    }));
+
+    // If no jobs provided, create some realistic defaults for the demo
+    const formattedJobs = (jobs && jobs.length > 0) ? jobs : [
+      {
+        id: "JOB-101",
+        name: "Premium Cotton Batch A",
+        priority: 3,
+        color: "#6366f1",
+        operations: [
+          { machineId: formattedMachines[0]?.id || "M1", duration: 4, task: "Yarn Prep" },
+          { machineId: formattedMachines[1]?.id || "M2", duration: 6, task: "Weaving" },
+          { machineId: formattedMachines[2]?.id || "M3", duration: 2, task: "QC" }
+        ]
+      },
+      {
+        id: "JOB-102",
+        name: "Synthetic Blend B",
+        priority: 1,
+        color: "#10b981",
+        operations: [
+          { machineId: formattedMachines[1]?.id || "M2", duration: 8, task: "Weaving" },
+          { machineId: formattedMachines[0]?.id || "M1", duration: 3, task: "Finishing" }
+        ]
+      },
+      {
+        id: "JOB-103",
+        name: "Silk Export Grade",
+        priority: 5,
+        color: "#f59e0b",
+        operations: [
+          { machineId: formattedMachines[0]?.id || "M1", duration: 5, task: "Yarn Prep" },
+          { machineId: formattedMachines[2]?.id || "M3", duration: 4, task: "Special Weave" },
+          { machineId: formattedMachines[3]?.id || "M4", duration: 3, task: "Softening" }
+        ]
+      },
+      {
+        id: "JOB-104",
+        name: "Denim Rugged",
+        priority: 2,
+        color: "#ec4899",
+        operations: [
+          { machineId: formattedMachines[2]?.id || "M3", duration: 7, task: "Heavy Dyeing" },
+          { machineId: formattedMachines[1]?.id || "M2", duration: 5, task: "Finishing" }
+        ]
+      }
+    ];
+
+    const result = optimizeScheduling({ jobs: formattedJobs, machines: formattedMachines });
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
