@@ -13,6 +13,8 @@ import {
   Box, Network, Mic, Droplet, RefreshCcw, Fingerprint, MessageSquare, ArrowRight, Landmark, BookOpen, FileScan, Sparkles, Recycle, Flame
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { agentsData } from "../data/agentsData";
 
 // --- High-Fidelity Styles ---
@@ -466,6 +468,9 @@ export default function Dashboard() {
   };
 
   // UI States
+  const [isMsmeModalOpen, setIsMsmeModalOpen] = useState(false);
+  const [isClusterModalOpen, setIsClusterModalOpen] = useState(false);
+  const [isSubsidyModalOpen, setIsSubsidyModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [showNotification, setShowNotification] = useState(false);
 
@@ -1338,6 +1343,7 @@ export default function Dashboard() {
                 <div className="stat-label">Delivery Delay Prediction</div>
               </div>
 
+              {/* RESTORED: Local Yarn Predictor */}
               <div className="stat-card">
                 <div className="stat-header">
                   <div className="stat-icon"><Briefcase size={20} /></div>
@@ -2420,6 +2426,39 @@ export default function Dashboard() {
               </div>
 
               <AgentGrid categories={['Operations', 'Quality Control', 'Labor & HR']} title="Production & Operations AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
+              
+              {/* HACKATHON WINNER: Computer Vision Mockup */}
+              <div className="stat-card" style={{ marginTop: '1.5rem', background: 'linear-gradient(rgba(139, 92, 246, 0.15), transparent)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 className="section-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: '#a78bfa' }}>
+                    <Video size={22} /> Live Computer Vision Defect Detection
+                  </h3>
+                  <span className="badge" style={{ background: '#8b5cf6', color: 'white' }}>MODEL: YOLOv8 (EDGE)</span>
+                </div>
+                <div style={{
+                  width: '100%', height: '220px', background: '#000', borderRadius: '12px', position: 'relative', overflow: 'hidden',
+                  backgroundImage: 'url("https://www.fibre2fashion.com/news/images/270/shutterstock_1854497641_289356.jpg")',
+                  backgroundSize: 'cover', backgroundPosition: 'center', border: '2px solid #1e293b'
+                }}>
+                  {/* Simulated Scanner Line */}
+                  <div style={{ position: 'absolute', top: 0, left: '30%', width: '4px', height: '100%', background: 'rgba(139, 92, 246, 0.7)', boxShadow: '0 0 15px #8b5cf6', animation: 'scan 3s infinite linear' }}></div>
+                  {/* Simulated Defect Box */}
+                  <div style={{ position: 'absolute', top: '40%', left: '45%', border: '2px solid #f43f5e', width: '50px', height: '50px', backgroundColor: 'rgba(244, 63, 94, 0.2)' }}>
+                    <div style={{ background: '#f43f5e', color: 'white', fontSize: '0.6rem', padding: '2px 4px', fontWeight: 'bold', position: 'absolute', top: '-18px', left: '-2px', whiteSpace: 'nowrap' }}>
+                      1.2mm Yarn Breakage (97%)
+                    </div>
+                  </div>
+                  {/* Recording indicator */}
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px' }}>
+                    <div style={{ width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></div>
+                    <span style={{ fontSize: '0.7rem', color: 'white', fontWeight: 'bold' }}>LIVE FEED - Loom 4</span>
+                  </div>
+                </div>
+                <style>{`
+                    @keyframes scan { 0% { left: 10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { left: 90%; opacity: 0; } }
+                    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+                  `}</style>
+              </div>
             </div>
           )
         }
@@ -2896,7 +2935,7 @@ export default function Dashboard() {
 
                   <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
                     <div style={{ fontSize: '1.2rem', fontWeight: '800', color: '#3b82f6', marginBottom: '4px' }}>Arbitrage Gap: +₹14.2/m</div>
-                    <p style={{ fontSize: '0.75rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>Detected price-drop in Turkish cotton yarn. 5,000kg window open for 2h 42m.</p>
+                    <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>Detected price-drop in Turkish cotton yarn. 5,000kg window open for 2h 42m.</p>
                   </div>
                   
                   <div style={{ marginTop: 'auto' }}>
@@ -2945,7 +2984,7 @@ export default function Dashboard() {
                     <button className="btn-primary" style={{ width: '100%', background: '#eab308', border: 'none', color: 'black', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await api.post('/owner/trust-score', { score: 'A+', trustIndex: 94, suppliers: 15 }); alert(res.data.message || 'Trust-Score shared successfully.'); } catch (err) { alert('Error: Could not reach the API. Please ensure the backend is running.'); console.error(err); } }}>Share Trust-Score with Suppliers</button>
                   </div>
                 </div>
-              </div>
+                </div>
 
               <div className="charts-grid" style={{ marginTop: '1.5rem' }}>
                 <div className="stat-card">
@@ -2992,20 +3031,30 @@ export default function Dashboard() {
           activeTab === 'strategy' && (
             <div className="strategy-panel animate-fade-in">
               <div className="stats-grid">
-                <div className="stat-card" style={{ border: '1px solid var(--accent)', background: 'rgba(16, 185, 129, 0.05)' }}>
+                <div className="stat-card" style={{ border: '1px solid var(--accent)', background: 'rgba(16, 185, 129, 0.05)', cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => setIsMsmeModalOpen(true)} onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(16, 185, 129, 0.2)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
                   <div className="stat-header"><span className="stat-label">MSME Growth Score</span><TrendingUp size={20} color="var(--accent)" /></div>
-                  <div className="stat-value">{typeof digitalMaturity === 'object' ? JSON.stringify(digitalMaturity) : digitalMaturity || 0}/100</div>
+                  <div className="stat-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {typeof digitalMaturity === 'object' ? JSON.stringify(digitalMaturity) : digitalMaturity || 0}/100
+                    <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(16, 185, 129, 0.2)', borderRadius: '12px', color: 'var(--accent)' }}>View Details</span>
+                  </div>
                   <div className="stat-label">Digital Transformation Index</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => setIsClusterModalOpen(true)} onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(34, 211, 238, 0.2)'; e.currentTarget.style.borderColor = 'rgba(34, 211, 238, 0.5)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
                   <div className="stat-header"><span className="stat-label">Cluster Rank</span><Award size={20} color="var(--primary)" /></div>
-                  <div className="stat-value">TOP 15%</div>
+                  <div className="stat-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    TOP 15%
+                    <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(34, 211, 238, 0.1)', borderRadius: '12px', color: '#22d3ee', border: '1px solid rgba(34, 211, 238, 0.3)' }}>View Intelligence</span>
+                  </div>
                   <div className="stat-label">Bhilwara Textile Cluster</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => setIsSubsidyModalOpen(true)} onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(59, 130, 246, 0.2)'; e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
                   <div className="stat-header"><span className="stat-label">Subsidy Status</span><Building2 size={20} color="var(--accent)" /></div>
-                  <div className="stat-value">{typeof govSchemes.tufsStatus === 'object' ? JSON.stringify(govSchemes.tufsStatus) : govSchemes.tufsStatus || 'Eligible'}</div>
+                  <div className="stat-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {typeof govSchemes.tufsStatus === 'object' ? JSON.stringify(govSchemes.tufsStatus) : govSchemes.tufsStatus || 'Eligible'}
+                    <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)' }}>View Intel</span>
+                  </div>
                   <div className="stat-label">TUFS / RIPS Potential</div>
+                  <button className="btn-primary" style={{ width: '100%', marginTop: '1rem', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontSize: '0.8rem', padding: '0.5rem', border: '1px solid rgba(59, 130, 246, 0.3)', fontWeight: 'bold', cursor: 'pointer', borderRadius: '4px' }} onClick={(e) => { e.stopPropagation(); setIsSubsidyModalOpen(true); }}>Check Subsidy Eligibility</button>
                 </div>
               </div>
 
@@ -3014,7 +3063,91 @@ export default function Dashboard() {
                   <h3 className="section-title">Eligible MSME Schemes</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {Array.isArray(govSchemes?.eligibleSchemes) && govSchemes.eligibleSchemes.length > 0 ? govSchemes.eligibleSchemes.map((s, i) => (
-                      <div key={i} style={{ padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderLeft: '3px solid var(--accent)', borderRadius: '8px', fontSize: '0.9rem' }}>
+                      <div key={i} style={{ padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderLeft: '3px solid var(--accent)', borderRadius: '8px', fontSize: '0.9rem', cursor: 'pointer', transition: '0.2s' }} onClick={() => {
+                        alert(`Generating auto-filled application for: ${s}. Connecting to CA portal... Click OK to download draft!`);
+
+                        const doc = new jsPDF();
+
+                        // Government Header
+                        doc.setFillColor(248, 250, 252);
+                        doc.rect(0, 0, 210, 297, 'F');
+                        doc.setTextColor(30, 58, 138);
+                        doc.setFontSize(18);
+                        doc.setFont("helvetica", "bold");
+                        doc.text('GOVERNMENT OF RAJASTHAN', 105, 20, { align: 'center' });
+                        doc.setFontSize(14);
+                        doc.text(s.toUpperCase(), 105, 30, { align: 'center' });
+                        doc.setFontSize(12);
+                        doc.setTextColor(71, 85, 105);
+                        doc.text('Auto-Generated Application Form', 105, 38, { align: 'center' });
+
+                        doc.setDrawColor(203, 213, 225);
+                        doc.line(14, 45, 196, 45);
+
+                        // Form Content
+                        doc.setTextColor(15, 23, 42);
+                        doc.setFontSize(12);
+                        doc.setFont("helvetica", "bold");
+                        doc.text('ENTERPRISE DETAILS (Data Auto-Extracted)', 14, 55);
+
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(11);
+                        const formY = 65;
+                        const lineSpacing = 10;
+
+                        doc.text('Name of Enterprise:', 14, formY);
+                        doc.setFont("helvetica", "bold"); doc.text('Bhilwara Smart Textiles Pvt. Ltd.', 80, formY); doc.setFont("helvetica", "normal");
+
+                        doc.text('Udyam Registration No:', 14, formY + lineSpacing);
+                        doc.setFont("helvetica", "bold"); doc.text('UDYAM-RJ-08-10245', 80, formY + lineSpacing); doc.setFont("helvetica", "normal");
+
+                        doc.text('Registered Address:', 14, formY + (lineSpacing * 2));
+                        doc.text('Plot 42, RIICO Industrial Area, Bhilwara, Rajasthan 311001', 80, formY + (lineSpacing * 2));
+
+                        doc.text('Category of Enterprise:', 14, formY + (lineSpacing * 3));
+                        doc.text('Medium Enterprise (Textile & Technical Textiles)', 80, formY + (lineSpacing * 3));
+
+                        doc.line(14, formY + (lineSpacing * 4), 196, formY + (lineSpacing * 4));
+
+                        doc.setFont("helvetica", "bold");
+                        doc.text('SUBSIDY CLAIM DETAILS', 14, formY + (lineSpacing * 5));
+                        doc.setFont("helvetica", "normal");
+
+                        autoTable(doc, {
+                          startY: formY + (lineSpacing * 5.5),
+                          head: [['Investment Type', 'Amount Invested', 'Eligible Subsidy (%)', 'Claim Amount']],
+                          body: [
+                            ['Plant & Machinery', 'INR 4.0 Crore', '25%', 'INR 1.0 Crore'],
+                            ['Green Energy System', 'INR 1.0 Crore', '20%', 'INR 20 Lakh']
+                          ],
+                          headStyles: { fillColor: [30, 58, 138] },
+                          alternateRowStyles: { fillColor: [241, 245, 249] },
+                          theme: 'grid'
+                        });
+
+                        let finalY = doc.lastAutoTable.finalY || 150;
+
+                        doc.setFont("helvetica", "bold");
+                        doc.text('DECLARATION', 14, finalY + 15);
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+
+                        const declarationText = doc.splitTextToSize("I hereby declare that the information provided above is automatically calculated from real-time secure IoT sensors and ERP logs integrated via the SmartFactory Platform. The generated values are verified against manufacturing production records.", 182);
+                        doc.text(declarationText, 14, finalY + 25);
+
+                        // Stamp & Signature Simulation
+                        doc.setDrawColor(16, 185, 129);
+                        doc.setLineWidth(1);
+                        doc.rect(140, finalY + 45, 50, 25);
+                        doc.setTextColor(16, 185, 129);
+                        doc.text('e-Verified by', 145, finalY + 52);
+                        doc.text('SmartFactory AI', 145, finalY + 58);
+                        doc.text('Date: ' + new Date().toLocaleDateString(), 145, finalY + 66);
+
+                        // Download
+                        const safeFileName = s.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                        doc.save(`${safeFileName}_draft_application.pdf`);
+                      }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'}>
                         <strong>{s}</strong>
                       </div>
                     )) : (
@@ -3024,6 +3157,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="stat-card">
+
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h3 className="section-title" style={{ margin: 0 }}>Strategic ROI Simulator</h3>
                     <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '4px 12px', borderRadius: '20px', border: '1px solid #10b981', color: '#10b981', fontWeight: '900', fontSize: '0.8rem' }}>
@@ -3058,17 +3192,124 @@ export default function Dashboard() {
                       <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', lineHeight: '1.5' }}>
                         Increasing **Automation** to {growthSliders.automation}% while maintaining **Solar** at {growthSliders.solar}% will yield a net margin improvement of ₹{(projectedRoi * 2.5).toFixed(2)} Lakh/Year.
                       </p>
+                    <div style={{ marginTop: '1.5rem' }}>
+                      <h4 style={{ fontSize: '0.85rem', color: '#a5b4fc', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Strategic High-Impact Reports</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                    <div style={{ padding: '1rem', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }} onClick={() => {
+                      alert("Simulating Solar Transition... Projected break-even reduced from 2.5 years to 1.8 years using AI load-balancing. Click OK to download ROI Report.");
+
+                      const doc = new jsPDF();
+                      doc.setFillColor(252, 211, 77); // Amber/Yellow
+                      doc.rect(0, 0, 210, 35, 'F');
+                      doc.setTextColor(30, 41, 59);
+                      doc.setFontSize(22);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('SOLAR TRANSITION ROI SIMULATION', 105, 20, { align: 'center' });
+                      doc.setFontSize(12);
+                      doc.setFont("helvetica", "normal");
+                      doc.text('Financial & Energy Impact Projection', 105, 30, { align: 'center' });
+
+                      doc.setTextColor(30, 41, 59);
+                      doc.setFontSize(14);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('1. Existing Metrics', 14, 50);
+                      doc.setFontSize(11);
+                      doc.setFont("helvetica", "normal");
+                      doc.text(`Current Solar Dependence: ${typeof solar.solarPercentage === 'object' ? JSON.stringify(solar.solarPercentage) : solar.solarPercentage || 0}%`, 14, 60);
+                      doc.text('Current Average Monthly Energy Bill: INR 2.3 Lakhs', 14, 68);
+
+                      doc.setFontSize(14);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('2. Proposed Upgrade: 40% Solar Dependence', 14, 85);
+
+                      autoTable(doc, {
+                        startY: 90,
+                        head: [['Financial Metric', 'Current State', 'Projected State']],
+                        body: [
+                          ['Monthly Energy Bill', 'INR 2,30,000', 'INR 1,45,000'],
+                          ['Monthly Savings', '-', 'INR 85,000'],
+                          ['Annual Savings', '-', 'INR 10,20,000'],
+                          ['Initial System Cost', '-', 'INR 18,36,000'],
+                          ['Estimated Break-Even', 'N/A', '1.8 Years']
+                        ],
+                        headStyles: { fillColor: [99, 102, 241] },
+                        theme: 'striped'
+                      });
+
+                      const finalY = doc.lastAutoTable.finalY + 20;
+                      doc.setFontSize(12);
+                      doc.setTextColor(16, 185, 129);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('✓ AI Insights: Smart Machine Load Balancing will reduce the actual break-even time from 2.5 years to 1.8 years.', 14, finalY);
+
+                      doc.save('Solar_Transition_ROI.pdf');
+                    }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                      <p style={{ fontWeight: '700', marginBottom: '5px' }}>Solar Transition ROI</p>
+                      <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>Current solar at {typeof solar.solarPercentage === 'object' ? JSON.stringify(solar.solarPercentage) : solar.solarPercentage || 0}%. Increasing to 40% will save ₹85,000/month in power costs.</p>
+                    </div>
+                    <div style={{ padding: '1rem', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }} onClick={() => {
+                      alert("Allocating 10 training hours to weavers... Projected Production Efficiency Index (PEI) increase to 89%. Click OK to download Report.");
+
+                      const doc = new jsPDF();
+                      doc.setFillColor(56, 189, 248); // Sky Blue
+                      doc.rect(0, 0, 210, 35, 'F');
+                      doc.setTextColor(15, 23, 42);
+                      doc.setFontSize(22);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('LABOR SKILL IMPACT SIMULATION', 105, 20, { align: 'center' });
+                      doc.setFontSize(12);
+                      doc.setFont("helvetica", "normal");
+                      doc.text('Workforce Intelligence & AI Training Projections', 105, 30, { align: 'center' });
+
+                      doc.setTextColor(30, 41, 59);
+                      doc.setFontSize(14);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('1. Current Workforce Status', 14, 50);
+                      doc.setFontSize(11);
+                      doc.setFont("helvetica", "normal");
+                      doc.text(`Current Workforce Proficiency: ${typeof laborSkill.overallScore === 'object' ? JSON.stringify(laborSkill.overallScore) : laborSkill.overallScore || 0}%`, 14, 60);
+                      doc.text('Current Production Efficiency Index (PEI): 85%', 14, 68);
+
+                      doc.setFontSize(14);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('2. Proposed Intervention', 14, 85);
+
+                      autoTable(doc, {
+                        startY: 90,
+                        head: [['Target Resource', 'Training Allocation', 'Projected Impact']],
+                        body: [
+                          ['Weavers (Grade B)', '10 Hours / Week', '+4% General Machine Speed'],
+                          ['Machine Technicians', '5 Hours / Week', '-12% Machine Downtime'],
+                          ['Floor Supervisors', '2 Hours AI Dashboard', '+8% Quality Control']
+                        ],
+                        headStyles: { fillColor: [14, 165, 233] },
+                        theme: 'grid'
+                      });
+
+                      const finalY = doc.lastAutoTable.finalY + 20;
+                      doc.setFontSize(12);
+                        doc.setTextColor(234, 88, 12);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('✓ Executive Summary: Adding just 10 hours of training raises PEI to 89%, effectively reducing late deliveries by 14%.', 14, finalY, { maxWidth: 180 });
+
+                      doc.save('Labor_Skill_Impact_Report.pdf');
+                    }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                      <p style={{ fontWeight: '700', marginBottom: '5px' }}>Labor Skill Impact</p>
+                      <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>Workers are {typeof laborSkill.overallScore === 'object' ? JSON.stringify(laborSkill.overallScore) : laborSkill.overallScore || 0}% proficient. 10 hours of extra training will boost PEI by 4%.</p>
                     </div>
                   </div>
                 </div>
               </div>
-              <AgentGrid categories={['Core Systems', 'Finance']} title="Strategic Intelligence AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
             </div>
-          )
-        }
+          </div>
+        </div>
+        <AgentGrid categories={['Core Systems', 'Finance']} title="Strategic Intelligence AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
+      </div>
+    )
+  }
 
-        {
-          activeTab === 'agents' && (
+        {activeTab === 'agents' && (
             <div className="agents-panel animate-fade-in" style={{ paddingBottom: '2rem' }}>
               <div className="stat-card" style={{ marginBottom: '1.5rem', background: 'linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -3196,212 +3437,1057 @@ export default function Dashboard() {
           </div>
         )}
 
-        {
-          activeTab === 'gov' && (
-            <div className="gov-panel animate-fade-in">
-              <div className="stat-card" style={{ marginBottom: '1.5rem', background: 'linear-gradient(90deg, #1e293b 0%, #0f172a 100%)', border: '1px solid #0ea5e9' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <div style={{ padding: '12px', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '12px' }}>
-                    <Building2 size={32} color="#0ea5e9" />
+        {activeTab === 'gov' && (
+          <div className="gov-panel animate-fade-in">
+            {/* 🏛️ PREMIUM HERO SECTION WITH LIVE KPI TICKER */}
+            <div className="gov-hero-section" style={{ 
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', 
+              borderRadius: '24px', 
+              padding: '2.5rem', 
+              marginBottom: '2rem',
+              border: '1px solid rgba(14, 165, 233, 0.2)',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
+            }}>
+              <div style={{ position: 'absolute', top: 0, right: 0, width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(14, 165, 233, 0.08) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                  <div style={{ padding: '18px', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '20px', border: '1px solid rgba(14, 165, 233, 0.3)', boxShadow: '0 0 20px rgba(14, 165, 233, 0.2)' }}>
+                    <Building2 size={40} color="#0ea5e9" />
                   </div>
                   <div>
-                    <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Bhilwara MSME Gov-Portal</h2>
-                    <p style={{ opacity: 0.6, margin: 0 }}>Integrated Hub for Textile Subsidies & Benefits</p>
+                    <h1 style={{ fontSize: '2.2rem', fontWeight: '900', margin: 0, letterSpacing: '-0.5px', background: 'linear-gradient(90deg, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                      Bhilwara MSME Gov-Portal
+                    </h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#0ea5e9', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>District Industrial Center (DIC) Integrated</span>
+                      <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#64748b' }}></div>
+                      <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Industry 4.0 Compliance Hub</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Cluster Connectivity</div>
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    {['Udyam', 'RIPS', 'SIDBI', 'GSTN'].map(tag => (
+                      <span key={tag} style={{ fontSize: '0.65rem', fontWeight: '800', padding: '4px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>{tag}</span>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              <div className="charts-grid">
-                <div className="stat-card">
-                  <h3 className="section-title">Active Applications</h3>
-                  {!udyamLinked ? (
-                    <div style={{ opacity: 0.6, textAlign: 'center', padding: '2rem' }}>
-                      <div className="pulse-slow" style={{ width: '60px', height: '60px', margin: '0 auto 1.5rem', background: 'rgba(14, 165, 233, 0.05)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(14, 165, 233, 0.2)' }}>
-                        <Database size={32} color="#0ea5e9" />
-                      </div>
-                      <p style={{ margin: '1rem 0', fontSize: '0.9rem' }}>Gateway Locked: Link your Udyam Aadhar to enable live subsidy tracking.</p>
-                      <button 
-                        className="btn-cyan-gradient" 
-                        style={{ padding: '12px 30px', border: 'none', borderRadius: '8px', color: 'white', fontWeight: '700', cursor: 'pointer', background: 'linear-gradient(90deg, #0ea5e9, #0284c7)', boxShadow: '0 4px 15px rgba(14, 165, 233, 0.3)' }}
-                        onClick={handleUdyamLink}
-                      >
-                        INITIATE UDYAM SYNC
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {govApplications.map(app => (
-                        <div key={app.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', borderLeft: '3px solid var(--accent)' }}>
-                          <div>
-                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{app.name}</div>
-                            <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>ID: {app.id} | Applied on: {app.date}</div>
-                          </div>
-                          <span style={{ fontSize: '0.65rem', background: app.status === 'Approved' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)', color: app.status === 'Approved' ? '#10b981' : '#f59e0b', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>{app.status}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              {/* LIVE KPI TICKER */}
+              <div style={{ marginTop: '2.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', padding: '12px 20px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', fontWeight: '900', color: '#10b981', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '20px' }}>
+                  <TrendingUp size={16} /> TEXTILE INDEX
                 </div>
-                <div className="stat-card">
-                  <h3 className="section-title">Cluster Notifications</h3>
-                  <div className="recommendations-list">
-                    <div className="alert alert-info" style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '8px', fontSize: '0.85rem' }}>New Rajasthan Energy Policy (2024) released for Textile Clusters.</div>
-                    <div className="alert alert-info" style={{ padding: '1rem', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '8px', fontSize: '0.85rem' }}>Deadline for SITP Interest Subvention: Oct 31st.</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="stat-card" style={{ marginTop: '1.5rem', background: 'linear-gradient(rgba(14, 165, 233, 0.1), transparent)' }}>
-                <h3 className="section-title" style={{ color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Factory size={22} /> Rajasthan MSME Policy Support
-                </h3>
-                <div className="stats-grid" style={{ marginTop: '2rem' }}>
-                  <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
-                    <div style={{ fontWeight: '800', color: '#0ea5e9' }}>PMEGP Eligibility</div>
-                    <div style={{ fontSize: '1.2rem', margin: '0.5rem 0' }}>{govSchemes.pmegpEligible ? 'Qualified ' : 'Qualified'}</div>
-                    <div style={{ fontSize: '0.75rem', opacity: 0.5 }}>Subsidy: Up to 35% of project cost.</div>
-                  </div>
-                  <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
-                    <div style={{ fontWeight: '800', color: '#0ea5e9' }}>CLCSS (Tech Upgrade)</div>
-                    <div style={{ fontSize: '1.2rem', margin: '0.5rem 0' }}>High Probability</div>
-                    <div style={{ fontSize: '0.75rem', opacity: 0.5 }}>15% capital subsidy for machinery.</div>
-                  </div>
-                  <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
-                    <div style={{ fontWeight: '800', color: '#0ea5e9' }}>RIPS 2022 Benefits</div>
-                    <div style={{ fontSize: '1.2rem', margin: '0.5rem 0' }}>Eligible (Textile Focus)</div>
-                    <div style={{ fontSize: '0.75rem', opacity: 0.5 }}>Electricity duty & Land tax exemptions.</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="stat-card" style={{ marginTop: '1.5rem', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 78, 59, 0.05) 100%)', border: '1px solid rgba(16, 185, 129, 0.2)', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                  <div>
-                    <h3 className="section-title" style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
-                      <BrainCircuit size={22} /> AI Scheme Intelligence Center
-                    </h3>
-                    <p style={{ fontSize: '0.8rem', opacity: 0.6, marginTop: '5px' }}>Cross-referencing Factory Telemetry with Rajasthan RIPS 2022 Policies</p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#10b981', letterSpacing: '1px' }}>SYSTEM UPTIME: 99.9%</div>
-                    <div style={{ fontSize: '0.6rem', opacity: 0.5 }}>Last Policy Sync: 12-MAR-2026</div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                  {/* Left: Interactive Eligibility Scanner */}
-                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '1px' }}>GRANT PROBABILITY SCORE</span>
-                      <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#10b981' }}>{grantProbability}%</span>
-                    </div>
-                    
-                    <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', marginBottom: '1.5rem' }}>
-                      <div style={{ width: `${grantProbability}%`, height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)', transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)' }}></div>
-                    </div>
-
-                    {isScanningSchemes ? (
-                      <div className="animate-fade-in" style={{ fontSize: '0.8rem' }}>
-                        {scanSteps.map((step, i) => (
-                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#10b981', opacity: i === scanSteps.length - 1 ? 1 : 0.5 }}>
-                            <div className="spin" style={{ width: '12px', height: '12px', border: '2px solid transparent', borderTopColor: '#10b981', borderRadius: '50%' }}></div>
-                            {step}...
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div style={{ textAlign: 'center' }}>
-                         <p style={{ fontSize: '0.85rem', opacity: 0.8, marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                          Based on your **PEI ({renderSafeValue(executiveSummary.pei)}%)**, **ZLD Compliance**, and **Solar Offset**, you are in the top 5% of eligible factories for the **Textile Excellence Subsidy**.
-                        </p>
-                        <button 
-                          className="btn-primary" 
-                          style={{ width: '100%', background: '#10b981', color: 'black', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-                          onClick={handleSchemeScan}
-                        >
-                          RERUN ELIGIBILITY DEEP-SCAN
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right: Live Rajasthan Scheme Feed */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#94a3b8', letterSpacing: '1px' }}>LIVE BHILWARA FEED</div>
+                <div className="ticker-wrap" style={{ flex: 1, overflow: 'hidden' }}>
+                  <div className="ticker-content" style={{ display: 'flex', gap: '40px', animation: 'ticker 30s linear infinite' }}>
                     {[
-                      { title: "RIPS 2022 Electricity Exemption", benefit: "100% Duty Waiver", risk: "Low", icon: <Zap size={16} /> },
-                      { title: "ZED Certification Subsidy", benefit: "90% Cost Refund", risk: "Immediate", icon: <Award size={16} /> },
-                      { title: "Textile Skill Development Fund", benefit: "₹15,000 / Karigar", risk: "High", icon: <Users size={16} /> }
-                    ].map((scheme, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'transform 0.2s' }} onClick={() => setSelectedScheme(scheme)}>
-                        <div style={{ padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', color: '#10b981' }}>{scheme.icon}</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{scheme.title}</div>
-                          <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>Benefit: {scheme.benefit}</div>
-                        </div>
-                        <span style={{ fontSize: '0.6rem', padding: '2px 6px', borderRadius: '4px', background: scheme.risk === 'Immediate' ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: scheme.risk === 'Immediate' ? '#f43f5e' : '#10b981' }}>{scheme.risk}</span>
+                      { label: 'RIPS 2022 Interest Rate', val: '5.0%', trend: 'Fixed' },
+                      { label: 'Cotton Yarn (Bhilwara)', val: '₹242/kg', trend: '+1.2%' },
+                      { label: 'Solar Subvention Gap', val: '12%', trend: '-2.1%' },
+                      { label: 'Export Credit Limit', val: '₹5.0Cr', trend: 'Base' },
+                      { label: 'GST Input Refund Avg', val: '14 Days', trend: '-2 Days' },
+                      { label: 'DIC Clearance Rate', val: '98.2%', trend: '+0.5%' },
+                    ].map((kpi, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600' }}>{kpi.label}:</span>
+                        <span style={{ fontSize: '0.8rem', color: '#e2e8f0', fontWeight: '800' }}>{kpi.val}</span>
+                        <span style={{ fontSize: '0.65rem', color: kpi.trend.includes('+') ? '#10b981' : kpi.trend.includes('-') ? '#f43f5e' : '#0ea5e9', fontWeight: '700' }}>{kpi.trend}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-
-                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
-                  <button className="btn-primary" style={{ background: 'transparent', color: '#10b981', border: '1px solid #10b981', padding: '8px 20px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold' }} onClick={handleDownloadReport}>Download AI Compliance Report (PDF)</button>
-                </div>
               </div>
+            </div>
 
-              {/* HACKATHON WINNER: GenAI Auto-Filler */}
-              <div className="stat-card" style={{ marginTop: '1.5rem', background: 'linear-gradient(rgba(236, 72, 153, 0.1), transparent)', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h3 className="section-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: '#ec4899' }}>
-                    <Wand2 size={22} /> GenAI Subsidy Auto-Filler
+            <div className="stat-card" style={{ marginTop: '1.5rem', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 78, 59, 0.05) 100%)', border: '1px solid rgba(16, 185, 129, 0.2)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <div>
+                  <h3 className="section-title" style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+                    <BrainCircuit size={22} /> AI Scheme Intelligence Center
                   </h3>
-                  {subsidyDraftStatus === 'drafting' && (
-                    <div style={{ fontSize: '0.75rem', color: '#ec4899', fontWeight: 'bold' }}>DRAFTING {draftProgress}%</div>
-                  )}
-                  {subsidyDraftStatus === 'completed' && (
-                    <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 'bold' }}>COMPLETED!</div>
-                  )}
+                  <p style={{ fontSize: '0.8rem', opacity: 0.6, marginTop: '5px' }}>Cross-referencing Factory Telemetry with Rajasthan RIPS 2022 Policies</p>
                 </div>
-                
-                {subsidyDraftStatus === 'drafting' ? (
-                  <div style={{ width: '100%', height: '4px', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '2px', overflow: 'hidden', marginBottom: '1.5rem' }}>
-                    <div style={{ width: `${draftProgress}%`, height: '100%', background: '#ec4899', transition: 'width 0.3s' }}></div>
-                  </div>
-                ) : (
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                    Tired of complex government forms? Our Generative AI reads your factory's live data (production, power, employment) and instantly drafts the Rajasthan RIPS 2022 subsidy application.
-                  </p>
-                )}
-
-                <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
-                   {subsidyDraftStatus !== 'completed' ? (
-                    <button
-                      className="btn-primary"
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ec4899', color: 'white', fontWeight: 'bold', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: subsidyDraftStatus === 'drafting' ? 'not-allowed' : 'pointer', opacity: subsidyDraftStatus === 'drafting' ? 0.7 : 1 }}
-                      disabled={subsidyDraftStatus === 'drafting'}
-                      onClick={handleGenAiSubsidy}
-                    >
-                      <Bot size={18} /> {subsidyDraftStatus === 'drafting' ? 'PROCESSING DATA...' : 'GENERATE RIPS APPLICATION'}
-                    </button>
-                   ) : (
-                    <button
-                      className="btn-primary"
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#10b981', color: 'white', fontWeight: 'bold', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
-                      onClick={() => alert('Opening Rajasthan Gov Portal for submission... (Simulated)')}
-                    >
-                      <CheckCircle2 size={18} /> SUBMIT TO RAJASTHAN GOV PORTAL
-                    </button>
-                   )}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#10b981', letterSpacing: '1px' }}>SYSTEM UPTIME: 99.9%</div>
+                  <div style={{ fontSize: '0.6rem', opacity: 0.5 }}>Last Policy Sync: 12-MAR-2026</div>
                 </div>
               </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '1px' }}>GRANT PROBABILITY SCORE</span>
+                    <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#10b981' }}>{grantProbability}%</span>
+                  </div>
+                  <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', marginBottom: '1.5rem' }}>
+                    <div style={{ width: `${grantProbability}%`, height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)', transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)' }}></div>
+                  </div>
+                  {isScanningSchemes ? (
+                    <div className="animate-fade-in" style={{ fontSize: '0.8rem' }}>
+                      {scanSteps.map((step, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#10b981', opacity: i === scanSteps.length - 1 ? 1 : 0.5 }}>
+                          <div className="spin" style={{ width: '12px', height: '12px', border: '2px solid transparent', borderTopColor: '#10b981', borderRadius: '50%' }}></div>
+                          {step}...
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center' }}>
+                       <p style={{ fontSize: '0.85rem', opacity: 0.8, marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                        Based on your **PEI ({renderSafeValue(executiveSummary.pei)}%)**, **ZLD Compliance**, and **Solar Offset**, you are in the top 5% of eligible factories for the **Textile Excellence Subsidy**.
+                      </p>
+                      <button className="btn-primary" style={{ width: '100%', background: '#10b981', color: 'black', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }} onClick={handleSchemeScan}>RERUN ELIGIBILITY DEEP-SCAN</button>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#94a3b8', letterSpacing: '1px' }}>LIVE BHILWARA FEED</div>
+                  {[
+                    { title: "RIPS 2022 Electricity Exemption", benefit: "100% Duty Waiver", risk: "Low", icon: <Zap size={16} /> },
+                    { title: "ZED Certification Subsidy", benefit: "90% Cost Refund", risk: "Immediate", icon: <Award size={16} /> },
+                    { title: "Textile Skill Development Fund", benefit: "₹15,000 / Karigar", risk: "High", icon: <Users size={16} /> }
+                  ].map((scheme, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'transform 0.2s' }} onClick={() => setSelectedScheme(scheme)}>
+                      <div style={{ padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', color: '#10b981' }}>{scheme.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{scheme.title}</div>
+                        <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>Benefit: {scheme.benefit}</div>
+                      </div>
+                      <span style={{ fontSize: '0.6rem', padding: '2px 6px', borderRadius: '4px', background: scheme.risk === 'Immediate' ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: scheme.risk === 'Immediate' ? '#f43f5e' : '#10b981' }}>{scheme.risk}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                <button className="btn-primary" style={{ background: 'transparent', color: '#10b981', border: '1px solid #10b981', padding: '8px 20px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold' }} onClick={handleDownloadReport}>Download AI Compliance Report (PDF)</button>
+              </div>
+            </div>
+
+            <div className="stat-card" style={{ marginTop: '1.5rem', background: 'linear-gradient(rgba(236, 72, 153, 0.1), transparent)', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 className="section-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: '#ec4899' }}>
+                  <Wand2 size={22} /> GenAI Subsidy Auto-Filler
+                </h3>
+                {subsidyDraftStatus === 'drafting' && (
+                  <div style={{ fontSize: '0.75rem', color: '#ec4899', fontWeight: 'bold' }}>DRAFTING {draftProgress}%</div>
+                )}
+                {subsidyDraftStatus === 'completed' && (
+                  <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 'bold' }}>COMPLETED!</div>
+                )}
+              </div>
+              
+              {subsidyDraftStatus === 'drafting' ? (
+                <div style={{ width: '100%', height: '4px', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '2px', overflow: 'hidden', marginBottom: '1.5rem' }}>
+                  <div style={{ width: `${draftProgress}%`, height: '100%', background: '#ec4899', transition: 'width 0.3s' }}></div>
+                </div>
+              ) : (
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                  Tired of complex government forms? Our Generative AI reads your factory's live data (production, power, employment) and instantly drafts the Rajasthan RIPS 2022 subsidy application.
+                </p>
+              )}
+
+              <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
+                 {subsidyDraftStatus !== 'completed' ? (
+                  <button
+                    className="btn-primary"
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ec4899', color: 'white', fontWeight: 'bold', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: subsidyDraftStatus === 'drafting' ? 'not-allowed' : 'pointer', opacity: subsidyDraftStatus === 'drafting' ? 0.7 : 1 }}
+                    disabled={subsidyDraftStatus === 'drafting'}
+                    onClick={handleGenAiSubsidy}
+                  >
+                    <Bot size={18} /> {subsidyDraftStatus === 'drafting' ? 'PROCESSING DATA...' : 'GENERATE RIPS APPLICATION'}
+                  </button>
+                 ) : (
+                  <button
+                    className="btn-primary"
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#10b981', color: 'white', fontWeight: 'bold', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
+                    onClick={() => alert('Opening Rajasthan Gov Portal for submission... (Simulated)')}
+                  >
+                    <CheckCircle2 size={18} /> SUBMIT TO RAJASTHAN GOV PORTAL
+                  </button>
+                 )}
+              </div>
+            </div>
+
+              {/* ═══════════════════════════════════════════════════════════
+                   ADVANCED INDUSTRY-GRADE SECTIONS — MASSIVE UPGRADE
+              ═══════════════════════════════════════════════════════════ */}
+
+              {/* SECTION: Application Pipeline Tracker */}
+              <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
+                <div className="gov-section-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div className="gov-icon-badge" style={{ background: 'rgba(99,102,241,0.15)', color: '#6366f1' }}>
+                      <TrendingUp size={20} />
+                    </div>
+                    <div>
+                      <div className="gov-section-title">Application Pipeline Tracker</div>
+                      <div className="gov-section-subtitle">Real-time status across all submitted schemes</div>
+                    </div>
+                  </div>
+                  <div className="gov-live-badge">● LIVE</div>
+                </div>
+
+                {/* Pipeline Status Bar */}
+                <div className="pipeline-container">
+                  {[
+                    { label: 'Applied', count: 3, color: '#6366f1', icon: '📋' },
+                    { label: 'Under Review', count: 2, color: '#f59e0b', icon: '🔍' },
+                    { label: 'Field Verification', count: 1, color: '#0ea5e9', icon: '🏭' },
+                    { label: 'Approved', count: 1, color: '#10b981', icon: '✅' },
+                    { label: 'Disbursed', count: 1, color: '#34d399', icon: '💰' }
+                  ].map((stage, i) => (
+                    <div key={i} className="pipeline-stage">
+                      <div className="pipeline-bubble" style={{ background: `rgba(${stage.color === '#6366f1' ? '99,102,241' : stage.color === '#f59e0b' ? '245,158,11' : stage.color === '#0ea5e9' ? '14,165,233' : stage.color === '#10b981' ? '16,185,129' : '52,211,153'},0.15)`, border: `1px solid ${stage.color}`, color: stage.color }}>
+                        <span style={{ fontSize: '1.2rem' }}>{stage.icon}</span>
+                        <span className="pipeline-count" style={{ color: stage.color }}>{stage.count}</span>
+                      </div>
+                      <div className="pipeline-label">{stage.label}</div>
+                      {i < 4 && <div className="pipeline-connector" style={{ background: `linear-gradient(90deg, ${stage.color}, ${['#6366f1', '#f59e0b', '#0ea5e9', '#10b981', '#34d399'][i + 1]})` }}></div>}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Application Table */}
+                <div className="gov-table-wrap">
+                  <table className="gov-table">
+                    <thead>
+                      <tr>
+                        <th>Scheme Name</th>
+                        <th>Application ID</th>
+                        <th>Applied Date</th>
+                        <th>Scheme Value</th>
+                        <th>Stage</th>
+                        <th>Est. Disbursal</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { name: 'RIPS 2022 Interest Subvention', id: 'APP1024', date: '01-Mar-2026', value: '₹18.5L', stage: 'Under Review', stageColor: '#f59e0b', disbursal: 'Apr 2026' },
+                        { name: 'Solar Grid Subsidy (Phase 1)', id: 'APP1055', date: '15-Feb-2026', value: '₹12.0L', stage: 'Approved', stageColor: '#10b981', disbursal: 'Mar 2026' },
+                        { name: 'ZED Certification Grant', id: 'APP1067', date: '10-Feb-2026', value: '₹3.6L', stage: 'Field Verification', stageColor: '#0ea5e9', disbursal: 'May 2026' },
+                        { name: 'CLCSS Machinery Upgrade', id: 'APP1078', date: '20-Jan-2026', value: '₹28.0L', stage: 'Applied', stageColor: '#6366f1', disbursal: 'Jun 2026' },
+                        { name: 'Textile Skill Dev. Fund', id: 'APP0998', date: '05-Jan-2026', value: '₹4.5L', stage: 'Disbursed', stageColor: '#34d399', disbursal: 'Completed ✓' },
+                      ].map((row, i) => (
+                        <tr key={i} className="gov-table-row">
+                          <td style={{ fontWeight: '600', color: '#e2e8f0' }}>{row.name}</td>
+                          <td><span className="gov-id-badge">{row.id}</span></td>
+                          <td style={{ color: '#94a3b8' }}>{row.date}</td>
+                          <td style={{ fontWeight: '700', color: '#34d399' }}>{row.value}</td>
+                          <td><span className="gov-status-pill" style={{ background: `${row.stageColor}20`, color: row.stageColor, border: `1px solid ${row.stageColor}40` }}>{row.stage}</span></td>
+                          <td style={{ color: '#94a3b8' }}>{row.disbursal}</td>
+                          <td>
+                            <button className="gov-action-btn" onClick={() => alert(`Viewing details for ${row.id}`)}>View →</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* SECTION: Subsidy Savings Dashboard */}
+              <div className="gov-section-card gov-savings-card" style={{ marginTop: '1.5rem' }}>
+                <div className="gov-section-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div className="gov-icon-badge" style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}>
+                      <Award size={20} />
+                    </div>
+                    <div>
+                      <div className="gov-section-title">Subsidy Savings Impact Dashboard</div>
+                      <div className="gov-section-subtitle">Total government benefit unlocked for your factory</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="savings-kpi-grid">
+                  {[
+                    { label: 'Total Applied Value', value: '₹66.6L', sub: 'Across 5 active schemes', color: '#6366f1', icon: '📊' },
+                    { label: 'Confirmed Savings', value: '₹16.5L', sub: 'Approved + Disbursed', color: '#10b981', icon: '✅' },
+                    { label: 'Pending Benefit', value: '₹50.1L', sub: 'Under review / Processing', color: '#f59e0b', icon: '⏳' },
+                    { label: 'Electricity Duty Saved', value: '₹8.2L/yr', sub: 'RIPS 2022 exemption', color: '#0ea5e9', icon: '⚡' },
+                  ].map((kpi, i) => (
+                    <div key={i} className="savings-kpi-card" style={{ borderTop: `3px solid ${kpi.color}` }}>
+                      <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>{kpi.icon}</div>
+                      <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{kpi.label}</div>
+                      <div style={{ fontSize: '1.6rem', fontWeight: '900', color: kpi.color }}>{kpi.value}</div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>{kpi.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Savings Breakdown Bar */}
+                <div style={{ marginTop: '1.5rem' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase' }}>Scheme-wise Benefit Allocation</div>
+                  <div style={{ height: '28px', borderRadius: '14px', overflow: 'hidden', display: 'flex', gap: '2px' }}>
+                    {[
+                      { pct: 28, color: '#6366f1', label: 'RIPS' },
+                      { pct: 18, color: '#0ea5e9', label: 'Solar' },
+                      { pct: 42, color: '#8b5cf6', label: 'CLCSS' },
+                      { pct: 5, color: '#10b981', label: 'ZED' },
+                      { pct: 7, color: '#34d399', label: 'Skill' },
+                    ].map((seg, i) => (
+                      <div key={i} style={{ flex: seg.pct, background: seg.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: '700', color: 'white', minWidth: '30px', transition: 'flex 0.8s ease', cursor: 'default' }} title={`${seg.label}: ${seg.pct}%`}>
+                        {seg.pct > 10 ? `${seg.label} ${seg.pct}%` : ''}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '8px', flexWrap: 'wrap' }}>
+                    {[{ label: 'RIPS 2022', color: '#6366f1' }, { label: 'Solar', color: '#0ea5e9' }, { label: 'CLCSS', color: '#8b5cf6' }, { label: 'ZED', color: '#10b981' }, { label: 'Skill Fund', color: '#34d399' }].map((l, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#94a3b8' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: l.color }}></div>
+                        {l.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: Compliance Calendar */}
+              <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
+                <div className="gov-section-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div className="gov-icon-badge" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
+                      <Activity size={20} />
+                    </div>
+                    <div>
+                      <div className="gov-section-title">Compliance & Deadline Calendar</div>
+                      <div className="gov-section-subtitle">AI-monitored critical dates for your registered schemes</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: '700', background: 'rgba(245,158,11,0.1)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(245,158,11,0.3)' }}>⚠ 2 URGENT</div>
+                </div>
+
+                <div className="calendar-grid">
+                  {[
+                    { date: '31 Mar', scheme: 'RIPS 2022 – Annual Return Submission', urgency: 'CRITICAL', daysLeft: 17, color: '#ef4444', action: 'File Now' },
+                    { date: '10 Apr', scheme: 'ZED Audit Documentation Upload', urgency: 'URGENT', daysLeft: 27, color: '#f59e0b', action: 'Prepare' },
+                    { date: '30 Apr', scheme: 'Solar Subsidy Phase 1 – Equipment Invoice', urgency: 'UPCOMING', daysLeft: 47, color: '#0ea5e9', action: 'Review' },
+                    { date: '31 May', scheme: 'CLCSS – Progress Report Submission', urgency: 'SCHEDULED', daysLeft: 78, color: '#6366f1', action: 'Schedule' },
+                    { date: '31 Oct', scheme: 'SITP Interest Subvention Deadline', urgency: 'SCHEDULED', daysLeft: 231, color: '#94a3b8', action: 'Noted' },
+                  ].map((item, i) => (
+                    <div key={i} className="calendar-item" style={{ borderLeft: `3px solid ${item.color}` }}>
+                      <div className="calendar-date-box" style={{ background: `${item.color}15`, border: `1px solid ${item.color}40` }}>
+                        <div style={{ fontSize: '1.1rem', fontWeight: '900', color: item.color }}>{item.date.split(' ')[0]}</div>
+                        <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{item.date.split(' ')[1]}</div>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600', fontSize: '0.88rem', marginBottom: '4px', color: '#e2e8f0' }}>{item.scheme}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: '700', color: item.color, background: `${item.color}15`, padding: '2px 6px', borderRadius: '4px' }}>{item.urgency}</span>
+                          <span style={{ fontSize: '0.65rem', color: '#64748b' }}>{item.daysLeft} days remaining</span>
+                        </div>
+                      </div>
+                      <button className="gov-action-btn" style={{ background: `${item.color}15`, color: item.color, border: `1px solid ${item.color}30` }} onClick={() => alert(`Action: ${item.action} for ${item.scheme}`)}>{item.action}</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SECTION: Premium Policy Matrix */}
+              <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
+                <div className="gov-section-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div className="gov-icon-badge" style={{ background: 'rgba(139,92,246,0.15)', color: '#8b5cf6' }}>
+                      <Factory size={20} />
+                    </div>
+                    <div>
+                      <div className="gov-section-title">Rajasthan Scheme Eligibility Matrix</div>
+                      <div className="gov-section-subtitle">AI-scored suitability for your factory profile</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="policy-matrix-grid">
+                  {[
+                    { name: 'RIPS 2022', fullName: 'Rajasthan Investment Promotion Scheme', eligibility: 95, category: 'Capital Subsidy', benefit: '₹18–25L', status: 'Active', color: '#6366f1', features: ['Electricity Duty Waiver', 'Land Tax Exemption', 'Interest Subvention @5%', 'Employment Incentive'] },
+                    { name: 'CLCSS', fullName: 'Credit Linked Capital Subsidy Scheme', eligibility: 88, category: 'Machinery Upgrade', benefit: '₹28L', status: 'Applied', color: '#0ea5e9', features: ['15% Capital Subsidy', 'Up to ₹15L ceiling', 'SIDBI Nodal Agency', 'Textile Focus Priority'] },
+                    { name: 'PMEGP', fullName: 'Prime Minister Employment Generation', eligibility: 92, category: 'Enterprise Subsidy', benefit: '₹35%', status: 'Eligible', color: '#10b981', features: ['35% Urban Subsidy', 'Credit facility via Banks', 'KVIC Implementation', 'SC/ST Priority'] },
+                    { name: 'ZED', fullName: 'Zero Defect Zero Effect Scheme', eligibility: 78, category: 'Quality Certification', benefit: '₹3.6L', status: 'In Progress', color: '#f59e0b', features: ['90% Cost Refund', 'Quality Stamp', 'Export Market Access', 'Rating Certificate'] },
+                    { name: 'SITP', fullName: 'Scheme for Integrated Textile Parks', eligibility: 65, category: 'Cluster Development', benefit: 'Infrastructure', status: 'Available', color: '#ec4899', features: ['Plug & Play Factory', 'Common Infrastructure', 'Logistics Support', 'Skill Centre Access'] },
+                    { name: 'TSDF', fullName: 'Textile Skill Development Fund', eligibility: 99, category: 'Worker Upskilling', benefit: '₹15K/Worker', status: 'Approved', color: '#34d399', features: ['₹15,000 per Karigar', 'Govt Certified Training', 'Digital Skill Modules', 'Attendance Incentive'] },
+                  ].map((policy, i) => (
+                    <div key={i} className="policy-card" style={{ borderTop: `3px solid ${policy.color}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                        <div>
+                          <div style={{ fontSize: '1.1rem', fontWeight: '900', color: policy.color }}>{policy.name}</div>
+                          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>{policy.fullName}</div>
+                        </div>
+                        <span style={{ fontSize: '0.6rem', fontWeight: '700', padding: '3px 8px', borderRadius: '20px', background: `${policy.color}20`, color: policy.color, border: `1px solid ${policy.color}40`, whiteSpace: 'nowrap' }}>{policy.status}</span>
+                      </div>
+
+                      {/* Eligibility Score Bar */}
+                      <div style={{ marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginBottom: '4px' }}>
+                          <span style={{ color: '#94a3b8' }}>AI Eligibility Score</span>
+                          <span style={{ color: policy.color, fontWeight: '700' }}>{policy.eligibility}%</span>
+                        </div>
+                        <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ width: `${policy.eligibility}%`, height: '100%', background: `linear-gradient(90deg, ${policy.color}, ${policy.color}aa)`, borderRadius: '3px', boxShadow: `0 0 8px ${policy.color}60`, transition: 'width 1s ease' }}></div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.75rem' }}>
+                        <div>
+                          <div style={{ color: '#64748b' }}>Category</div>
+                          <div style={{ color: '#e2e8f0', fontWeight: '600' }}>{policy.category}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ color: '#64748b' }}>Max Benefit</div>
+                          <div style={{ color: policy.color, fontWeight: '800' }}>{policy.benefit}</div>
+                        </div>
+                      </div>
+
+                      <div style={{ marginBottom: '14px' }}>
+                        {policy.features.map((f, fi) => (
+                          <div key={fi} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: '#94a3b8', marginBottom: '3px' }}>
+                            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: policy.color, flexShrink: 0 }}></div>
+                            {f}
+                          </div>
+                        ))}
+                      </div>
+
+                      <button className="gov-apply-btn" style={{ background: `linear-gradient(135deg, ${policy.color}20, ${policy.color}10)`, border: `1px solid ${policy.color}50`, color: policy.color }} onClick={() => alert(`Initiating application for ${policy.name}`)}>
+                        {policy.status === 'Applied' || policy.status === 'In Progress' ? '📋 Track Application' : policy.status === 'Approved' ? '✅ Download Sanction Letter' : '⚡ Apply Now'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SECTION: Gov Contacts & Fast Track */}
+              <div className="gov-section-card" style={{ marginTop: '1.5rem' }}>
+                <div className="gov-section-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div className="gov-icon-badge" style={{ background: 'rgba(14,165,233,0.15)', color: '#0ea5e9' }}>
+                      <Landmark size={20} />
+                    </div>
+                    <div>
+                      <div className="gov-section-title">Bhilwara Gov. Contact Directory & Fast-Track Portals</div>
+                      <div className="gov-section-subtitle">Direct access to district offices and online government portals</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="contacts-grid">
+                  {[
+                    { name: 'District Industries Centre', short: 'DIC Bhilwara', phone: '01482-230710', email: 'dic.bhilwara@rajasthan.gov.in', role: 'RIPS, PMEGP, CLCSS Nodal Office', color: '#6366f1', link: 'https://industries.rajasthan.gov.in' },
+                    { name: 'MSME Development Institute', short: 'MSME-DI Jaipur', phone: '0141-2390557', email: 'msmedi-jaipur@dcmsme.gov.in', role: 'Technology & Capacity Building', color: '#0ea5e9', link: 'https://msme.gov.in' },
+                    { name: 'Rajasthan RCSS Portal', short: 'Single Window', phone: '0141-2385562', email: 'helpdesk.rajnivesh@rajasthan.gov.in', role: 'All Clearances & NOC Gateway', color: '#10b981', link: 'https://rajnivesh.rajasthan.gov.in' },
+                    { name: 'ZED Certification Authority', short: 'QCI–ZED', phone: '011-23357820', email: 'zed@qcin.org', role: 'Zero Defect Certification Body', color: '#f59e0b', link: 'https://zed.org.in' },
+                  ].map((c, i) => (
+                    <div key={i} className="contact-card" style={{ borderLeft: `3px solid ${c.color}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#e2e8f0' }}>{c.name}</div>
+                          <div style={{ fontSize: '0.7rem', color: c.color, fontWeight: '600' }}>{c.short}</div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '10px', fontStyle: 'italic' }}>{c.role}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px' }}>
+                        <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>📞 {c.phone}</div>
+                        <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>✉️ {c.email}</div>
+                      </div>
+                      <button className="gov-apply-btn" style={{ background: `${c.color}15`, border: `1px solid ${c.color}40`, color: c.color, width: '100%' }} onClick={() => window.open(c.link, '_blank')}>
+                        🌐 Open Portal →
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Links Row */}
+                <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(14,165,233,0.05)', borderRadius: '12px', border: '1px solid rgba(14,165,233,0.15)' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>⚡ Fast-Track Direct Links</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {[
+                      { label: 'Udyam Registration', url: 'https://udyamregistration.gov.in' },
+                      { label: 'RIPS 2022 Portal', url: 'https://invest.rajasthan.gov.in' },
+                      { label: 'SIDBI CLCSS', url: 'https://www.sidbi.in' },
+                      { label: 'GST E-Invoice', url: 'https://einvoice1.gst.gov.in' },
+                      { label: 'TReDS Platform', url: 'https://www.m1xchange.com' },
+                      { label: 'NSIC Tender Portal', url: 'https://nsic.co.in' },
+                    ].map((link, i) => (
+                      <button key={i} onClick={() => window.open(link.url, '_blank')} style={{ background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.2)', color: '#0ea5e9', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.2)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                        onMouseOut={e => { e.currentTarget.style.background = 'rgba(14,165,233,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                      >
+                        {link.label} ↗
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <AgentGrid categories={['Finance']} title="Finance & Sector Analytics AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
             </div>
-          )
-        }
+        )}
 
-      </main >
-    </div >
+      </main>
+
+      {/* MSME Growth Score Modal */}
+      {
+        isMsmeModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsMsmeModalOpen(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={() => setIsMsmeModalOpen(false)}>✕</button>
+
+              <div className="modal-header">
+                <div className="modal-title">Overall Transformation Index</div>
+                <div className="modal-score-wrap">
+                  <div className="modal-score-glow"></div>
+                  <div className="modal-score">78<span> / 100</span></div>
+                </div>
+              </div>
+
+              <div className="modal-grid">
+                <div className="metric-card" style={{ '--metric-color': '#10b981' }}>
+                  <div className="metric-icon">📈</div>
+                  <div className="metric-content">
+                    <div className="metric-title">Production Efficiency</div>
+                    <div className="metric-value">
+                      82%
+                      <div className="circular-progress" style={{ '--progress': '82%' }}></div>
+                    </div>
+                    <div className="metric-desc">Machines running efficiently with minimal downtime.</div>
+                  </div>
+                </div>
+
+                <div className="metric-card" style={{ '--metric-color': '#f59e0b' }}>
+                  <div className="metric-icon">⚡</div>
+                  <div className="metric-content">
+                    <div className="metric-title">Energy Efficiency</div>
+                    <div className="metric-value">
+                      70%
+                      <div className="circular-progress" style={{ '--progress': '70%' }}></div>
+                    </div>
+                    <div className="metric-desc">High electricity usage detected, optimization recommended.</div>
+                  </div>
+                </div>
+
+                <div className="metric-card" style={{ '--metric-color': '#10b981' }}>
+                  <div className="metric-icon">👷</div>
+                  <div className="metric-content">
+                    <div className="metric-title">Workforce Productivity</div>
+                    <div className="metric-value">
+                      85%
+                      <div className="circular-progress" style={{ '--progress': '85%' }}></div>
+                    </div>
+                    <div className="metric-desc">Worker productivity is above the cluster average.</div>
+                  </div>
+                </div>
+
+                <div className="metric-card" style={{ '--metric-color': '#10b981' }}>
+                  <div className="metric-icon">💰</div>
+                  <div className="metric-content">
+                    <div className="metric-title">Financial Stability</div>
+                    <div className="metric-value">
+                      75%
+                      <div className="circular-progress" style={{ '--progress': '75%' }}></div>
+                    </div>
+                    <div className="metric-desc">Factory shows stable profit growth and positive cash flow.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-recommendations">
+                <div className="rec-title">
+                  <Bot size={20} /> AI Strategic Recommendations
+                </div>
+                <ul className="rec-list">
+                  <li className="rec-item">Install solar hybrid energy system to boost Energy Efficiency score.</li>
+                  <li className="rec-item">Upgrade 2 old weaving machines to reduce unexpected downtime.</li>
+                  <li className="rec-item">Provide worker skill training to further increase productivity yields.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Cluster AI Modal */}
+      {
+        isClusterModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsClusterModalOpen(false)}>
+            <div className="cluster-modal-content" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={() => setIsClusterModalOpen(false)}>✕</button>
+
+              <div className="modal-header" style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem' }}>
+                <div className="modal-title" style={{ color: '#22d3ee', fontSize: '1.2rem', marginBottom: '0.5rem' }}>Cluster AI – Industrial Benchmark Intelligence</div>
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>AI-powered comparison of factory performance across the entire industrial cluster.</p>
+              </div>
+
+              <div className="cluster-section-title"><Activity size={18} /> Cluster Performance Overview</div>
+              <div className="modal-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: '1.5rem' }}>
+                <div className="cluster-metric-card">
+                  <div className="metric-title">Your Factory Performance</div>
+                  <div className="metric-value">82% Efficiency</div>
+                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginTop: '10px' }}>
+                    <div className="cluster-glow-bar" style={{ width: '82%' }}></div>
+                  </div>
+                </div>
+                <div className="cluster-metric-card">
+                  <div className="metric-title">Cluster Average Performance</div>
+                  <div className="metric-value" style={{ color: '#fbbf24' }}>74% Efficiency</div>
+                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginTop: '10px' }}>
+                    <div className="cluster-glow-bar" style={{ width: '74%', background: '#fbbf24', boxShadow: '0 0 10px #fbbf24' }}></div>
+                  </div>
+                </div>
+                <div className="cluster-metric-card">
+                  <div className="metric-title">Top Factory Performance</div>
+                  <div className="metric-value" style={{ color: '#8b5cf6' }}>91% Efficiency</div>
+                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginTop: '10px' }}>
+                    <div className="cluster-glow-bar" style={{ width: '91%', background: '#8b5cf6', boxShadow: '0 0 10px #8b5cf6' }}></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-grid" style={{ marginBottom: '1.5rem' }}>
+                <div className="cluster-metric-card">
+                  <div className="cluster-section-title" style={{ border: 'none', padding: 0 }}><Factory size={18} /> Production Benchmark</div>
+                  <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#94a3b8' }}>Your Production:</span> <span style={{ fontWeight: 'bold' }}>12,500 units/day</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#94a3b8' }}>Cluster Average:</span> <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>10,800 units/day</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#94a3b8' }}>Top Factory:</span> <span style={{ fontWeight: 'bold', color: '#8b5cf6' }}>15,200 units/day</span></div>
+                  </div>
+                </div>
+
+                <div className="cluster-metric-card">
+                  <div className="cluster-section-title" style={{ border: 'none', padding: 0 }}><Zap size={18} /> Energy Intelligence</div>
+                  <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#94a3b8' }}>Your Cost:</span> <span style={{ fontWeight: 'bold', color: '#ef4444' }}>₹2.3L / month</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#94a3b8' }}>Cluster Average:</span> <span style={{ fontWeight: 'bold' }}>₹2.0L / month</span></div>
+                  </div>
+                  <div className="cluster-insight" style={{ borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5' }}>
+                    Your factory energy cost is slightly higher than the cluster average. AI recommends energy optimization.
+                  </div>
+                </div>
+
+                <div className="cluster-metric-card">
+                  <div className="cluster-section-title" style={{ border: 'none', padding: 0 }}><Users size={18} /> Workforce Productivity</div>
+                  <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#94a3b8' }}>Your Productivity:</span> <span style={{ fontWeight: 'bold', color: '#10b981' }}>85%</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#94a3b8' }}>Cluster Average:</span> <span style={{ fontWeight: 'bold' }}>78%</span></div>
+                  </div>
+                  <div className="cluster-insight">
+                    Your workforce productivity is above the cluster average.
+                  </div>
+                </div>
+
+                <div className="cluster-metric-card">
+                  <div className="cluster-section-title" style={{ border: 'none', padding: 0 }}><TrendingUp size={18} /> Demand Prediction</div>
+                  <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#94a3b8' }}>Next Month Trend:</span> <span style={{ fontWeight: 'bold', color: '#10b981' }}>HIGH</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#94a3b8' }}>Market Price Exp:</span> <span style={{ fontWeight: 'bold', color: '#10b981' }}>+6% Increase</span></div>
+                  </div>
+                  <div className="cluster-insight" style={{ borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#93c5fd' }}>
+                    Demand for textile products is expected to increase across the cluster.
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-grid">
+                <div className="cluster-metric-card" style={{ gridColumn: '1 / -1' }}>
+                  <div className="cluster-section-title"><Award size={18} /> Top Performing Factories</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                      <div style={{ width: '30px', height: '30px', background: '#fbbf24', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', color: 'black' }}>1</div>
+                      <div style={{ flex: 1, fontWeight: 'bold' }}>Shree Textiles</div>
+                      <div style={{ color: '#fbbf24', fontWeight: 'bold' }}>Growth Score: 91</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                      <div style={{ width: '30px', height: '30px', background: '#94a3b8', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', color: 'black' }}>2</div>
+                      <div style={{ flex: 1, fontWeight: 'bold' }}>Surya Fabrics</div>
+                      <div style={{ color: '#94a3b8', fontWeight: 'bold' }}>Growth Score: 88</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '10px', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', borderRadius: '8px' }}>
+                      <div style={{ width: '30px', height: '30px', background: '#10b981', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', color: 'black' }}>3</div>
+                      <div style={{ flex: 1, fontWeight: 'bold', color: '#10b981' }}>Your Factory</div>
+                      <div style={{ color: '#10b981', fontWeight: 'bold' }}>Growth Score: 82</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-recommendations" style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.2)' }}>
+                <div className="rec-title" style={{ color: '#10b981' }}>
+                  <Bot size={20} /> Cluster AI Recommendations
+                </div>
+                <ul className="rec-list">
+                  <li className="rec-item" style={{ color: '#e2e8f0' }}>Upgrade to Air Jet Loom technology for higher production efficiency.</li>
+                  <li className="rec-item" style={{ color: '#e2e8f0' }}>Install solar hybrid energy system to reduce electricity costs.</li>
+                  <li className="rec-item" style={{ color: '#e2e8f0' }}>Increase production capacity by 12% to match cluster leaders.</li>
+                </ul>
+              </div>
+
+              <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+                <button
+                  className="btn-cyan-gradient"
+                  style={{ padding: '12px 30px', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' }}
+                  onClick={() => {
+                    alert("Connecting to Cluster Nodes... Generating Your Custom PDF Report! Click OK to download.");
+
+                    const doc = new jsPDF();
+
+                    // Report Header
+                    doc.setFillColor(15, 23, 42); // Dark slate bg
+                    doc.rect(0, 0, 210, 40, 'F');
+                    doc.setTextColor(34, 211, 238); // Cyan title
+                    doc.setFontSize(22);
+                    doc.text('BHILWARA CLUSTER AI REPORT', 105, 20, { align: 'center' });
+                    doc.setTextColor(148, 163, 184); // Subtitle
+                    doc.setFontSize(12);
+                    doc.text('Industrial Benchmark Intelligence - Confidential', 105, 30, { align: 'center' });
+
+                    // Main Body
+                    doc.setTextColor(30, 41, 59);
+                    doc.setFontSize(14);
+                    doc.text('1. Performance Overview', 14, 50);
+
+                    autoTable(doc, {
+                      startY: 55,
+                      head: [['Metric', 'Your Factory', 'Cluster Average', 'Cluster Leader']],
+                      body: [
+                        ['Production Efficiency', '82%', '74%', '91%'],
+                        ['Workforce Productivity', '85%', '78%', '88%'],
+                        ['Energy Cost (per month)', 'INR 2.3L', 'INR 2.0L', 'INR 1.8L']
+                      ],
+                      headStyles: { fillColor: [16, 185, 129] },
+                      alternateRowStyles: { fillColor: [241, 245, 249] },
+                      theme: 'grid'
+                    });
+
+                    let finalY = doc.lastAutoTable.finalY || 55;
+
+                    doc.setFontSize(14);
+                    doc.text('2. Top Performing Factories (Leaderboard)', 14, finalY + 15);
+
+                    autoTable(doc, {
+                      startY: finalY + 20,
+                      head: [['Rank', 'Factory Name', 'Growth Score']],
+                      body: [
+                        ['1', 'Shree Textiles', '91'],
+                        ['2', 'Surya Fabrics', '88'],
+                        ['3', 'Your Factory', '82']
+                      ],
+                      headStyles: { fillColor: [59, 130, 246] },
+                      theme: 'striped'
+                    });
+
+                    finalY = doc.lastAutoTable.finalY || finalY + 20;
+
+                    doc.setFontSize(14);
+                    doc.setTextColor(30, 41, 59);
+                    doc.text('3. AI Strategic Recommendations', 14, finalY + 15);
+
+                    doc.setFontSize(11);
+                    doc.setTextColor(71, 85, 105);
+                    const splitText = doc.splitTextToSize(
+                      "• Upgrade to Air Jet Loom technology for higher production efficiency.\n\n" +
+                      "• Install a solar hybrid energy system to reduce your high electricity costs down to cluster average.\n\n" +
+                      "• Increase production capacity by 12% to effectively match cluster leaders and capitalize on the +6% expected demand trend.",
+                      180
+                    );
+                    doc.text(splitText, 14, finalY + 25);
+
+                    // Footer
+                    doc.setFontSize(10);
+                    doc.setTextColor(148, 163, 184);
+                    doc.text('Generated by SmartFactory AI System', 105, 280, { align: 'center' });
+
+                    doc.save('Bhilwara_Cluster_Report.pdf');
+                  }}
+                >
+                  View Full Cluster Intelligence Report
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Government Subsidy AI Modal */}
+      {
+        isSubsidyModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsSubsidyModalOpen(false)}>
+            <div className="subsidy-modal-content" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={() => setIsSubsidyModalOpen(false)}>✕</button>
+
+              <div className="modal-header" style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                <div className="modal-title" style={{ color: '#60a5fa', fontSize: '1.2rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                  <Landmark size={24} /> Government Subsidy Intelligence
+                </div>
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>AI-powered system that identifies government subsidies available for the factory.</p>
+              </div>
+
+              <div className="cluster-section-title" style={{ color: '#60a5fa', borderBottomColor: 'rgba(96, 165, 250, 0.2)' }}><Briefcase size={18} /> Eligible Government Schemes</div>
+              <div className="modal-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: '1.5rem' }}>
+                <div className="subsidy-card subsidy-card-glow">
+                  <div className="metric-title" style={{ color: '#f8fafc' }}>RIPS 2022</div>
+                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '10px' }}>Rajasthan Investment Promotion Scheme</div>
+                  <div className="metric-value" style={{ color: '#10b981', fontSize: '1.2rem' }}>₹1.2 Crore Capital Subsidy</div>
+                  <div style={{ marginTop: '10px' }}><span className="status-badge badge-eligible">Eligible</span></div>
+                </div>
+                <div className="subsidy-card subsidy-card-glow">
+                  <div className="metric-title" style={{ color: '#f8fafc' }}>TUFS</div>
+                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '10px' }}>Technology Upgradation Fund Scheme</div>
+                  <div className="metric-value" style={{ color: '#3b82f6', fontSize: '1.2rem' }}>25% Machinery Subsidy</div>
+                  <div style={{ marginTop: '10px' }}><span className="status-badge badge-review">In Review</span></div>
+                </div>
+                <div className="subsidy-card subsidy-card-glow">
+                  <div className="metric-title" style={{ color: '#f8fafc' }}>Solar Energy Subsidy</div>
+                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '10px' }}>State Renewable Energy Board</div>
+                  <div className="metric-value" style={{ color: '#fbbf24', fontSize: '1.2rem' }}>₹85,000 Monthly Savings</div>
+                  <div style={{ marginTop: '10px' }}><span className="status-badge badge-approved">Approved</span></div>
+                </div>
+              </div>
+
+              <div className="modal-grid" style={{ marginBottom: '1.5rem', gridTemplateColumns: '1fr 1fr' }}>
+                <div className="subsidy-card">
+                  <div className="cluster-section-title" style={{ color: '#60a5fa', borderBottom: 'none', padding: 0 }}><Activity size={18} /> Application Status</div>
+                  <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                        <span style={{ fontWeight: 'bold' }}>RIPS 2022</span>
+                        <span className="status-badge badge-not-applied">Not Applied</span>
+                      </div>
+                      <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px' }}>
+                        <div style={{ width: '0%', height: '100%', background: '#94a3b8', borderRadius: '3px' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                        <span style={{ fontWeight: 'bold' }}>TUFS Scheme</span>
+                        <span className="status-badge badge-review">In Review</span>
+                      </div>
+                      <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px' }}>
+                        <div style={{ width: '65%', height: '100%', background: '#f59e0b', borderRadius: '3px', boxShadow: '0 0 8px #f59e0b' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                        <span style={{ fontWeight: 'bold' }}>Solar Subsidy</span>
+                        <span className="status-badge badge-approved">Approved</span>
+                      </div>
+                      <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px' }}>
+                        <div style={{ width: '100%', height: '100%', background: '#3b82f6', borderRadius: '3px', boxShadow: '0 0 8px #3b82f6' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="subsidy-card">
+                  <div className="cluster-section-title" style={{ color: '#60a5fa', borderBottom: 'none', padding: 0 }}><DollarSign size={18} /> Estimated Financial Benefit</div>
+                  <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
+                      <span style={{ color: '#94a3b8' }}>Capital Subsidy:</span>
+                      <span style={{ fontWeight: 'bold', color: '#10b981', fontSize: '1.1rem' }}>₹1.2 Crore</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px' }}>
+                      <span style={{ color: '#94a3b8' }}>Machinery Subsidy:</span>
+                      <span style={{ fontWeight: 'bold', color: '#10b981', fontSize: '1.1rem' }}>₹45 Lakh</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#94a3b8' }}>Energy Savings:</span>
+                      <span style={{ fontWeight: 'bold', color: '#10b981', fontSize: '1.1rem' }}>₹10 Lakh / year</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-grid" style={{ marginBottom: '1.5rem', gridTemplateColumns: '1.5fr 1fr' }}>
+                <div className="subsidy-card" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.05))', borderColor: 'rgba(59, 130, 246, 0.3)' }}>
+                  <div className="cluster-section-title" style={{ color: '#60a5fa', borderBottom: 'none', padding: 0 }}><Sparkles size={18} /> AI Auto-Fill Application</div>
+                  <p style={{ color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.5', margin: '1rem 0' }}>
+                    The system automatically collects factory data including energy usage, worker count, and machinery details to generate government-ready application forms.
+                  </p>
+                  <button
+                    className="btn-cyan-gradient"
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                    onClick={() => {
+                      alert("GenAI extracting factory data... Fetching Udyam Registration... Applying Machine Specs... Click OK to download draft!");
+
+                      const doc = new jsPDF();
+
+                      // Government Header
+                      doc.setFillColor(248, 250, 252);
+                      doc.rect(0, 0, 210, 297, 'F');
+                      doc.setTextColor(30, 58, 138);
+                      doc.setFontSize(18);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('GOVERNMENT OF RAJASTHAN', 105, 20, { align: 'center' });
+                      doc.setFontSize(14);
+                      doc.text('RAJASTHAN INVESTMENT PROMOTION SCHEME (RIPS-2022)', 105, 30, { align: 'center' });
+                      doc.setFontSize(12);
+                      doc.setTextColor(71, 85, 105);
+                      doc.text('Auto-Generated Application Form - Form A', 105, 38, { align: 'center' });
+
+                      doc.setDrawColor(203, 213, 225);
+                      doc.line(14, 45, 196, 45);
+
+                      // Form Content
+                      doc.setTextColor(15, 23, 42);
+                      doc.setFontSize(12);
+                      doc.setFont("helvetica", "bold");
+                      doc.text('ENTERPRISE DETAILS (Data Auto-Extracted)', 14, 55);
+
+                      doc.setFont("helvetica", "normal");
+                      doc.setFontSize(11);
+                      const formY = 65;
+                      const lineSpacing = 10;
+
+                      doc.text('Name of Enterprise:', 14, formY);
+                      doc.setFont("helvetica", "bold"); doc.text('Bhilwara Smart Textiles Pvt. Ltd.', 80, formY); doc.setFont("helvetica", "normal");
+
+                      doc.text('Udyam Registration No:', 14, formY + lineSpacing);
+                      doc.setFont("helvetica", "bold"); doc.text('UDYAM-RJ-08-10245', 80, formY + lineSpacing); doc.setFont("helvetica", "normal");
+
+                      doc.text('Registered Address:', 14, formY + (lineSpacing * 2));
+                      doc.text('Plot 42, RIICO Industrial Area, Bhilwara, Rajasthan 311001', 80, formY + (lineSpacing * 2));
+
+                      doc.text('Category of Enterprise:', 14, formY + (lineSpacing * 3));
+                      doc.text('Medium Enterprise (Textile & Technical Textiles)', 80, formY + (lineSpacing * 3));
+
+                      doc.line(14, formY + (lineSpacing * 4), 196, formY + (lineSpacing * 4));
+
+                      doc.setFont("helvetica", "bold");
+                      doc.text('SUBSIDY CLAIM DETAILS', 14, formY + (lineSpacing * 5));
+                      doc.setFont("helvetica", "normal");
+
+                      autoTable(doc, {
+                        startY: formY + (lineSpacing * 5.5),
+                        head: [['Investment Type', 'Amount Invested', 'Eligible Subsidy (%)', 'Claim Amount']],
+                        body: [
+                          ['Plant & Machinery (Air Jet Looms)', 'INR 4.0 Crore', '25%', 'INR 1.0 Crore'],
+                          ['Green Energy (Solar Hybrid System)', 'INR 1.0 Crore', '20%', 'INR 20 Lakh'],
+                          ['Total Capital Subsidy Claim', '-', '-', 'INR 1.2 Crore']
+                        ],
+                        headStyles: { fillColor: [30, 58, 138] },
+                        alternateRowStyles: { fillColor: [241, 245, 249] },
+                        theme: 'grid'
+                      });
+
+                      let finalY = doc.lastAutoTable.finalY || 150;
+
+                      doc.setFont("helvetica", "bold");
+                      doc.text('DECLARATION', 14, finalY + 15);
+                      doc.setFont("helvetica", "normal");
+                      doc.setFontSize(10);
+
+                      const declarationText = doc.splitTextToSize("I hereby declare that the information provided above is automatically calculated from real-time secure IoT sensors and ERP logs integrated via the SmartFactory Platform. The generated values are verified against manufacturing production records.", 182);
+                      doc.text(declarationText, 14, finalY + 25);
+
+                      // Stamp & Signature Simulation
+                      doc.setDrawColor(16, 185, 129);
+                      doc.setLineWidth(1);
+                      doc.rect(140, finalY + 45, 50, 25);
+                      doc.setTextColor(16, 185, 129);
+                      doc.text('e-Verified by', 145, finalY + 52);
+                      doc.text('SmartFactory AI', 145, finalY + 58);
+                      doc.text('Date: ' + new Date().toLocaleDateString(), 145, finalY + 66);
+
+                      // Download
+                      doc.save('RIPS-2022-Application-Draft.pdf');
+                    }}
+                  >
+                    <FileScan size={18} /> Generate Auto-Filled Subsidy Application
+                  </button>
+                </div>
+
+                <div className="subsidy-card">
+                  <div className="cluster-section-title" style={{ color: '#60a5fa', borderBottom: 'none', padding: 0 }}><Activity size={18} /> Subsidy Deadline Tracker</div>
+                  <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '10px', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
+                      <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>TUFS Application Deadline:</div>
+                      <div style={{ fontWeight: 'bold', color: '#f59e0b', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '5px' }}>12 April <span style={{ fontSize: '0.75rem', background: '#f59e0b', color: 'black', padding: '2px 6px', borderRadius: '10px' }}>Urgent</span></div>
+                    </div>
+                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '10px', borderRadius: '8px', borderLeft: '3px solid #10b981' }}>
+                      <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Solar Subsidy Window:</div>
+                      <div style={{ fontWeight: 'bold', color: '#10b981', fontSize: '1.1rem' }}>25 days remaining</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+                <button
+                  style={{ background: 'transparent', border: '1px solid #3b82f6', color: '#3b82f6', padding: '10px 25px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                  onClick={() => {
+                    alert("Compiling Subsidy Eligibility Data... Click OK to download your report.");
+
+                    const doc = new jsPDF();
+
+                    doc.setFillColor(15, 23, 42);
+                    doc.rect(0, 0, 210, 40, 'F');
+                    doc.setTextColor(34, 211, 238);
+                    doc.setFontSize(22);
+                    doc.setFont("helvetica", "bold");
+                    doc.text('SUBSIDY ELIGIBILITY REPORT', 105, 20, { align: 'center' });
+                    doc.setTextColor(148, 163, 184);
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
+                    doc.text('SmartFactory Financial Intelligence', 105, 30, { align: 'center' });
+
+                    doc.setTextColor(30, 41, 59);
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    doc.text('1. Identified Government Schemes', 14, 50);
+
+                    doc.setFont("helvetica", "normal");
+                    autoTable(doc, {
+                      startY: 55,
+                      head: [['Scheme Name', 'Benefit Type', 'Estimated Value', 'Status']],
+                      body: [
+                        ['RIPS 2022 (Rajasthan)', 'Capital Subsidy', 'INR 1.2 Crore', 'Eligible'],
+                        ['TUFS (Textiles)', 'Machinery Subsidy', '25% (Est. 45L)', 'In Review'],
+                        ['Solar Energy Board', 'Energy Savings', 'INR 10L / year', 'Approved']
+                      ],
+                      headStyles: { fillColor: [59, 130, 246] },
+                      alternateRowStyles: { fillColor: [241, 245, 249] },
+                      theme: 'grid'
+                    });
+
+                    let finalY = doc.lastAutoTable.finalY || 55;
+
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    doc.text('2. Action Items & Next Steps', 14, finalY + 15);
+
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(71, 85, 105);
+                    const actionsText = doc.splitTextToSize(
+                      "• The RIPS 2022 application requires immediate submission. All prerequisite data has been collected by the SmartFactory platform.\n\n" +
+                      "• TUFS Scheme is under review. The designated nodal officer will process the machine specs within 14 working days.\n\n" +
+                      "• The Solar Subsidy is approved and installation should be scheduled before the 25-day deadline expires.",
+                      180
+                    );
+                    doc.text(actionsText, 14, finalY + 25);
+
+                    // Footer
+                    doc.setFontSize(10);
+                    doc.setTextColor(148, 163, 184);
+                    doc.text('Confidential - Generated by SmartFactory AI', 105, 280, { align: 'center' });
+
+                    doc.save('Subsidy_Eligibility_Report.pdf');
+                  }}
+                >
+                  Download Subsidy Report
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div>
   );
 }
 

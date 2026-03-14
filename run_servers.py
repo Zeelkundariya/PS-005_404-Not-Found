@@ -2,8 +2,8 @@ import subprocess
 import os
 import time
 
-backend_dir = r"C:\Users\zeelk\OneDrive\Desktop\AI & Automation for Manufacturing SMEs\smartfactory-ai\backend"
-frontend_dir = r"C:\Users\zeelk\OneDrive\Desktop\AI & Automation for Manufacturing SMEs\smartfactory-ai\frontend"
+backend_dir = r"c:\Users\ASUS\OneDrive\Desktop\su hackathone\SU-Hackathon\SU-Hackathon\backend"
+frontend_dir = r"c:\Users\ASUS\OneDrive\Desktop\su hackathone\SU-Hackathon\SU-Hackathon\frontend"
 
 def run_server(name, directory, command, env_vars):
     print(f"Starting {name} server in {directory}...")
