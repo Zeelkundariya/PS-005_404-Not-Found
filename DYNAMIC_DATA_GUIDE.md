@@ -18,7 +18,10 @@ Instead of random numbers, we use a **Persistent State Drift**.
 - **Latency Handling**: We use Axios interceptors to handle potential timeouts, ensuring the dashboard never "freezes" even if the network fluctuates.
 
 ### 3. Plant Floor: Dynamic Machine Monitoring
-The "Machine Pulse" or "Plant Floor" grid is a direct manifestation of the back-end sensor simulation.
+The "Machine Pulse" grid is powered by a **Hybrid Data Layer**:
+- **In-Memory Backend State**: The total factory state is stored in the **backend's primary memory (RAM)** rather than the database for sub-second performance. This represents a "Hot Cache" of the factory floor.
+- **REST API Delivery**: The frontend uses a dedicated **API Channel (`GET /api/iot/live`)** to fetch this hot state.
+- **Persistence Logic**: While real-time "telemetry" (temperature/vibration) lives in memory for speed, critical "Audit Logs" or "User Actions" (like maintenance overrides) are committed to **MongoDB** for long-term records.
 - **Dynamic Object Generation**: The orchestrator tracks 15 distinct industrial units (Looms, Stenters, Dyeing Jets).
 - **Sub-Second Recalculation**: On every poll, each machine's `health`, `temp`, `vibration`, and `failureProb` are recalculated.
 - **State Machine Integration**: If a machine's temperature exceeds 85°C or vibration goes above 8 m/s², its status instantly flips from `Running` to `Warning`. This triggers a UI color change (from Cyan to Amber) across the plant grid in real-time.
