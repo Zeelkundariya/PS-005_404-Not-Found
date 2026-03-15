@@ -1,5 +1,7 @@
 import api from "../api";
 import React, { useEffect, useState, useRef, memo } from "react";
+import { useAuth } from "../context/AuthContext";
+import { LogOut } from "lucide-react";
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
   BarChart, Bar, Cell, Legend, PieChart, Pie
@@ -18,6 +20,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { agentsData } from "../data/agentsData";
 import FYPOptimizer from "./FYPOptimizer";
+import MaintenanceHub from "./MaintenanceHub";
 
 // --- High-Fidelity Styles ---
 const industrialStyles = `
@@ -125,6 +128,7 @@ const AgentGrid = React.memo(({ categories, title, focusedAgent, setFocusedAgent
 
 export default function Dashboard({ defaultTab = 'overview' }) {
   const navigate = useNavigate();
+  const { logout, user } = useAuth();
   // --- AI States ---
   const [delay, setDelay] = useState("");
   const [agentMessage, setAgentMessage] = useState("Monitoring... Ready for Owner Command.");
@@ -168,7 +172,7 @@ export default function Dashboard({ defaultTab = 'overview' }) {
   const [govApplications, setGovApplications] = useState([]);
   const [subsidyDraftStatus, setSubsidyDraftStatus] = useState(null); // 'drafting', 'completed', null
   const [draftProgress, setDraftProgress] = useState(0);
-  
+
   // GovAssist AI States
   const [complianceData, setComplianceData] = useState(null);
   const [schemeEligibility, setSchemeEligibility] = useState(null);
@@ -305,7 +309,7 @@ export default function Dashboard({ defaultTab = 'overview' }) {
     // Safer selection: pick from any available machine
     const randomIndex = Math.floor(Math.random() * fleetData.length);
     const randomMachine = fleetData[randomIndex].id;
-    
+
     setPendingJobs([...pendingJobs, {
       id: newId,
       name: "New Batch Order",
@@ -595,7 +599,9 @@ export default function Dashboard({ defaultTab = 'overview' }) {
   // Interactive Machine Slider State
   const [machineVibration, setMachineVibration] = useState(45);
   const [ticketGenerated, setTicketGenerated] = useState(false);
-  const [userRole, setUserRole] = useState('Strategic Owner'); // Operator, Manager, Strategic Owner
+  const roleMap = { owner: 'Owner', manager: 'Manager', operator: 'Operator' };
+  const [userRole, setUserRole] = useState(roleMap[user?.role] || 'Operator');
+  useEffect(() => { if (user?.role) setUserRole(roleMap[user.role] || 'Operator'); }, [user]);
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [isAiLearningMode, setIsAiLearningMode] = useState(true);
   const [lang, setLang] = useState('EN'); // EN, HI
@@ -826,21 +832,21 @@ export default function Dashboard({ defaultTab = 'overview' }) {
         // ── PdM ───────────────────────────────────────────────────────────
         setAdvancedPdM(prev => ({
           ...prev,
-          failureProbability:     parseFloat(data.pdm.failureProbability.toFixed(1)),
-          healthScore:            parseFloat(data.pdm.healthScore.toFixed(1)),
-          remainingLifeHours:     data.pdm.remainingLifeHours,
-          downtimePrevented:      `${data.pdm.downtimePrevented} Hrs`,
-          backlogItems:           data.pdm.backlogItems,
+          failureProbability: parseFloat(data.pdm.failureProbability.toFixed(1)),
+          healthScore: parseFloat(data.pdm.healthScore.toFixed(1)),
+          remainingLifeHours: data.pdm.remainingLifeHours,
+          downtimePrevented: `${data.pdm.downtimePrevented} Hrs`,
+          backlogItems: data.pdm.backlogItems,
           productionLossEstimate: data.pdm.productionLossEstimate,
-          netSavingsPotential:    data.pdm.netSavingsPotential,
-          techAvailability:       data.pdm.techAvailability,
+          netSavingsPotential: data.pdm.netSavingsPotential,
+          techAvailability: data.pdm.techAvailability,
         }));
         setStrategicPdM(prev => ({
           ...prev,
           portfolioHealth: parseFloat(data.pdm.portfolioHealth.toFixed(1)),
-          revenueAtRisk:   data.pdm.revenueAtRisk,
+          revenueAtRisk: data.pdm.revenueAtRisk,
           netEbitdaImpact: `₹${Math.round(data.pdm.portfolioHealth * 14000).toLocaleString('en-IN')}`,
-          pdmRoi:          `${Math.round(data.pdm.healthScore * 4.2)}%`,
+          pdmRoi: `${Math.round(data.pdm.healthScore * 4.2)}%`,
         }));
         setFailureTrend(data.pdm.failureTrend);
 
@@ -852,17 +858,17 @@ export default function Dashboard({ defaultTab = 'overview' }) {
         setSafety(prev => ({
           ...prev,
           ppeCompliance: data.safety.ppeCompliance,
-          safetyScore:   data.safety.safetyScore,
+          safetyScore: data.safety.safetyScore,
         }));
 
         // ── Finance / Profit ──────────────────────────────────────────────
         setProfit(prev => ({
           ...prev,
-          revenue:      data.finance.revenueFmt,
-          cost:         data.finance.costFmt,
-          profit:       data.finance.profitFmt,
-          margin:       `${data.finance.profitMargin}%`,
-          exportScore:  data.finance.exportScore,
+          revenue: data.finance.revenueFmt,
+          cost: data.finance.costFmt,
+          profit: data.finance.profitFmt,
+          margin: `${data.finance.profitMargin}%`,
+          exportScore: data.finance.exportScore,
         }));
         setCostOptimization(prev => ({
           ...prev,
@@ -879,30 +885,30 @@ export default function Dashboard({ defaultTab = 'overview' }) {
         setWaterTrend(data.sustainability.waterTrend);
         setEsg(prev => ({
           ...prev,
-          solarUnits:   data.sustainability.solarUnits,
+          solarUnits: data.sustainability.solarUnits,
           solarPercent: `${data.gauges.solarPercent.toFixed(0)}%`,
-          co2Saved:     `${data.sustainability.co2Saved.toFixed(1)} T`,
-          wasteKg:      data.sustainability.wasteKg,
-          airQuality:   data.sustainability.airQuality,
-          humidity:     data.sustainability.humidity,
-          ambientTemp:  data.sustainability.ambientTemp,
+          co2Saved: `${data.sustainability.co2Saved.toFixed(1)} T`,
+          wasteKg: data.sustainability.wasteKg,
+          airQuality: data.sustainability.airQuality,
+          humidity: data.sustainability.humidity,
+          ambientTemp: data.sustainability.ambientTemp,
         }));
 
         // ── Quality ───────────────────────────────────────────────────────
         setQuality(prev => ({
           ...prev,
-          score:        data.quality.score,
-          passRate:     data.quality.batchPassRate,
-          defectRate:   data.quality.defectRate,
-          returnRate:   data.quality.returnRate,
+          score: data.quality.score,
+          passRate: data.quality.batchPassRate,
+          defectRate: data.quality.defectRate,
+          returnRate: data.quality.returnRate,
         }));
 
         // ── Textile metrics ───────────────────────────────────────────────
         setTextileMetrics(prev => ({
           ...prev,
-          output:      data.kpis.outputToday,
-          oee:         data.kpis.oeeScore,
-          defectRate:  data.kpis.defectRate,
+          output: data.kpis.outputToday,
+          oee: data.kpis.oeeScore,
+          defectRate: data.kpis.defectRate,
         }));
 
         // ── Inventory alerts from supply chain ────────────────────────────
@@ -938,20 +944,20 @@ export default function Dashboard({ defaultTab = 'overview' }) {
         const { data } = await api.get("/iot/live");
         if (!isMounted) return;
         const m = data.machines;
-        const hotMachine    = m.find(x => x.temp > 80)?.name || "Stenter #1";
-        const warnMachine   = m.find(x => x.status === "Warning")?.name || "Rotor #1";
-        const maintMachine  = m.find(x => x.status === "Maintenance")?.name || "Draw Frame #1";
+        const hotMachine = m.find(x => x.temp > 80)?.name || "Stenter #1";
+        const warnMachine = m.find(x => x.status === "Warning")?.name || "Rotor #1";
+        const maintMachine = m.find(x => x.status === "Maintenance")?.name || "Draw Frame #1";
         const logPool = [
-          { msg: `[PdM-AI] Bearing wear detected on ${hotMachine}. Temp at ${data.machines.find(x=>x.name===hotMachine)?.temp||82}°C. Scheduling lubrication.`, type: "warning" },
+          { msg: `[PdM-AI] Bearing wear detected on ${hotMachine}. Temp at ${data.machines.find(x => x.name === hotMachine)?.temp || 82}°C. Scheduling lubrication.`, type: "warning" },
           { msg: `[Brahma] Global efficiency snapshot: OEE ${data.kpis.oeeScore.toFixed(1)}% | PEI ${data.kpis.pei.toFixed(1)}% | ${data.kpis.activeWorkers} operators online.`, type: "system" },
-          { msg: `[Agent-22] Quality audit Batch-${Math.floor(Math.random()*200+100)}: Defect rate ${data.kpis.defectRate.toFixed(1)}%. ${data.kpis.defectRate < 2 ? "Within tolerance." : "Escalating to QC team."}`, type: data.kpis.defectRate < 2 ? "success" : "warning" },
+          { msg: `[Agent-22] Quality audit Batch-${Math.floor(Math.random() * 200 + 100)}: Defect rate ${data.kpis.defectRate.toFixed(1)}%. ${data.kpis.defectRate < 2 ? "Within tolerance." : "Escalating to QC team."}`, type: data.kpis.defectRate < 2 ? "success" : "warning" },
           { msg: `[Energy-AI] Solar contribution: ${data.gauges.solarPercent.toFixed(0)}%. Grid draw at ${data.gauges.gridPower.toFixed(0)} kW. Peak-shaving active.`, type: "info" },
           { msg: `[Supply-AI] Yarn stock: ${data.supplyChain.yarnStockKg} kg (${data.supplyChain.yarnStockStatus}). Water consumption: ${data.sustainability.waterUsage} L.`, type: data.supplyChain.yarnStockStatus === "Low" ? "warning" : "info" },
           { msg: `[Finance-AI] Today's P&L: Revenue ${data.finance.revenueFmt} | Cost ${data.finance.costFmt} | Net ${data.finance.profitFmt}`, type: "success" },
           { msg: `[Safety-AI] PPE compliance at ${data.safety.ppeCompliance}%. ${data.safety.accidentFreeDays} accident-free days maintained.`, type: data.safety.ppeCompliance > 95 ? "success" : "warning" },
-          { msg: `[Alert] ${warnMachine} flagged: Vibration ${data.machines.find(x=>x.name===warnMachine)?.vibration||8.2}Hz — above threshold. Dispatcher notified.`, type: "warning" },
+          { msg: `[Alert] ${warnMachine} flagged: Vibration ${data.machines.find(x => x.name === warnMachine)?.vibration || 8.2}Hz — above threshold. Dispatcher notified.`, type: "warning" },
           { msg: `[Neuro-Sync] Telemetry synced from 15 edge nodes. ${data.machineAlerts.warning} warnings, ${data.machineAlerts.maintenance} in maintenance.`, type: "system" },
-          { msg: `[Maintenance] Work order dispatched for ${maintMachine}. Technician en-route. ETA: ${Math.floor(Math.random()*15+5)} minutes.`, type: "info" },
+          { msg: `[Maintenance] Work order dispatched for ${maintMachine}. Technician en-route. ETA: ${Math.floor(Math.random() * 15 + 5)} minutes.`, type: "info" },
         ];
         const randomLog = logPool[Math.floor(Math.random() * logPool.length)];
         setStrategicAiLogs(prev => {
@@ -978,7 +984,7 @@ export default function Dashboard({ defaultTab = 'overview' }) {
         `Monitoring real-time yarn pricing from Global markets...`,
         `Optimizing workforce distribution for night shift...`,
         `Syncing telemetry with Edge Node Bhilwara-4...`,
-        `Running GA permutation cycle #${Math.floor(Math.random()*999+1)}...`,
+        `Running GA permutation cycle #${Math.floor(Math.random() * 999 + 1)}...`,
         `Cross-referencing buyer risk profiles against live orders...`,
       ];
       setAgentMessage(messages[Math.floor(Math.random() * messages.length)]);
@@ -1003,8 +1009,8 @@ export default function Dashboard({ defaultTab = 'overview' }) {
         { label: "Double Pick (91.5%)", color: "#f59e0b", top: "60%", left: "30%" },
         { label: "Slub Detected (88.1%)", color: "#8b5cf6", top: "40%", left: "70%" },
         { label: "Oil Stain (94.3%)", color: "#3b82f6", top: "15%", left: "60%" },
-        { label: `Yarn Breakage (${(90+Math.random()*9).toFixed(1)}%)`, color: "#f43f5e", top: "45%", left: "45%" },
-        { label: `Weave Distortion (${(85+Math.random()*10).toFixed(1)}%)`, color: "#f97316", top: "30%", left: "55%" },
+        { label: `Yarn Breakage (${(90 + Math.random() * 9).toFixed(1)}%)`, color: "#f43f5e", top: "45%", left: "45%" },
+        { label: `Weave Distortion (${(85 + Math.random() * 10).toFixed(1)}%)`, color: "#f97316", top: "30%", left: "55%" },
       ];
       setCvDefect(defects[Math.floor(Math.random() * defects.length)]);
     }, 4000));
@@ -1306,22 +1312,110 @@ export default function Dashboard({ defaultTab = 'overview' }) {
     }, 1000);
   };
 
+  const generateAndDownloadPDF = (data, title) => {
+    console.log("Generating PDF for:", title, data);
+    try {
+      const doc = new jsPDF();
+
+      // Header
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 210, 40, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("SMARTFACTORY AI - GOVASSIST", 15, 22);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`REPORT ID: ${data.reportId || 'AUTO-GEN'} // AUTHENTICATED BY INDUSTRIAL EDGE-NODE 4`, 15, 30);
+      doc.text(`GENERATED: ${new Date().toLocaleString()} BHILWARA HUB`, 15, 35);
+
+      // Title
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(title.toUpperCase(), 15, 60);
+
+      // Factory Info
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(`OPERATOR: ${data.factoryName || 'Bhilwara Smart Textiles'}`, 15, 75);
+      doc.text(`CATEGORY: ${data.type?.toUpperCase() || 'REGULATORY COMPLIANCE'}`, 15, 82);
+
+      // Metrics Table
+      const tableData = Object.entries(data.metrics || {}).map(([key, value]) => [
+        key.replace(/([A-Z])/g, ' $1').toUpperCase(),
+        value.toString()
+      ]);
+
+      if (tableData.length > 0) {
+        console.log("Adding table to PDF...");
+        autoTable(doc, {
+          startY: 95,
+          head: [['MEASUREMENT PARAMETER', 'VERIFIED VALUE']],
+          body: tableData,
+          theme: 'striped',
+          headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: 'bold' },
+          styles: { fontSize: 10, cellPadding: 5 },
+          columnStyles: { 0: { fontStyle: 'bold', width: 100 } }
+        });
+      }
+
+      // Verification Section
+      const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : 160;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(15, finalY, 180, 40, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.rect(15, finalY, 180, 40, 'D');
+
+      doc.setTextColor(71, 85, 105);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("DIGITAL CERTIFICATION", 20, finalY + 10);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("This document is auto-generated by the SmartFactory AI Engine utilizing real-time", 20, finalY + 18);
+      doc.text("telemetry streams from production edge-sensors. Valid for government submission.", 20, finalY + 23);
+
+      doc.setFont("courier", "bold");
+      doc.setTextColor(99, 102, 241);
+      doc.text(`HASH_VERIFY: ${Math.random().toString(36).substring(2, 15).toUpperCase()}`, 20, finalY + 33);
+
+      // Footer
+      doc.setTextColor(148, 163, 184);
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.text("Confidential // SmartFactory AI Industrial Regulatory Intelligence Hub", 105, 285, { align: "center" });
+
+      doc.save(`GovAssist_Report_${title.replace(/\s+/g, '_')}.pdf`);
+      console.log("PDF Saved successfully.");
+    } catch (err) {
+      console.error("CRITICAL PDF ERROR:", err);
+      alert("Error generating PDF. Technical details logged to console.");
+    }
+  };
+
   const handleGovAssistReport = async (type) => {
     setIsGeneratingReport(true);
+    setAgentMessage(`AI: Processing ${type} telemetry for regulatory report...`);
     try {
       const { data } = await api.get(`/govassist/generate-report?type=${type}`);
       setReportData(data);
       if (setSystemEvents) {
         setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: `AI Report ${data.reportId} generated for ${type.toUpperCase()}.`, type: 'success' }, ...prev]);
       }
-      
+
       setTimeout(() => {
-        alert(`${type.toUpperCase()} Report Generated Successfully.\nReport ID: ${data.reportId}\nTimestamp: ${data.timestamp}`);
+        generateAndDownloadPDF(data, `${type} Compliance Audit`);
         setIsGeneratingReport(false);
+        setAgentMessage(`AI: ${type.toUpperCase()} report ready for download.`);
       }, 1500);
     } catch (err) {
       console.error("Report generation error:", err);
       setIsGeneratingReport(false);
+      setAgentMessage("AI: Error generating report. Check connection.");
     }
   };
 
@@ -1345,16 +1439,29 @@ export default function Dashboard({ defaultTab = 'overview' }) {
         }
       };
       fetchGovAssist();
-      const interval = setInterval(fetchGovAssist, 10000); 
+      const interval = setInterval(fetchGovAssist, 10000);
       return () => { clearInterval(interval); isMounted = false; };
     }
   }, [activeTab]);
 
   const handleDownloadReport = () => {
-    setAgentMessage("Generating Compliance Report...");
+    setAgentMessage("AI: Compiling industrial compliance archive...");
     setTimeout(() => {
-      alert("Compliance Report Downloaded: smartfactory_bhilwara_compliance_2026.pdf");
-      setSystemEvents(prev => [{ id: Date.now() + Math.random(), time: new Date().toLocaleTimeString(), msg: "Compliance report generated & downloaded.", type: "info" }, ...prev]);
+      const mockData = {
+        reportId: `COMP-${Math.floor(Math.random() * 90000) + 10000}`,
+        factoryName: "Bhilwara Smart Textiles - Unit 1",
+        type: "Comprehensive Compliance",
+        metrics: {
+          overallSafetyScore: "94%",
+          laborCompliance: "Verified",
+          pollutionControl: "Optimal",
+          lastInspectionStatus: "Passed",
+          sustainabilityRank: "A+"
+        }
+      };
+      generateAndDownloadPDF(mockData, "Master Compliance Audit");
+      setSystemEvents(prev => [{ id: Date.now() + Math.random(), time: new Date().toLocaleTimeString(), msg: "Master Compliance report generated & downloaded.", type: "info" }, ...prev]);
+      setAgentMessage("AI: Archive downloaded successfully.");
     }, 1500);
   };
 
@@ -1545,6 +1652,16 @@ export default function Dashboard({ defaultTab = 'overview' }) {
             </li>
           )}
 
+          {(userRole === 'Manager' || userRole === 'Owner') && (
+            <li className={`sidebar-link ${activeTab === 'maintenance-hub' ? 'active' : ''}`}
+              onClick={() => setActiveTab('maintenance-hub')}
+              style={{ color: activeTab === 'maintenance-hub' ? '#00f2ff' : '#0ea5e9', borderLeft: activeTab === 'maintenance-hub' ? '3px solid #00f2ff' : 'none' }}>
+              <Activity size={18} className={activeTab === 'maintenance-hub' ? 'pulse-slow' : ''} />
+              {lang === 'EN' ? 'Maintenance Hub AI' : ' '}
+              <div className="ml-auto w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_#00f2ff]"></div>
+            </li>
+          )}
+
 
 
 
@@ -1570,9 +1687,9 @@ export default function Dashboard({ defaultTab = 'overview' }) {
           )}
 
           {(userRole === 'Manager' || userRole === 'Owner' || userRole === 'Strategic Owner') && (
-            <li className={`sidebar-link ${activeTab === 'fyp' ? 'active' : ''}`} 
-              onClick={() => setActiveTab('fyp')} 
-              style={{ 
+            <li className={`sidebar-link ${activeTab === 'fyp' ? 'active' : ''}`}
+              onClick={() => setActiveTab('fyp')}
+              style={{
                 color: activeTab === 'fyp' ? '#60a5fa' : '#3b82f6',
                 borderLeft: activeTab === 'fyp' ? '3px solid #3b82f6' : 'none',
                 background: activeTab === 'fyp' ? 'linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)' : 'transparent'
@@ -1619,62 +1736,69 @@ export default function Dashboard({ defaultTab = 'overview' }) {
 
         </ul>
 
-        <div className="sidebar-footer" style={{ padding: '1.5rem', borderTop: '1px solid var(--border)', marginTop: 'auto' }}>
-          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginBottom: '1rem', fontWeight: '800', letterSpacing: '1px' }}>SYSTEM ACCESS</div>
+        <div className="sidebar-footer" style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: user?.role === 'owner'
+                ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+                : user?.role === 'manager'
+                ? 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)'
+                : 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 'bold',
+              color: 'white',
+              fontSize: '1rem'
+            }}>
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{ color: 'white', fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name || 'Authorized User'}</div>
+              <div style={{
+                color: user?.role === 'owner' ? '#fbbf24' : user?.role === 'manager' ? '#818cf8' : '#38bdf8',
+                fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px'
+              }}>
+                {userRole} Node
+              </div>
+            </div>
+          </div>
 
-          <select
-            value={userRole}
-            onChange={(e) => setUserRole(e.target.value)}
-            style={{ width: '100%', background: 'rgba(0,0,0,0.2)', color: 'white', border: '1px solid var(--border)', padding: '10px', borderRadius: '8px', fontSize: '0.75rem', marginBottom: '1rem', cursor: 'pointer' }}
+          <button
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              color: '#f87171',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              borderRadius: '10px',
+              fontSize: '0.75rem',
+              fontWeight: '900',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              transition: 'all 0.2s',
+              textTransform: 'uppercase'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
-            <option value="Operator"> OPERATOR VIEW</option>
-            <option value="Manager"> MANAGER VIEW</option>
-            <option value="Owner"> STRATEGIC OWNER</option>
-          </select>
-
+            <LogOut size={16} /> Terminate Session
+          </button>
         </div>
       </nav>
 
       {/* Main Content */}
       <main className="main-content">
-        <header className="header">
-          <div className="welcome-text">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <span className="badge" style={{ background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.65rem', fontWeight: '800', letterSpacing: '1px' }}>
-                {userRole.toUpperCase()} ACCESS
-              </span>
-              {userRole === 'Owner' && <span className="badge" style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', border: '1px solid #eab308' }}>PREMIUM ROLE</span>}
-            </div>
-            <h1>{lang === 'EN' ? `Welcome, ${userRole === 'Owner' ? 'Strategic Owner' : userRole}` : `${userRole === 'Owner' ? ' ' : userRole}   `}</h1>
-            <p>{lang === 'EN' ? 'Real-time intelligence and AI-driven optimization' : '-   - '}</p>
-          </div>
-          <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button
-              className={`btn-primary ${isSimulating ? 'pulse-heavy' : ''}`}
-              disabled={isSimulating}
-              onClick={() => {
-                setIsSimulating(true);
-                const shiftOutput = manualData?.actualOutput || 80;
-                api.post("/ai/simulate", {
-                  outputPerShift: shiftOutput,
-                  shifts: 3,
-                  deadlineDays: 5
-                })
-                  .then(r => {
-                    setSimulation(r.data.result);
-                    setTimeout(() => setIsSimulating(false), 2000);
-                  })
-                  .catch(err => {
-                    alert("Simulation error: " + err.message);
-                    setIsSimulating(false);
-                  });
-              }}
-            >
-              <Play size={16} style={{ marginRight: '8px' }} />
-              {isSimulating ? 'AI PROCESSING...' : 'Simulate Shift'}
-            </button>
-          </div>
-        </header>
 
         <div className="scanner-overlay" />
 
@@ -2877,27 +3001,27 @@ export default function Dashboard({ defaultTab = 'overview' }) {
                           <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'white' }}>{m.name || 'Machine'}</span>
                           <span style={{ fontSize: '0.55rem', color: '#64748b' }}>Asset: {m.id}</span>
                         </div>
-                        <span style={{ 
-                          fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', letterSpacing: '0.5px', 
-                          background: m.status === 'Running' ? 'rgba(16,185,129,0.15)' : m.status === 'Warning' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)', 
-                          color: m.status === 'Running' ? '#10b981' : m.status === 'Warning' ? '#f59e0b' : '#ef4444', 
-                          border: `1px solid ${m.status === 'Running' ? 'rgba(16,185,129,0.3)' : m.status === 'Warning' ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.3)'}` 
+                        <span style={{
+                          fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', letterSpacing: '0.5px',
+                          background: m.status === 'Running' ? 'rgba(16,185,129,0.15)' : m.status === 'Warning' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)',
+                          color: m.status === 'Running' ? '#10b981' : m.status === 'Warning' ? '#f59e0b' : '#ef4444',
+                          border: `1px solid ${m.status === 'Running' ? 'rgba(16,185,129,0.3)' : m.status === 'Warning' ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.3)'}`
                         }}>
                           {m.status?.toUpperCase()}
                         </span>
                       </div>
-                      
+
                       <div style={{ marginBottom: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: '#94a3b8', marginBottom: '4px' }}>
                           <span>Operational Health</span>
                           <span style={{ color: m.health > 85 ? '#10b981' : m.health > 70 ? '#f59e0b' : '#ef4444', fontWeight: 'bold' }}>{m.health}%</span>
                         </div>
                         <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px' }}>
-                          <div style={{ 
-                            height: '100%', width: `${m.health}%`, 
-                            background: m.health > 85 ? '#10b981' : m.health > 70 ? '#f59e0b' : '#ef4444', 
-                            borderRadius: '2px', 
-                            boxShadow: `0 0 8px ${m.health > 85 ? 'rgba(16,185,129,0.4)' : m.health > 70 ? 'rgba(245,158,11,0.4)' : 'rgba(239,68,68,0.4)'}` 
+                          <div style={{
+                            height: '100%', width: `${m.health}%`,
+                            background: m.health > 85 ? '#10b981' : m.health > 70 ? '#f59e0b' : '#ef4444',
+                            borderRadius: '2px',
+                            boxShadow: `0 0 8px ${m.health > 85 ? 'rgba(16,185,129,0.4)' : m.health > 70 ? 'rgba(245,158,11,0.4)' : 'rgba(239,68,68,0.4)'}`
                           }} />
                         </div>
                       </div>
@@ -2916,8 +3040,8 @@ export default function Dashboard({ defaultTab = 'overview' }) {
                         ))}
                       </div>
 
-                      <div style={{ 
-                        marginTop: '8px', padding: '4px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.4)', 
+                      <div style={{
+                        marginTop: '8px', padding: '4px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.4)',
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                       }}>
                         <span style={{ fontSize: '0.5rem', color: '#64748b', textTransform: 'uppercase' }}>Failure Prob:</span>
@@ -3103,7 +3227,7 @@ export default function Dashboard({ defaultTab = 'overview' }) {
                       <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Technical Backlog Depth</div>
                       <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>{advancedPdM.backlogItems} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Units</span></div>
                       <div style={{ marginTop: '15px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                         High-latency maintenance queue items
+                        High-latency maintenance queue items
                       </div>
                     </div>
                   </>
@@ -3587,6 +3711,14 @@ export default function Dashboard({ defaultTab = 'overview' }) {
           )
         }
 
+        {
+          activeTab === 'maintenance-hub' && (
+            <div className="maintenance-hub-content animate-fade-in" style={{ width: '100%' }}>
+              <MaintenanceHub />
+            </div>
+          )
+        }
+
 
 
         {
@@ -3871,166 +4003,73 @@ export default function Dashboard({ defaultTab = 'overview' }) {
 
 
 
-        {
-          activeTab === 'finance' && (
-            <div className="finance-panel animate-fade-in">
-              <div className="stats-grid">
-                <div className="stat-card" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0) 100%)' }}>
-                  <div className="stat-header"><span className="stat-label">Real-Time Profit Margin</span><DollarSign size={20} color="var(--accent)" /></div>
-                  <div className="stat-value">{renderSafeValue(profit.monthlyProfit, '0')} Cr</div>
-                  <div className="stat-label">Projection (Next 30D)</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-header"><span className="stat-label">Credit & Payment Risk</span><ShieldCheck size={20} color="var(--accent)" /></div>
-                  <div className="stat-value">{typeof creditRisk.riskScore === 'object' ? JSON.stringify(creditRisk.riskScore) : creditRisk.riskScore || 'Low'}</div>
-                  <div className="stat-label">Status: {typeof creditRisk.status === 'object' ? JSON.stringify(creditRisk.status) : creditRisk.status || 'Excellent'}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-header"><span className="stat-label">Cost Optimization</span><Cpu size={20} color="var(--primary)" /></div>
-                  <div className="stat-value">{typeof costOptimization.totalSavings === 'object' ? JSON.stringify(costOptimization.totalSavings) : costOptimization.totalSavings || '1.2'}L</div>
-                  <div className="stat-label">Potential Monthly Savings</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-header"><span className="stat-label">Cost per Meter</span><Activity size={20} color="var(--primary)" /></div>
-                  <div className="stat-value">{typeof profit.costPerMeter === 'object' ? JSON.stringify(profit.costPerMeter) : profit.costPerMeter || '8.50'}</div>
-                  <div className="stat-label">Textile Cluster Benchmark</div>
-                </div>
+        {activeTab === 'finance' && (
+          <div className="finance-panel animate-fade-in">
+            {/* KPI Hero Cards */}
+            <div className="stats-grid">
+              <div className="stat-card" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0) 100%)' }}>
+                <div className="stat-header"><span className="stat-label">Real-Time Profit Margin</span><DollarSign size={20} color="#10b981" /></div>
+                <div className="stat-value">₹{profit.monthlyProfit || '0'} Cr</div>
+                <div className="stat-label">Projection (Next 30D)</div>
               </div>
-
-              {/* RESTORED: Finance Arbitrage Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginTop: '1.5rem' }}>
-                <div className="stat-card" style={{ gridColumn: 'span 2', background: 'linear-gradient(180deg, #0f172a 0%, #172554 100%)', border: '1px solid #3b82f6', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <h4 style={{ margin: 0, color: '#93c5fd', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}><Globe size={16} /> Global Price Arbitrage</h4>
-                    <span style={{ fontSize: '0.6rem', color: '#60a5fa', fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase' }}>Live Market Sync: TURKEY - INDIA</span>
-                  </div>
-
-                  <div style={{ overflowX: 'auto', marginBottom: '8px' }}>
-                    <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse', textAlign: 'left' }}>
-                      <thead>
-                        <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(148, 163, 184, 0.1)' }}>
-                          <th style={{ padding: '8px 4px' }}>Market</th>
-                          <th style={{ padding: '8px 4px' }}>Price (INR/kg)</th>
-                          <th style={{ padding: '8px 4px' }}>Quality Index</th>
-                          <th style={{ padding: '8px 4px' }}>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td style={{ padding: '8px 4px' }}>Bhilwara (Local)</td>
-                          <td style={{ padding: '8px 4px' }}>232.2</td>
-                          <td style={{ padding: '8px 4px' }}>92%</td>
-                          <td style={{ padding: '8px 4px', color: '#cbd5e1' }}>Stable</td>
-                        </tr>
-                        <tr style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
-                          <td style={{ padding: '8px 4px' }}>Bursa (Turkey)</td>
-                          <td style={{ padding: '8px 4px', fontWeight: 'bold', color: '#3b82f6' }}>218.0</td>
-                          <td style={{ padding: '8px 4px' }}>94%</td>
-                          <td style={{ padding: '8px 4px', color: '#10b981', fontWeight: 'bold' }}>-6.2% DROP</td>
-                        </tr>
-                        <tr>
-                          <td style={{ padding: '8px 4px' }}>Guangzhou</td>
-                          <td style={{ padding: '8px 4px' }}>241.5</td>
-                          <td style={{ padding: '8px 4px' }}>88%</td>
-                          <td style={{ padding: '8px 4px', color: '#ef4444' }}>Rising</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                    <div style={{ fontSize: '1.2rem', fontWeight: '800', color: '#3b82f6', marginBottom: '4px' }}>Arbitrage Gap: +₹14.2/m</div>
-                    <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>Detected price-drop in Turkish cotton yarn. 5,000kg window open for 2h 42m.</p>
-                  </div>
-
-                  <div style={{ marginTop: 'auto' }}>
-                    <button className="btn-primary" style={{ width: '100%', background: '#3b82f6', border: 'none', color: 'white', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await api.post('/owner/arbitrage', { commodity: 'cotton', market: 'Bursa', volume: 500 }); alert(res.data.message || 'Arbitrage locked successfully.'); } catch (err) { alert('Error: Could not reach the API. Please ensure the backend is running.'); console.error(err); } }}>Lock Arbitrage Window</button>
-                  </div>
-                </div>
-
-                <div className="stat-card" style={{ background: 'linear-gradient(180deg, #0f172a 0%, #064e3b 100%)', border: '1px solid #10b981', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h4 style={{ margin: 0, color: '#6ee7b7', fontSize: '1rem' }}>AI Cash-Crunch Predictor</h4>
-                    <Landmark size={18} color="#10b981" />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#10b981', marginBottom: '8px' }}>Deficit Risk: 14 Days</div>
-                    <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>12 Lakh locked in unpaid invoices. Recommending immediate factoring.</p>
-                  </div>
-                  <div style={{ marginTop: 'auto' }}>
-                    <button className="btn-primary" style={{ width: '100%', background: '#10b981', border: 'none', color: 'black', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await api.post('/owner/cash-crunch', { totalUnpaid: 1200000, deficitDays: 14 }); alert(res.data.message || 'Invoice factoring initiated successfully.'); } catch (err) { alert('Error: Could not reach the API. Please ensure the backend is running.'); console.error(err); } }}><RefreshCcw size={14} style={{ display: 'inline', marginRight: '6px' }} /> Auto-Factor Unpaid Invoices</button>
-                  </div>
-                </div>
-
-                <div className="stat-card" style={{ background: 'linear-gradient(180deg, #0f172a 0%, #312e81 100%)', border: '1px solid #6366f1', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <h4 style={{ margin: 0, color: '#a5b4fc', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}><BookOpen size={16} /> AI 'Bahi-Khata' Scanner</h4>
-                    <span style={{ fontSize: '0.6rem', color: '#818cf8', fontWeight: 'bold', letterSpacing: '1px', background: 'rgba(99,102,241,0.2)', padding: '2px 6px', borderRadius: '4px' }}>LEGACY SYNC</span>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#6366f1', marginBottom: '8px' }}>Digital Conversion Ready</div>
-                    <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>Detected handwritten Marwari/Hindi ledger entries in red 'Bahi-Khata'. Extraction is pending.</p>
-                  </div>
-                  <div style={{ marginTop: 'auto' }}>
-                    <button className="btn-primary" style={{ width: '100%', background: 'transparent', border: '1px solid #6366f1', color: '#a5b4fc', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await api.post('/owner/ledger-scan', { ledgerType: 'Bahi-Khata', language: 'Marwari/Hindi' }); alert(res.data.message || 'Ledger scanned and synced successfully.'); } catch (err) { alert('Error: Could not reach the API. Please ensure the backend is running.'); console.error(err); } }}><FileScan size={14} style={{ display: 'inline', marginRight: '6px' }} /> Scan & Sync Traditional Ledger</button>
-                  </div>
-                </div>
-
-                <div className="stat-card" style={{ background: 'linear-gradient(180deg, #0f172a 0%, #422006 100%)', border: '1px solid #eab308', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <h4 style={{ margin: 0, color: '#fde047', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}><Award size={16} /> AI 'Mahajan' Trust-Score</h4>
-                    <span style={{ fontSize: '0.6rem', color: '#eab308', fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase' }}>Cluster Reputation</span>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#eab308', marginBottom: '8px' }}>A+ (Trust Index: 94)</div>
-                    <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>Peer-verified reputation for payment punctuality & quality consistency in Bhilwara.</p>
-                  </div>
-                  <div style={{ marginTop: 'auto' }}>
-                    <button className="btn-primary" style={{ width: '100%', background: '#eab308', border: 'none', color: 'black', fontWeight: 'bold', padding: '10px', borderRadius: '8px', cursor: 'pointer' }} onClick={async () => { try { const res = await api.post('/owner/trust-score', { score: 'A+', trustIndex: 94, suppliers: 15 }); alert(res.data.message || 'Trust-Score shared successfully.'); } catch (err) { alert('Error: Could not reach the API. Please ensure the backend is running.'); console.error(err); } }}>Share Trust-Score with Suppliers</button>
-                  </div>
-                </div>
+              <div className="stat-card">
+                <div className="stat-header"><span className="stat-label">Cost per Meter</span><Activity size={20} color="var(--primary)" /></div>
+                <div className="stat-value">{profit.costPerMeter || '₹8.50'}</div>
+                <div className="stat-label">Textile Cluster Benchmark</div>
               </div>
-
-              <div className="charts-grid" style={{ marginTop: '1.5rem' }}>
-                <div className="stat-card">
-                  <h3 className="section-title">Payment Cycle & Credit Risk Tracker</h3>
-                  <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                      <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>Avg. Payment Collection Period</span>
-                      <span style={{ fontWeight: '700' }}>{typeof creditRisk.avgCollectionDays === 'object' ? JSON.stringify(creditRisk.avgCollectionDays) : creditRisk.avgCollectionDays || '28'} Days</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                      <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>ECGC Export Insurance</span>
-                      <span style={{ color: 'var(--accent)', fontWeight: '700' }}>COVERED (Grade A)</span>
-                    </div>
-                    <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', fontSize: '0.8rem', color: 'var(--accent)' }}>
-                      High-trust buyer network detected in current pipeline.
-                    </div>
-                  </div>
-                </div>
-
-                <div className="chart-container">
-                  <h3 className="section-title">Cost Breakdown & Optimization Target</h3>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={costBreakdown.length > 0 ? costBreakdown : [
-                      { name: 'Labor', target: 80, actual: 70 },
-                      { name: 'Yarn', target: 90, actual: 85 },
-                      { name: 'Power', target: 60, actual: 40 },
-                    ]}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                      <XAxis dataKey="name" stroke="#94a3b8" />
-                      <YAxis stroke="#94a3b8" />
-                      <Tooltip contentStyle={{ background: '#1e293b', border: 'none' }} />
-                      <Bar dataKey="actual" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="target" fill="rgba(255,255,255,0.1)" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+              <div className="stat-card">
+                <div className="stat-header"><span className="stat-label">Credit & Payment Risk</span><ShieldCheck size={20} color="#10b981" /></div>
+                <div className="stat-value">{creditRisk.riskScore || 'Low'}</div>
+                <div className="stat-label">Status: {creditRisk.status || 'Excellent'}</div>
               </div>
-              <AgentGrid categories={['Finance']} title="Finance & Sector Analytics AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
+              <div className="stat-card">
+                <div className="stat-header"><span className="stat-label">Cost Optimization</span><Cpu size={20} color="var(--primary)" /></div>
+                <div className="stat-value">{costOptimization.totalSavings || '1.2'}L</div>
+                <div className="stat-label">Potential Monthly Savings</div>
+              </div>
             </div>
-          )
-        }
+
+            {/* Financial Arbitrage Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginTop: '1.5rem' }}>
+              <div className="stat-card" style={{ background: 'linear-gradient(180deg, rgba(232, 245, 189, 0.2) 0%, #172554 100%)', border: '1px solid rgba(232, 245, 189, 0.3)' }}>
+                <h4 style={{ color: '#E8F5BD', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}><Globe size={18} /> Global Price Arbitrage</h4>
+                <div className="stat-value" style={{ fontSize: '1.8rem', color: '#E8F5BD', marginBottom: '8px' }}>Gap: +₹14.2/m</div>
+                <p style={{ opacity: 0.8, fontSize: '0.9rem', marginBottom: '1.5rem' }}>Detected price-drop in Turkish cotton yarn. Buy window open for restricted volume.</p>
+                <button className="btn-primary" style={{ background: '#E8F5BD', color: '#172554', border: 'none' }} onClick={() => alert("Locking Arbitrage Window...")}>Lock Arbitrage Window</button>
+              </div>
+
+              <div className="stat-card" style={{ background: 'linear-gradient(180deg, rgba(232, 245, 189, 0.2) 0%, #064e3b 100%)', border: '1px solid rgba(232, 245, 189, 0.3)' }}>
+                <h4 style={{ color: '#E8F5BD', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}><Landmark size={18} /> AI Cash-Crunch Predictor</h4>
+                <div className="stat-value" style={{ fontSize: '1.8rem', color: '#E8F5BD', marginBottom: '8px' }}>Deficit Risk: 14 Days</div>
+                <p style={{ opacity: 0.8, fontSize: '0.9rem', marginBottom: '1.5rem' }}>₹12 Lakh locked in unpaid invoices. Recommending immediate factoring.</p>
+                <button className="btn-primary" style={{ background: '#E8F5BD', color: '#064e3b', border: 'none' }} onClick={() => alert("Auto-Factoring Invoices...")}>Auto-Factor Unpaid Invoices</button>
+              </div>
+            </div>
+
+            {/* Cost Breakdown Chart */}
+            <div className="chart-container" style={{ marginTop: '2rem' }}>
+              <h3 className="section-title">Cost Breakdown & Optimization Target</h3>
+              <div style={{ height: '300px', width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={costBreakdown.length > 0 ? costBreakdown : [
+                    { name: 'Labor', target: 80, actual: 70 },
+                    { name: 'Material', target: 90, actual: 85 },
+                    { name: 'Energy', target: 60, actual: 40 },
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis dataKey="name" stroke="#84B179" />
+                    <YAxis stroke="#84B179" />
+                    <Tooltip contentStyle={{ background: '#1a202c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
+                    <Bar dataKey="actual" fill="#84B179" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="target" fill="rgba(132, 177, 121, 0.1)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <AgentGrid categories={['Finance']} title="Finance & Sector Analytics AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
+          </div>
+        )}
 
         {
           activeTab === 'strategy' && (
@@ -4335,13 +4374,13 @@ export default function Dashboard({ defaultTab = 'overview' }) {
                     onClick={async () => {
                       setIsOptimizing(true);
                       setStrategicAiLogs(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: "SCHEDULER: Initiating Genetic Algorithm Optimization...", type: "system" }, ...prev]);
-                      
+
                       try {
                         const res = await api.post("/ai/scheduler/optimize", {
                           jobs: pendingJobs,
                           machines: fleetData.map(m => ({ id: m.id, name: m.name, color: m.color }))
                         });
-                        
+
                         if (res.data && res.data.schedule) {
                           setScheduleData(res.data.schedule);
                           setSchedulerStats({
@@ -4446,8 +4485,8 @@ export default function Dashboard({ defaultTab = 'overview' }) {
                           <span style={{ fontWeight: 'bold', fontSize: '0.8rem', color: job.color }}>{job.id}</span>
                           <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>Priority: {job.priority}</span>
                         </div>
-                        <input 
-                          value={job.name} 
+                        <input
+                          value={job.name}
                           onChange={(e) => {
                             const newJobs = [...pendingJobs];
                             newJobs[idx].name = e.target.value;
@@ -4458,7 +4497,7 @@ export default function Dashboard({ defaultTab = 'overview' }) {
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.65rem', opacity: 0.5 }}>Durations:</span>
                           {job.operations.map((op, oIdx) => (
-                            <input 
+                            <input
                               key={oIdx}
                               type="number"
                               value={op.duration}
@@ -4483,8 +4522,8 @@ export default function Dashboard({ defaultTab = 'overview' }) {
                     <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px' }}>
                       <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginBottom: '5px' }}>BOTTLENECK ANALYSIS</div>
                       <div style={{ color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                        {Object.entries(schedulerStats.machineUtilization).sort((a,b) => b[1]-a[1])[0]?.[0] || "Calculating..."} 
-                        <span style={{ marginLeft: '10px', fontSize: '0.7rem', opacity: 0.6 }}>@ {Object.entries(schedulerStats.machineUtilization).sort((a,b) => b[1]-a[1])[0]?.[1] || 0}% load</span>
+                        {Object.entries(schedulerStats.machineUtilization).sort((a, b) => b[1] - a[1])[0]?.[0] || "Calculating..."}
+                        <span style={{ marginLeft: '10px', fontSize: '0.7rem', opacity: 0.6 }}>@ {Object.entries(schedulerStats.machineUtilization).sort((a, b) => b[1] - a[1])[0]?.[1] || 0}% load</span>
                       </div>
                     </div>
                     <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px' }}>
@@ -4534,17 +4573,17 @@ export default function Dashboard({ defaultTab = 'overview' }) {
                 </div>
               </div>
             </div>
-            
+
             <AgentGrid categories={['Core Systems']} title="Scheduling Optimization Agents" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
           </div>
         )
-      }
+        }
 
-      {activeTab === 'fyp' && (
-        <div className="fyp-panel p-4 animate-fade-in" style={{ paddingBottom: '3rem' }}>
-          <FYPOptimizer />
-        </div>
-      )}
+        {activeTab === 'fyp' && (
+          <div className="fyp-panel p-4 animate-fade-in" style={{ paddingBottom: '3rem' }}>
+            <FYPOptimizer />
+          </div>
+        )}
 
 
         {activeTab === 'agents' && (
@@ -5168,183 +5207,274 @@ export default function Dashboard({ defaultTab = 'overview' }) {
         )}
 
         {activeTab === 'govassist' && (
-          <div className="gov-panel animate-fade-in" style={{ padding: '0 1.5rem 3rem 1.5rem' }}>
-            {/* HERO HEADER */}
-            <div style={{ marginBottom: '2rem', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', padding: '2.5rem', borderRadius: '24px', border: '1px solid rgba(236, 72, 153, 0.2)', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <h1 style={{ fontSize: '2.4rem', fontWeight: '900', margin: 0, color: 'white', letterSpacing: '-1px' }}>GovAssist AI <span style={{ color: '#ec4899' }}>Intelligence Module</span></h1>
-                <p style={{ fontSize: '1rem', color: '#a5b4fc', marginTop: '10px', maxWidth: '600px' }}>
-                  Advanced AI layer for Bhilwara textile factories to master compliance, maximize subsidies, and ensure inspection readiness through real-time telemetry analysis.
-                </p>
-                <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.8rem', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div> System Active
+          <div className="gov-panel animate-fade-in" style={{ padding: '0 2rem 3rem 2rem' }}>
+            {/* HEADER SECTION */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
+              <div>
+                <div style={{ background: '#6366f1', color: 'white', fontSize: '0.65rem', fontWeight: '900', padding: '4px 12px', borderRadius: '20px', width: 'fit-content', marginBottom: '12px', letterSpacing: '1px' }}>MANAGER ACCESS</div>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: '900', margin: 0, color: 'white', letterSpacing: '-1px' }}>GovAssist AI</h1>
+                <div style={{ fontSize: '1rem', color: '#94a3b8', marginTop: '6px' }}>Bhilwara Industrial Hub // Regulatory Intelligence Engine</div>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ background: 'rgba(0, 0, 0, 0.4)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '12px 24px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 15px #10b981', animation: 'pulse 2s infinite' }}></div>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 'bold', letterSpacing: '0.5px' }}>GOV-SYSTEM STATUS</div>
+                    <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: '900' }}>SYNCHRONIZED</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.8rem', color: 'white' }}>
-                    Policy Version: RIPS 2024 (v4.2)
-                  </div>
+                </div>
+                <button
+                  className="simulate-btn-cyan"
+                  style={{
+                    background: '#00f2ff',
+                    color: 'black',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '0 30px',
+                    height: '70px',
+                    borderRadius: '16px',
+                    border: 'none',
+                    fontWeight: '900',
+                    fontSize: '1rem',
+                    boxShadow: '0 0 20px rgba(0, 242, 255, 0.2)',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase'
+                  }}
+                  onClick={() => handleGovAssistReport('production')}
+                >
+                  <Play size={24} fill="black" /> Simulate Shift
+                </button>
+              </div>
+            </div>
+
+            {/* KPI ROW */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
+              <div className="stat-card" style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '10px', borderRadius: '12px' }}><ShieldCheck size={20} color="#3b82f6" /></div>
+                  <div style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontSize: '0.6rem', fontWeight: '900', padding: '4px 8px', borderRadius: '6px' }}>LIVE STATUS</div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold', marginBottom: '4px' }}>COMPLIANCE HEALTH</div>
+                <div style={{ fontSize: '2rem', fontWeight: '900', color: 'white' }}>90%</div>
+                <div style={{ fontSize: '0.7rem', color: '#3b82f6', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Activity size={12} /> Cross-module regulations
+                </div>
+              </div>
+
+              <div className="stat-card" style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '10px', borderRadius: '12px' }}><Building2 size={20} color="#10b981" /></div>
+                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.6rem', fontWeight: '900', padding: '4px 8px', borderRadius: '6px' }}>SIENA AI MATCH</div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold', marginBottom: '4px' }}>ELIGIBLE SCHEMES</div>
+                <div style={{ fontSize: '2rem', fontWeight: '900', color: 'white' }}>2</div>
+                <div style={{ fontSize: '0.7rem', color: '#10b981', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Activity size={12} /> Potential subsidies found
+                </div>
+              </div>
+
+              <div className="stat-card" style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <div style={{ background: 'rgba(234, 179, 8, 0.1)', padding: '10px', borderRadius: '12px' }}><Sparkles size={20} color="#eab308" /></div>
+                  <div style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', fontSize: '0.6rem', fontWeight: '900', padding: '4px 8px', borderRadius: '6px' }}>AUDIT SIM READY</div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold', marginBottom: '4px' }}>READINESS SCORE</div>
+                <div style={{ fontSize: '2rem', fontWeight: '900', color: 'white' }}>81%</div>
+                <div style={{ fontSize: '0.7rem', color: '#eab308', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Activity size={12} /> Industrial safety index
+                </div>
+              </div>
+
+              <div className="stat-card" style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '10px', borderRadius: '12px' }}><FileText size={20} color="#a855f7" /></div>
+                  <div style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', fontSize: '0.6rem', fontWeight: '900', padding: '4px 8px', borderRadius: '6px' }}>AUTO-COMPILED</div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold', marginBottom: '4px' }}>REPORTS READY</div>
+                <div style={{ fontSize: '2rem', fontWeight: '900', color: 'white' }}>4</div>
+                <div style={{ fontSize: '0.7rem', color: '#a855f7', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Activity size={12} /> Regulatory docs ready
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
-              
-              {/* 1. AI Compliance Assistant */}
-              <div className="industrial-panel" style={{ padding: '2rem', borderTop: '4px solid #10b981', background: 'rgba(15, 23, 42, 0.4)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 className="section-title" style={{ margin: 0, color: '#10b981', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <ShieldCheck size={24} /> AI Compliance Assistant
-                  </h3>
-                  <div style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', border: '1px solid rgba(16,185,129,0.3)' }}>
-                    {complianceData?.complianceScore || '92'}% COMPLIANCE
+            {/* MONITOR & SUBSIDY SECTION */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem', marginBottom: '2.5rem' }}>
+              {/* COMPLIANCE MONITOR */}
+              <div className="industrial-panel" style={{ padding: '2rem', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Activity size={24} color="#00f2ff" /> COMPLIANCE MONITOR
+                    </h3>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold', marginTop: '4px', letterSpacing: '1px' }}>REGULATORY TRACKING ACROSS ALL DEPARTMENTS</div>
                   </div>
+                  <div style={{ cursor: 'pointer', opacity: 0.6 }} onClick={() => handleDownloadReport()}><RefreshCcw size={18} /></div>
                 </div>
-                
-                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1.5rem' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Live Compliance Risk Stream</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {(complianceData?.risks || []).map((risk, i) => (
-                      <div key={i} style={{ borderLeft: `3px solid ${risk.risk === 'High' ? '#ef4444' : '#f59e0b'}`, paddingLeft: '15px' }}>
-                        <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#f8fafc' }}>{risk.issue}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px', lineHeight: '1.4' }}>{risk.action}</div>
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
-                          <span style={{ fontSize: '0.6rem', color: risk.risk === 'High' ? '#ef4444' : '#f59e0b', fontWeight: '900', textTransform: 'uppercase' }}>{risk.risk} RISK</span>
-                          <span style={{ fontSize: '0.6rem', color: '#475569', fontWeight: 'bold' }}>• {risk.category.toUpperCase()}</span>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                  {[
+                    { name: 'POLLUTION REPORT', deadline: '2026-03-25', status: 'COMPLETED', risk: 'LOW', color: '#10b981', type: 'environmental' },
+                    { name: 'LABOR COMPLIANCE REPORT', deadline: '2026-03-20', status: 'COMPLETED', risk: 'LOW', color: '#10b981', type: 'labor' },
+                    { name: 'FIRE SAFETY INSPECTION', deadline: '2026-04-10', status: 'PENDING', risk: 'MEDIUM', color: '#f59e0b', type: 'audit' },
+                    { name: 'ENERGY CONSUMPTION REPORT', deadline: '2026-03-30', status: 'PENDING', risk: 'LOW', color: '#10b981', type: 'environmental' }
+                  ].map((item, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer' }} onClick={() => handleGovAssistReport(item.type)}>
+                      <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        <div style={{ width: '4px', height: '40px', background: item.color, borderRadius: '2px' }}></div>
+                        <div>
+                          <div style={{ fontSize: '0.9rem', fontWeight: '900', color: 'white' }}>{item.name}</div>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Clock size={12} /> NEXT DEADLINE: {item.deadline}
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-                <button className="gov-apply-btn" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.4)', width: '100%' }} onClick={() => alert("Initializing Real-Time Compliance Audit...")}>
-                  Initiate Full Facility Scan →
-                </button>
-              </div>
-
-              {/* 2. Inspection Readiness AI */}
-              <div className="industrial-panel" style={{ padding: '2rem', borderTop: '4px solid #0ea5e9', background: 'rgba(15, 23, 42, 0.4)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 className="section-title" style={{ margin: 0, color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Eye size={24} /> Inspection Readiness AI
-                  </h3>
-                  <div style={{ background: 'rgba(14,165,233,0.1)', color: '#0ea5e9', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', border: '1px solid rgba(14,165,233,0.3)' }}>
-                    PASSIBILITY: {inspectionReadiness?.probabilityOfPass || '94'}%
-                  </div>
-                </div>
-                
-                <div style={{ textAlign: 'center', marginBottom: '1.5rem', background: 'rgba(14,165,233,0.05)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(14,165,233,0.1)' }}>
-                  <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#f8fafc', marginBottom: '4px' }}>
-                    {inspectionReadiness?.status || 'Inspection Ready'}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#0ea5e9', fontWeight: '700' }}>AI Readiness Score: {inspectionReadiness?.readinessScore || '88'}/100</div>
-                </div>
-
-                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1.5rem' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Readiness Deficiency Log</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {(inspectionReadiness?.issuesDetected || []).map((issue, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                        <div style={{ width: '8px', height: '8px', background: '#0ea5e9', borderRadius: '2px', marginTop: '6px', flexShrink: 0 }}></div>
-                        <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: '1.4' }}>{issue}</div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '0.65rem', fontWeight: '900', color: item.color, background: `${item.color}15`, padding: '4px 10px', borderRadius: '6px', display: 'inline-block' }}>{item.status}</div>
+                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold', marginTop: '6px' }}>RISK // <span style={{ color: item.risk === 'MEDIUM' ? '#f59e0b' : '#10b981' }}>{item.risk}</span></div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <button className="gov-apply-btn" style={{ background: '#0ea5e9', color: 'white', border: 'none' }} onClick={() => alert("Activating Virtual Inspection Drill...")}>
-                    Live Mock Drill
-                  </button>
-                  <button className="gov-apply-btn" style={{ background: 'rgba(14,165,233,0.1)', color: '#0ea5e9', border: '1px solid rgba(14,165,233,0.4)' }} onClick={() => alert("Downloading Inspection Preparation Blueprint...")}>
-                    Get Blueprint
-                  </button>
-                </div>
-              </div>
-
-              {/* 3. Government Scheme Eligibility AI */}
-              <div className="industrial-panel" style={{ padding: '2rem', borderTop: '4px solid #6366f1', gridColumn: 'span 2', background: 'rgba(15, 23, 42, 0.4)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                  <h3 className="section-title" style={{ margin: 0, color: '#6366f1', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Zap size={24} /> Government Scheme Eligibility AI
-                  </h3>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '8px' }}>FACTORY CAPEX: ₹{renderSafeValue(manualData?.investmentCr, '12')} Cr</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '8px' }}>TURNOVER: ₹{renderSafeValue(manualData?.turnoverCr, '45')} Cr</div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
-                  {(schemeEligibility?.schemes || [
-                    { name: "RIPS-2024", fullName: "Rajasthan Investment Promotion", benefit: "₹1.2 Cr Subsidy", eligibility: 92, status: "Eligible", color: "#10b981", features: ["Capital Subsidy", "Duty Waiver"] },
-                    { name: "AMTUFS", fullName: "Textile Tech Upgradation", benefit: "15% Subsidy", eligibility: 85, status: "Eligible", color: "#3b82f6", features: ["Machinery Link", "Online Status"] },
-                    { name: "Solar Rebate", fullName: "Renewable Energy Grant", benefit: "₹85k / Mo", eligibility: 78, status: "Approved", color: "#fbbf24", features: ["Net Metering", "Capital Grant"] },
-                    { name: "ZED Certification", fullName: "Zero Defect Support", benefit: "₹5 Lakh Grant", eligibility: 70, status: "Not Applied", color: "#f59e0b", features: ["Fee Refund", "Audit Support"] }
-                  ]).map((scheme, i) => (
-                    <div key={i} className="policy-card" style={{ borderTop: `3px solid ${scheme.color}`, background: 'rgba(0,0,0,0.2)', margin: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                        <div style={{ fontSize: '1rem', fontWeight: '900', color: scheme.color }}>{scheme.name}</div>
-                        <span style={{ fontSize: '0.6rem', fontWeight: '800', padding: '2px 6px', background: `${scheme.color}20`, color: scheme.color, borderRadius: '4px' }}>{scheme.status}</span>
-                      </div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: '900', color: 'white', marginBottom: '4px' }}>{scheme.benefit}</div>
-                      <div style={{ fontSize: '0.65rem', color: '#64748b', marginBottom: '16px', minHeight: '30px' }}>{scheme.fullName}</div>
-                      
-                      <div style={{ marginBottom: '16px' }}>
-                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', marginBottom: '4px' }}>
-                           <span style={{ color: '#94a3b8' }}>AI Probability</span>
-                           <span style={{ color: scheme.color, fontWeight: '800' }}>{scheme.eligibility}%</span>
-                         </div>
-                         <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px' }}>
-                           <div style={{ width: `${scheme.eligibility}%`, height: '100%', background: scheme.color, borderRadius: '2px' }}></div>
-                         </div>
-                      </div>
-
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
-                        {scheme.features.map((f, fi) => (
-                          <span key={fi} style={{ fontSize: '0.6rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{f}</span>
-                        ))}
-                      </div>
-
-                      <button className="gov-apply-btn" style={{ background: `${scheme.color}15`, color: scheme.color, border: `1px solid ${scheme.color}50`, width: '100%' }} onClick={() => alert(`Starting application for ${scheme.name}...`)}>
-                        Apply Instantly
-                      </button>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* 4. AI Auto Report Generator */}
-              <div className="industrial-panel" style={{ padding: '2rem', borderTop: '4px solid #ec4899', gridColumn: 'span 2', background: 'rgba(15, 23, 42, 0.4)' }}>
+              {/* SUBSIDY MATCHER */}
+              <div className="industrial-panel" style={{ padding: '2rem', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                  <h3 className="section-title" style={{ margin: 0, color: '#ec4899', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <FileText size={24} /> AI Auto Report Generator
-                  </h3>
-                  <div style={{ color: '#ec4899', fontSize: '0.75rem', fontWeight: '800', letterSpacing: '1px' }}>SYSTEM: GEN-AI ENGINE IDLE</div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Landmark size={24} color="#10b981" /> SUBSIDY MATCHER
+                    </h3>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold', marginTop: '4px', letterSpacing: '1px' }}>POWERED BY SIENA INDUSTRIAL AI ENGINE</div>
+                  </div>
+                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.6rem', fontWeight: '900', padding: '6px 12px', borderRadius: '10px' }}>AI ENGINE ACTIVE</div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '2rem', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: '10%', right: '10%', opacity: 0.05 }}><Landmark size={80} /></div>
+                    <div style={{ color: '#10b981', fontSize: '0.7rem', fontWeight: '900', marginBottom: '12px' }}>ELIGIBLE SCHEME</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: 'white', marginBottom: '8px' }}>Technology Upgradation Fund Scheme</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: '900', color: 'white', marginBottom: '20px' }}>₹4,20,000</div>
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
+                      <span style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '4px 10px', borderRadius: '6px', fontWeight: 'bold' }}>MACHINE INVOICE</span>
+                      <span style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '4px 10px', borderRadius: '6px', fontWeight: 'bold' }}>AUDIT REPORT</span>
+                      <span style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '4px 10px', borderRadius: '6px', fontWeight: 'bold' }}>MSME CERT</span>
+                    </div>
+                    <button
+                      className="btn-primary"
+                      style={{ background: '#10b981', color: 'black', width: '100%', fontWeight: '900', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                      onClick={() => alert("Initiating Official Submission for TUFS...")}
+                    >
+                      INITIATE OFFICIAL SUBMISSION <ArrowRight size={16} />
+                    </button>
+                  </div>
+
+                  <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '2rem' }}>
+                    <div style={{ color: '#10b981', fontSize: '0.7rem', fontWeight: '900', marginBottom: '12px' }}>ELIGIBLE SCHEME</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: 'white', marginBottom: '8px' }}>Energy Efficiency Rebate</div>
+                    <div style={{ fontSize: '2rem', fontWeight: '900', color: 'white', marginBottom: '15px' }}>₹1,10,000</div>
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '1.5rem' }}>
+                      <span style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '4px 10px', borderRadius: '6px', fontWeight: 'bold' }}>ENERGY AUDIT</span>
+                      <span style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '4px 10px', borderRadius: '6px', fontWeight: 'bold' }}>ELECTRICITY BILLS</span>
+                    </div>
+                    <button
+                      className="btn-primary"
+                      style={{ background: '#10b981', color: 'black', width: '100%', fontWeight: '900', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                      onClick={() => alert("Initiating Official Submission for Energy Rebate...")}
+                    >
+                      INITIATE OFFICIAL SUBMISSION <ArrowRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* AUDIT & REPORTS SECTION */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2rem' }}>
+              {/* AUDIT SIMULATION */}
+              <div className="industrial-panel" style={{ padding: '2rem', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Eye size={24} color="#f59e0b" /> AUDIT SIMULATION
+                    </h3>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold', marginTop: '4px', letterSpacing: '1px' }}>PREDICTIVE READINESS FOR SURPRISE INSPECTIONS</div>
+                  </div>
+                  <div style={{ fontSize: '0.65rem', color: '#f59e0b', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div style={{ width: '8px', height: '8px', background: '#f59e0b', borderRadius: '50%' }}></div> ACTIVE TRACING
+                  </div>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '2rem', display: 'flex', alignItems: 'center', gap: '2.5rem', marginBottom: '2rem' }}>
+                  <div style={{ position: 'relative', width: '120px', height: '120px', flexShrink: 0 }}>
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="50" stroke="rgba(255,255,255,0.05)" strokeWidth="12" fill="none" />
+                      <circle
+                        cx="60" cy="60" r="50" stroke="#f59e0b" strokeWidth="12" fill="none"
+                        strokeDasharray={`${2 * Math.PI * 50 * 0.81} ${2 * Math.PI * 50 * (1 - 0.81)}`}
+                        strokeDashoffset={2 * Math.PI * 50 * 0.25}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'white' }}>81%</div>
+                      <div style={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 'bold' }}>READY</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px 15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ fontSize: '0.6rem', color: '#f59e0b', fontWeight: '900', letterSpacing: '1px' }}>PRIMARY RISK</div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'white', marginTop: '4px' }}>SAFETY & FIRE HAZARDS</div>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px 15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ fontSize: '0.6rem', color: '#10b981', fontWeight: '900', letterSpacing: '1px' }}>COMPLIANCE LEVEL</div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: '800', color: 'white', marginTop: '4px' }}>OPTIMAL (HIGH)</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold', marginBottom: '1rem', letterSpacing: '1px' }}>CRITICAL ACTION ITEMS:</div>
+                  <div style={{ background: 'rgba(239, 68, 68, 0.05)', color: '#ef4444', padding: '1.2rem', borderRadius: '14px', border: '1px solid rgba(239, 68, 68, 0.1)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '8px', borderRadius: '8px' }}><ShieldAlert size={18} /></div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: '800', letterSpacing: '0.5px' }}>LINT ACCUMULATION NEAR LOOM 4 - SAFETY HAZARD</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* AUTOMATED REPORTS */}
+              <div className="industrial-panel" style={{ padding: '2rem', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <FileText size={24} color="#6366f1" /> AUTOMATED REPORTS
+                    </h3>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold', marginTop: '4px', letterSpacing: '1px' }}>1-CLICK GENERATION FOR REGULATORY SUBMISSION</div>
+                  </div>
+                  <button className="btn-primary" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1', border: '1px solid rgba(99, 102, 241, 0.3)', fontSize: '0.7rem', fontWeight: '900', padding: '8px 16px', borderRadius: '10px' }}>BATCH GENERATE</button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
                   {[
-                    { type: 'environmental', title: 'PCB / Environmental', icon: <Droplets size={22} />, color: '#10b981', desc: 'Auto-calculates water recycling efficiency (ZLD), sludge output, and carbon credits.' },
-                    { type: 'labor', title: 'Compliance & Safety', icon: <Users size={22} />, color: '#3b82f6', desc: 'Aggregates shift logs, PPE violation counts, and employee benefit submissions.' },
-                    { type: 'production', title: 'DIC Production Audit', icon: <BarChart3 size={22} />, color: '#6366f1', desc: 'Certified production capacity vs actual throughput reports for RIPS verification.' }
+                    { name: 'MONTHLY PRODUCTION REPORT', type: 'production', desc: 'VALIDATED VIA INDUSTRIAL EDGE-NODES AND REAL-TIME PRODUCTION TELEMETRY DATA STREAMS.' },
+                    { name: 'ENERGY USAGE REPORT', type: 'environmental', desc: 'VALIDATED VIA INDUSTRIAL EDGE-NODES AND REAL-TIME PRODUCTION TELEMETRY DATA STREAMS.' },
+                    { name: 'WORKER COMPLIANCE REPORT', type: 'labor', desc: 'VALIDATED VIA INDUSTRIAL EDGE-NODES AND REAL-TIME PRODUCTION TELEMETRY DATA STREAMS.' },
+                    { name: 'ENVIRONMENTAL COMPLIANCE REPORT', type: 'environmental', desc: 'VALIDATED VIA INDUSTRIAL EDGE-NODES AND REAL-TIME PRODUCTION TELEMETRY DATA STREAMS.' }
                   ].map((report, i) => (
-                    <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '1.8rem', position: 'relative' }}>
-                      <div style={{ padding: '12px', background: `${report.color}15`, color: report.color, borderRadius: '12px', width: 'fit-content', marginBottom: '1.2rem' }}>{report.icon}</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white', marginBottom: '8px' }}>{report.title}</div>
-                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.5', marginBottom: '2rem', minHeight: '60px' }}>{report.desc}</p>
-                      
-                      <button 
-                        disabled={isGeneratingReport}
-                        className="gov-apply-btn" 
-                        style={{ 
-                          background: isGeneratingReport ? 'rgba(255,255,255,0.05)' : 'white', 
-                          color: isGeneratingReport ? '#64748b' : 'black', 
-                          border: 'none', 
-                          fontWeight: '900', 
-                          width: '100%',
-                          cursor: isGeneratingReport ? 'not-allowed' : 'pointer'
-                        }} 
+                    <div key={i} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '10px', borderRadius: '10px', width: 'fit-content', marginBottom: '1rem' }}><FileText size={18} color="#6366f1" /></div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '900', color: 'white', marginBottom: '8px' }}>{report.name}</div>
+                        <div style={{ fontSize: '0.65rem', color: '#64748b', lineHeight: '1.5', marginBottom: '1.5rem' }}>{report.desc}</div>
+                      </div>
+                      <button
+                        className="btn-primary"
+                        style={{ background: 'rgba(255,255,255,0.05)', border: 'none', width: '100%', fontSize: '0.7rem', fontWeight: '900', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                         onClick={() => handleGovAssistReport(report.type)}
                       >
-                        {isGeneratingReport ? 'ENGINE GENERATING...' : 'Generate & Export →'}
+                        <RefreshCcw size={14} /> GENERATE & DOWNLOAD
                       </button>
                     </div>
                   ))}

@@ -5,6 +5,20 @@ const api = axios.create({
   timeout: 15000, // 15s for heavy AI ops
 });
 
+// Add a request interceptor
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers["x-auth-token"] = token;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // INTERCEPTOR: Prevent UI crash if backend or MongoDB goes down during demo
 api.interceptors.response.use(
   response => response,

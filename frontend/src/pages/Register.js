@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Mail, Lock, LogIn, Eye, EyeOff } from 'lucide-react';
+import { Shield, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 
-const Login = () => {
-    const [formData, setFormData] = useState({ email: '', password: '' });
+const Register = () => {
+    const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'operator' });
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { login, isAuthenticated, user, loading } = useAuth();
+    const { register, isAuthenticated, user, loading } = useAuth();
     const navigate = useNavigate();
 
     // Access Helper: Map roles to entry points
@@ -18,7 +18,7 @@ const Login = () => {
         operator: '/operator-dashboard'
     }[role] || '/dashboard');
 
-    // Auto-Rescue: If already authenticated, bypass login
+    // Auto-Rescue: If already authenticated, bypass register
     useEffect(() => {
         if (!loading && isAuthenticated && user) {
             navigate(getEntryPoint(user.role));
@@ -32,10 +32,10 @@ const Login = () => {
         setError('');
         setIsSubmitting(true);
         try {
-            const data = await login(formData.email, formData.password);
+            const data = await register(formData.name, formData.email, formData.password, formData.role);
             navigate(getEntryPoint(data.user.role));
         } catch (err) {
-            setError(err.response?.data?.msg || 'Verification failed. Protocol mismatch.');
+            setError(err.response?.data?.msg || 'Registration failed. Protocol mismatch.');
         } finally {
             setIsSubmitting(false);
         }
@@ -53,29 +53,29 @@ const Login = () => {
         }}>
             <div style={{
                 width: '100%',
-                maxWidth: '420px',
+                maxWidth: '440px',
                 background: '#0f172a',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '24px',
                 padding: '2.5rem',
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
             }}>
-                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{
                         width: '64px',
                         height: '64px',
-                        background: 'rgba(34, 211, 238, 0.1)',
+                        background: 'rgba(99, 102, 241, 0.1)',
                         borderRadius: '16px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         margin: '0 auto 1.5rem',
-                        border: '1px solid rgba(34, 211, 238, 0.2)'
+                        border: '1px solid rgba(99, 102, 241, 0.2)'
                     }}>
-                        <Shield size={32} color="#22d3ee" />
+                        <Shield size={32} color="#6366f1" />
                     </div>
-                    <h1 style={{ fontSize: '1.8rem', fontWeight: '900', color: 'white', marginBottom: '0.5rem' }}>Authorize Access</h1>
-                    <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Secure session for SmartFactory AI</p>
+                    <h1 style={{ fontSize: '1.8rem', fontWeight: '900', color: 'white', marginBottom: '0.5rem' }}>Deploy Node</h1>
+                    <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Initialize your SmartFactory node</p>
                 </div>
 
                 {error && (
@@ -95,6 +95,30 @@ const Login = () => {
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                     <div>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Full Name</label>
+                        <div style={{ position: 'relative' }}>
+                            <User style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#475569' }} size={18} />
+                            <input
+                                type="text"
+                                name="name"
+                                required
+                                placeholder="Node Admin Name"
+                                style={{
+                                    width: '100%',
+                                    padding: '14px 16px 14px 48px',
+                                    background: 'rgba(2, 6, 23, 0.4)',
+                                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                                    borderRadius: '14px',
+                                    color: 'white',
+                                    fontSize: '0.95rem',
+                                    outline: 'none'
+                                }}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
                         <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Access Email</label>
                         <div style={{ position: 'relative' }}>
                             <Mail style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#475569' }} size={18} />
@@ -102,7 +126,7 @@ const Login = () => {
                                 type="email"
                                 name="email"
                                 required
-                                placeholder="operator@hub.ai"
+                                placeholder="admin@node.ai"
                                 style={{
                                     width: '100%',
                                     padding: '14px 16px 14px 48px',
@@ -149,40 +173,59 @@ const Login = () => {
                         </div>
                     </div>
 
+                    <div>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>System Access Role</label>
+                        <select
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                            style={{
+                                width: '100%',
+                                padding: '14px 16px',
+                                background: 'rgba(2, 6, 23, 0.4)',
+                                border: '1px solid rgba(255, 255, 255, 0.05)',
+                                borderRadius: '14px',
+                                color: 'white',
+                                fontSize: '0.95rem',
+                                outline: 'none',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <option value="owner">Strategic Owner</option>
+                            <option value="manager">Plant Manager</option>
+                            <option value="operator">Node Operator</option>
+                        </select>
+                    </div>
+
                     <button
                         type="submit"
                         disabled={isSubmitting}
                         style={{
                             width: '100%',
                             padding: '16px',
-                            background: '#22d3ee',
-                            color: 'black',
+                            background: '#6366f1',
+                            color: 'white',
                             border: 'none',
                             borderRadius: '14px',
                             fontWeight: '900',
                             fontSize: '1rem',
                             cursor: isSubmitting ? 'not-allowed' : 'pointer',
                             marginTop: '1rem',
-                            boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.2)',
+                            boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.4)',
                             opacity: isSubmitting ? 0.7 : 1,
-                            transition: 'all 0.2s',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '10px'
+                            transition: 'all 0.2s'
                         }}
                     >
-                        <LogIn size={20} />
-                        {isSubmitting ? 'VERIFYING...' : 'AUTHORIZE SESSION'}
+                        {isSubmitting ? 'PROVISIONING...' : 'INITIALIZE NODE'}
                     </button>
                 </form>
 
                 <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.9rem', color: '#94a3b8' }}>
-                    New Operator? <Link to="/register" style={{ color: '#22d3ee', textDecoration: 'none', fontWeight: 'bold' }}>Register Node</Link>
+                    Already an Operator? <Link to="/login" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 'bold' }}>Authorize Session</Link>
                 </div>
             </div>
         </div>
     );
 };
 
-export default Login;
+export default Register;

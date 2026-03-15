@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
     ArrowRight, Factory, Zap, ShieldCheck,
     MessageCircle, Globe, Layers,
@@ -9,9 +10,13 @@ import {
 
 const Landing = () => {
     const navigate = useNavigate();
+    const { isAuthenticated, user } = useAuth();
     const [scrolled, setScrolled] = useState(false);
-
     const [livePulse, setLivePulse] = useState({ oee: 78.5, active: 18 });
+
+    const handleEnterDashboard = () => {
+        navigate('/login');
+    };
 
     useEffect(() => {
         const interval = setInterval(async () => {
@@ -37,7 +42,7 @@ const Landing = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-const features = [
+    const features = [
         {
             icon: <Clock size={24} />,
             title: "'EM4' Scheduler",
@@ -101,7 +106,7 @@ const features = [
 
                 <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
                     <button
-                        onClick={() => navigate('/dashboard')}
+                        onClick={handleEnterDashboard}
                         style={{
                             background: 'rgba(255,255,255,0.03)',
                             border: '1px solid rgba(255,255,255,0.1)',
@@ -203,7 +208,7 @@ const features = [
 
                     <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
                         <button
-                            onClick={() => navigate('/dashboard')}
+                            onClick={handleEnterDashboard}
                             style={{
                                 background: '#6366f1',
                                 border: 'none',
@@ -313,7 +318,7 @@ const features = [
                     <h2 style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '1.5rem' }}>Ready to reach Nirvana?</h2>
                     <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', marginBottom: '3rem', maxWidth: '600px', margin: '0 auto 3rem auto' }}>Join the textile revolution and optimize your factory in minutes. No complex hardware required.</p>
                     <button
-                        onClick={() => navigate('/dashboard')}
+                        onClick={handleEnterDashboard}
                         style={{
                             background: 'white',
                             border: 'none',
