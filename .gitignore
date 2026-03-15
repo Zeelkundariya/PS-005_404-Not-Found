@@ -8,3 +8,9 @@ package-lock.json
 /backend/node_modules/
 /frontend/node_modules/
 /frontend/build/
+*.xlsx
+*.txt
+.idea/
+.vscode/
+production-scheduler-fyp/backend/node_modules/
+production-scheduler-fyp/frontend/node_modules/
