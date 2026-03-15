@@ -17,7 +17,14 @@ Instead of random numbers, we use a **Persistent State Drift**.
 - **Execution**: Every 2.5 seconds, it pings `/api/iot/live`.
 - **Latency Handling**: We use Axios interceptors to handle potential timeouts, ensuring the dashboard never "freezes" even if the network fluctuates.
 
-### 3. Inter-connected Logic (Systemic Integrity)
+### 3. Plant Floor: Dynamic Machine Monitoring
+The "Machine Pulse" or "Plant Floor" grid is a direct manifestation of the back-end sensor simulation.
+- **Dynamic Object Generation**: The orchestrator tracks 15 distinct industrial units (Looms, Stenters, Dyeing Jets).
+- **Sub-Second Recalculation**: On every poll, each machine's `health`, `temp`, `vibration`, and `failureProb` are recalculated.
+- **State Machine Integration**: If a machine's temperature exceeds 85°C or vibration goes above 8 m/s², its status instantly flips from `Running` to `Warning`. This triggers a UI color change (from Cyan to Amber) across the plant grid in real-time.
+- **Impact**: It allows supervisors to see exactly which specific machine on the physical floor needs attention before it triggers a complete line stoppage.
+
+### 4. Inter-connected Logic (Systemic Integrity)
 Data isn't just floating; it’s linked.
 - **Example**: If the `vibration` sensor on a machine exceeds a certain threshold, the `Reliability Score` KPI on the main dashboard automatically drops.
 - **Example**: As `Production Speed` increases, the `Energy Consumption` gauge moves up in sync.
