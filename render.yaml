@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: smartfactory-ai-unified
+    env: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+        placeholder: "Your MongoDB Atlas URI"
+      - key: JWT_SECRET
+        sync: false
+        placeholder: "Your secure JWT secret"
+      - key: PORT
+        value: 3001
