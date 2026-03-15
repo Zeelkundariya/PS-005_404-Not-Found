@@ -18,13 +18,28 @@ const OwnerPortal = () => {
         }
     };
 
+    const [liveStats, setLiveStats] = useState({ oee: '78.5%', latency: '0.8ms' });
+
     useEffect(() => {
         fetchRequests();
         const interval = setInterval(fetchRequests, 3000);
         const timeInterval = setInterval(() => setCurrentTime(new Date()), 1000);
+        
+        const iotInterval = setInterval(async () => {
+            try {
+                const { data } = await axios.get('/api/iot/live');
+                setLiveStats({
+                    oee: `${data.kpis.oeeScore.toFixed(1)}%`,
+                    latency: `${(Math.random() * 0.5 + 0.3).toFixed(2)}ms`,
+                    revenue: data.finance.revenueToday
+                });
+            } catch (err) { console.error(err); }
+        }, 2500);
+
         return () => {
             clearInterval(interval);
             clearInterval(timeInterval);
+            clearInterval(iotInterval);
         };
     }, []);
 
@@ -173,8 +188,8 @@ const OwnerPortal = () => {
                 <div className="flex flex-row gap-6 mb-12 overflow-x-auto no-scrollbar">
                     {[
                         { label: 'AGENTS', val: '52/52', icon: Cpu, color: 'text-gray-500' },
-                        { label: 'LATENCY', val: '0.8ms', icon: Activity, color: 'text-indigo-400' },
-                        { label: 'PENDING', val: requests.length, icon: Zap, color: 'text-amber-500' },
+                        { label: 'OEE SCORE', val: liveStats.oee, icon: Activity, color: 'text-indigo-400' },
+                        { label: 'LATENCY', val: liveStats.latency, icon: Zap, color: 'text-amber-500' },
                         { label: 'NODE', val: 'Bhilwara', icon: Activity, color: 'text-emerald-400' }
                     ].map((stat, i) => (
                         <div key={i} className="stat-card flex-1 min-w-[200px] p-6 group transition-all duration-300 hover:border-indigo-500/20">

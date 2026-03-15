@@ -24,6 +24,8 @@ app.use("/api/upload", require("./routes/uploadRoutes"));
 app.use("/api/whatsapp", require("./routes/whatsapp"));
 app.use("/api/owner", require("./routes/ownerRoutes"));
 app.use("/api/fyp", require("./routes/fypRoutes"));
+app.use("/api/iot", require("./routes/iotSimulator"));
+app.use("/api/govassist", require("./routes/govAssistRoutes"));
 
 // app.get("*", (req, res) => {
 //     res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));

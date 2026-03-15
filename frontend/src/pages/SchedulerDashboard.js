@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../api';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
   AreaChart, Area 
@@ -6,36 +7,71 @@ import {
 import { 
   Clock, Play, Pause, AlertCircle, CheckCircle2, 
   Settings, Plus, Filter, Download, MoreVertical,
-  Cpu, Users, Zap, TrendingUp, Calendar, LayoutDashboard
+  Cpu, Users, Zap, TrendingUp, Calendar, LayoutDashboard, Activity, Wifi
 } from 'lucide-react';
 
 const SchedulerDashboard = () => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [activeTab, setActiveTab] = useState('gantt');
-  
-  // Mock Data
-  const machineData = [
-    { id: 'M1', name: 'Loom #01 (Jacquard)', status: 'Running', health: 95, color: '#3b82f6', load: 85 },
-    { id: 'M2', name: 'Loom #04 (Dobby)', status: 'Maintenance', health: 42, color: '#f59e0b', load: 0 },
-    { id: 'M3', name: 'Stenter #01 (Finishing)', status: 'Running', health: 88, color: '#10b981', load: 92 },
-    { id: 'M4', name: 'Dyeing Jar #02', status: 'Idle', health: 99, color: '#8b5cf6', load: 15 },
-    { id: 'M5', name: 'Inspection #03', status: 'Running', health: 91, color: '#ec4899', load: 60 },
+  const [liveData, setLiveData] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState('--:--:--');
+  const [pulse, setPulse] = useState(false);
+
+  // Fetch live data from IoT simulator
+  const fetchLiveData = useCallback(async () => {
+    try {
+      const { data } = await api.get('/iot/live');
+      setLiveData(data);
+      setLastUpdated(new Date().toLocaleTimeString());
+      setPulse(p => !p);
+    } catch (err) {
+      console.error('Scheduler live data error:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLiveData();
+    const id = setInterval(fetchLiveData, 2500);
+    return () => clearInterval(id);
+  }, [fetchLiveData]);
+
+  const sch = liveData?.scheduler;
+  const machineData = sch?.machines ?? [
+    { id: 'M1', name: 'Loom #01 (Jacquard)',    status: 'Running',     health: 95, color: '#3b82f6', load: 85 },
+    { id: 'M2', name: 'Loom #04 (Dobby)',        status: 'Maintenance', health: 42, color: '#f59e0b', load: 0  },
+    { id: 'M3', name: 'Stenter #01 (Finishing)', status: 'Running',     health: 88, color: '#10b981', load: 92 },
+    { id: 'M4', name: 'Dyeing Jar #02',          status: 'Idle',        health: 99, color: '#8b5cf6', load: 15 },
+    { id: 'M5', name: 'Inspection #03',          status: 'Running',     health: 91, color: '#ec4899', load: 60 },
   ];
 
-  const [schedule, setSchedule] = useState([
-    { id: 'J101', job: 'Premium Denim', task: 'Warping', machineId: 'M1', start: 0, duration: 4, color: '#3b82f6' },
-    { id: 'J101', job: 'Premium Denim', task: 'Sizing', machineId: 'M2', start: 4, duration: 3, color: '#3b82f6' },
-    { id: 'J102', job: 'Cotton Twill', task: 'Weaving', machineId: 'M1', start: 4, duration: 6, color: '#10b981' },
-    { id: 'J103', job: 'Silk Blend', task: 'Dyeing', machineId: 'M4', start: 2, duration: 5, color: '#f59e0b' },
+  const [schedule] = useState([
+    { id: 'J101', job: 'Premium Denim',  task: 'Warping',   machineId: 'M1', start: 0, duration: 4, color: '#3b82f6' },
+    { id: 'J101', job: 'Premium Denim',  task: 'Sizing',    machineId: 'M2', start: 4, duration: 3, color: '#3b82f6' },
+    { id: 'J102', job: 'Cotton Twill',   task: 'Weaving',   machineId: 'M1', start: 4, duration: 6, color: '#10b981' },
+    { id: 'J103', job: 'Silk Blend',     task: 'Dyeing',    machineId: 'M4', start: 2, duration: 5, color: '#f59e0b' },
     { id: 'J104', job: 'Polyester Tech', task: 'Finishing', machineId: 'M3', start: 0, duration: 8, color: '#8b5cf6' },
-    { id: 'J105', job: 'Linen Batch', task: 'QC Scan', machineId: 'M5', start: 6, duration: 2, color: '#ec4899' },
+    { id: 'J105', job: 'Linen Batch',    task: 'QC Scan',   machineId: 'M5', start: 6, duration: 2, color: '#ec4899' },
   ]);
 
   const stats = [
-    { label: 'Overall Unit Utilization', value: '88.4%', trend: '+4.2%', icon: <Zap size={18} /> },
-    { label: 'Current Makespan', value: '14.2h', trend: '-1.5h', icon: <Clock size={18} /> },
-    { label: 'Energy Efficiency', value: '92%', trend: '+0.8%', icon: <TrendingUp size={18} /> },
-    { label: 'Active Operators', value: '24/30', trend: 'Stable', icon: <Users size={18} /> },
+    { label: 'Overall Unit Utilization', value: `${sch?.unitUtilization ?? 88.4}%`,     trend: '+4.2%', icon: <Zap size={18} /> },
+    { label: 'Current Makespan',          value: `${sch?.makespan ?? 14.2}h`,             trend: '-1.5h', icon: <Clock size={18} /> },
+    { label: 'Energy Efficiency',         value: `${sch?.energyEfficiency ?? 92}%`,       trend: '+0.8%', icon: <TrendingUp size={18} /> },
+    { label: 'Active Operators',          value: `${sch?.activeOperators ?? 24}/30`,      trend: 'Stable', icon: <Users size={18} /> },
+  ];
+
+  const effTrend = sch?.efficiencyTrend ?? [
+    { time: '0H', efficiency: 85 }, { time: '4H', efficiency: 88 },
+    { time: '8H', efficiency: 82 }, { time: '12H', efficiency: 94 },
+    { time: '16H', efficiency: 91 }, { time: '20H', efficiency: 89 },
+    { time: '24H', efficiency: 95 },
+  ];
+
+  const logFeed = sch?.logs?.length ? sch.logs : [
+    { time: '14:22:10', msg: 'Neural Sync: Loom #01 rotation adjusted (+2% throughput)', type: 'success' },
+    { time: '14:15:44', msg: 'Grid Alert: Peak load detected. Throttling Inspection #03.', type: 'alert' },
+    { time: '13:50:02', msg: 'Job J102 Weaving Phase 02 Initiated.', type: 'info' },
+    { time: '13:30:11', msg: 'Scheduler: GAN Redefining makespan (14.2h baseline).', type: 'info' },
   ];
 
   const handleOptimize = () => {
@@ -57,6 +93,9 @@ const SchedulerDashboard = () => {
           <p className="text-slate-400 mt-1 flex items-center gap-2 text-sm uppercase tracking-widest font-semibold">
             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
             Live Cluster: Bhilwara Textile Core
+            <span className="ml-4 text-xs text-slate-600 flex items-center gap-1">
+              <Wifi size={10} className="text-emerald-500" /> Updated: {lastUpdated}
+            </span>
           </p>
         </div>
 
@@ -83,12 +122,15 @@ const SchedulerDashboard = () => {
         </div>
       </header>
 
-      {/* KPI Section */}
+      {/* KPI Section — LIVE */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, i) => (
           <div key={i} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 p-5 rounded-2xl shadow-xl hover:border-blue-500/30 transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform text-blue-500">
-              {stat.icon}
+            <div className="absolute top-2 right-2">
+              <span className="text-[8px] font-black text-emerald-500 flex items-center gap-1 opacity-70">
+                <span className={`w-1.5 h-1.5 rounded-full bg-emerald-500 ${pulse ? 'opacity-100' : 'opacity-30'} transition-opacity`}></span>
+                LIVE
+              </span>
             </div>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-slate-800 rounded-lg text-blue-400">
@@ -97,7 +139,7 @@ const SchedulerDashboard = () => {
               <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.label}</span>
             </div>
             <div className="flex items-end justify-between">
-              <h3 className="text-3xl font-black text-white">{stat.value}</h3>
+              <h3 className="text-3xl font-black text-white transition-all duration-500">{stat.value}</h3>
               <span className={`text-xs font-bold px-2 py-1 rounded-md ${stat.trend.startsWith('+') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}`}>
                 {stat.trend}
               </span>
@@ -107,16 +149,19 @@ const SchedulerDashboard = () => {
       </div>
 
       <div className="grid grid-cols-12 gap-6">
-        {/* Left Column: Job Queue & Machine Status */}
+        {/* Left Column: Machine Status (LIVE) + Job Queue */}
         <div className="col-span-12 lg:col-span-4 space-y-6">
           
-          {/* Machine Status Panel */}
+          {/* Machine Status Panel — LIVE */}
           <section className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-black text-white flex items-center gap-2 truncate">
                 <Cpu size={20} className="text-blue-500" /> RESOURCE CLUSTER
               </h2>
-              <span className="text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-400 font-bold tracking-tighter hover:text-white cursor-pointer transition-colors">LIVE STATUS</span>
+              <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full font-bold tracking-tighter flex items-center gap-1">
+                <span className={`w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse`}></span>
+                LIVE
+              </span>
             </div>
             <div className="space-y-4">
               {machineData.map(m => (
@@ -159,11 +204,11 @@ const SchedulerDashboard = () => {
             </div>
             <div className="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-1">
               {[
-                { id: 'J202', name: 'Silk Saris B-04', priority: 'High', time: '12h' },
-                { id: 'J203', name: 'Uniform Twill', priority: 'Med', time: '8h' },
-                { id: 'J204', name: 'Poly-Blend X-2', priority: 'Low', time: '5h' },
-                { id: 'J205', name: 'Denim Indigo', priority: 'High', time: '14h' },
-                { id: 'J206', name: 'Cotton Rugs', priority: 'Med', time: '10h' },
+                { id: 'J202', name: 'Silk Saris B-04',  priority: 'High', time: '12h' },
+                { id: 'J203', name: 'Uniform Twill',     priority: 'Med',  time: '8h'  },
+                { id: 'J204', name: 'Poly-Blend X-2',    priority: 'Low',  time: '5h'  },
+                { id: 'J205', name: 'Denim Indigo',      priority: 'High', time: '14h' },
+                { id: 'J206', name: 'Cotton Rugs',       priority: 'Med',  time: '10h' },
               ].map(job => (
                 <div key={job.id} className="p-4 bg-slate-800/40 border border-slate-700/50 rounded-2xl hover:border-slate-500 transition-colors cursor-pointer group">
                   <div className="flex justify-between items-start mb-2">
@@ -192,7 +237,7 @@ const SchedulerDashboard = () => {
           </section>
         </div>
 
-        {/* Right Column: Gantt Chart & Big Analytics */}
+        {/* Right Column: Gantt Chart & LIVE Analytics */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
           
           {/* Gantt Chart Container */}
@@ -244,7 +289,6 @@ const SchedulerDashboard = () => {
 
                 {/* Grid Rows */}
                 <div className="flex-1 space-y-2 relative">
-                  {/* Vertical Grid Lines */}
                   <div className="absolute inset-0 flex justify-between pointer-events-none px-2 z-0">
                     <div className="w-48 shrink-0"></div>
                     {Array.from({ length: 13 }).map((_, i) => (
@@ -293,23 +337,19 @@ const SchedulerDashboard = () => {
             </div>
           </section>
 
-          {/* Efficiency & Diagnostics Section */}
+          {/* Efficiency & Diagnostics Section — LIVE */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <section className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-2xl">
-              <h2 className="text-lg font-black text-white flex items-center gap-2 mb-6 uppercase tracking-widest">
+              <h2 className="text-lg font-black text-white flex items-center gap-2 mb-2 uppercase tracking-widest">
                 <AlertCircle size={20} className="text-blue-500" /> Neural Impact Analysis
               </h2>
-              <div className="h-[180px]">
+              <p className="text-[10px] text-slate-500 mb-4 uppercase tracking-widest font-bold flex items-center gap-1">
+                <span className={`w-1.5 h-1.5 rounded-full bg-emerald-500 ${pulse ? 'opacity-100' : 'opacity-40'} transition-opacity`}></span>
+                Live Efficiency Stream
+              </p>
+              <div className="h-[160px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={[
-                    { time: '0H', efficiency: 85 },
-                    { time: '4H', efficiency: 88 },
-                    { time: '8H', efficiency: 82 },
-                    { time: '12H', efficiency: 94 },
-                    { time: '16H', efficiency: 91 },
-                    { time: '20H', efficiency: 89 },
-                    { time: '24H', efficiency: 95 },
-                  ]}>
+                  <AreaChart data={effTrend}>
                     <defs>
                       <linearGradient id="colorEff" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -318,7 +358,7 @@ const SchedulerDashboard = () => {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                     <XAxis dataKey="time" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
-                    <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                    <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} domain={[70, 100]} />
                     <Tooltip 
                       contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '10px' }}
                       itemStyle={{ color: '#3b82f6', fontWeight: 'bold' }}
@@ -327,23 +367,19 @@ const SchedulerDashboard = () => {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-              <p className="text-[11px] text-slate-500 mt-4 leading-relaxed font-bold uppercase tracking-tighter">
-                AI Inference: Peak efficiency expected at <span className="text-white">T+12H</span> due to synchronized cooling cycles on Sector 4 looms.
+              <p className="text-[11px] text-slate-500 mt-3 leading-relaxed font-bold uppercase tracking-tighter">
+                AI Inference: Peak efficiency at <span className="text-white">{effTrend.reduce((a,b) => a.efficiency > b.efficiency ? a : b).time}</span> — synchronized cooling active.
               </p>
             </section>
 
+            {/* Live Event Log */}
             <section className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-2xl">
               <h2 className="text-lg font-black text-white flex items-center gap-2 mb-6 uppercase tracking-widest">
                 <CheckCircle2 size={20} className="text-blue-500" /> Optimization Event Log
               </h2>
-              <div className="space-y-4 overflow-y-auto max-h-[180px] pr-2 custom-scrollbar">
-                {[
-                  { time: '14:22:10', msg: 'Neural Sync: Loom #01 rotation adjusted (+2% throughput)', type: 'success' },
-                  { time: '14:15:44', msg: 'Grid Alert: Peak load detected. Throttling Inspection #03.', type: 'alert' },
-                  { time: '13:50:02', msg: 'Job J102 Weaving Phase 02 Initiated.', type: 'info' },
-                  { time: '13:30:11', msg: 'Scheduler: GAN Redefining makespan (14.2h baseline).', type: 'info' },
-                ].map((log, i) => (
-                  <div key={i} className="flex gap-3 text-[10px] border-l-2 border-slate-800 pl-3 py-1 group hover:border-blue-500 transition-colors">
+              <div className="space-y-3 overflow-y-auto max-h-[180px] pr-2 custom-scrollbar">
+                {logFeed.map((log, i) => (
+                  <div key={i} className={`flex gap-3 text-[10px] border-l-2 pl-3 py-1 group transition-colors ${log.type === 'success' ? 'border-emerald-500/40' : log.type === 'alert' ? 'border-orange-500/40' : 'border-slate-700'}`}>
                     <span className="text-slate-600 font-black tracking-tighter shrink-0">{log.time}</span>
                     <span className={`font-bold ${log.type === 'success' ? 'text-emerald-400' : log.type === 'alert' ? 'text-orange-400' : 'text-slate-400'}`}>{log.msg}</span>
                   </div>
@@ -355,25 +391,12 @@ const SchedulerDashboard = () => {
         </div>
       </div>
 
-      <style jsx="true">{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.02);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(59, 130, 246, 0.2);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(59, 130, 246, 0.5);
-        }
-        .dashed {
-          background-image: linear-gradient(to bottom, #334155 50%, transparent 50%);
-          background-size: 1px 10px;
-          background-repeat: repeat-y;
-        }
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.5); }
+        .dashed { background-image: linear-gradient(to bottom, #334155 50%, transparent 50%); background-size: 1px 10px; background-repeat: repeat-y; }
       `}</style>
     </div>
   );

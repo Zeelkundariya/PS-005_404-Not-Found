@@ -34,6 +34,34 @@ const FYPOptimizer = () => {
 
   useEffect(() => {
     fetchData();
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await api.get('/iot/live');
+        setStats({
+          makespan: data.scheduler.makespan,
+          utilization: data.machines.reduce((acc, m) => {
+            acc[m.id] = m.health; // Use health/utilization drift
+            return acc;
+          }, {})
+        });
+        // Gradually update convergence data with a new point
+        setConvergenceData(prev => {
+          const last = prev[prev.length - 1];
+          const nextTime = (parseInt(last.time) + 4) + 'h';
+          return [...prev.slice(-10), { time: nextTime, efficiency: data.scheduler.unitUtilization }];
+        });
+        
+        // Update machine statuses if they match existing ones
+        setMachines(prev => prev.map(m => {
+          const live = data.machines.find(lm => lm.name.includes(m.machineName) || m.machineName.includes(lm.name));
+          return live ? { ...m, status: live.status.toLowerCase() } : m;
+        }));
+
+      } catch (err) {
+        console.error("FYP live poll error:", err);
+      }
+    }, 2500);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchData = async () => {

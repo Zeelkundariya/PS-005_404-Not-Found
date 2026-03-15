@@ -9,7 +9,7 @@ import {
   ShieldCheck, CheckCircle2, Factory, BarChart3, Play,
   Cpu, TrendingUp, Droplets, Wind, Package, Plus, Award,
   ShieldAlert, BrainCircuit, Layers, CheckCircle, Thermometer, Globe, Building2, Database,
-  MessageCircle, Video, Wand2, Smartphone, Bot,
+  MessageCircle, Video, Wand2, Smartphone, Bot, Eye, FileText,
   Box, Network, Mic, Droplet, RefreshCcw, Fingerprint, MessageSquare, ArrowRight, Landmark, BookOpen, FileScan, Sparkles, Recycle, Flame,
   Waves, Clock, Map, Bell, History, X
 } from 'lucide-react';
@@ -168,6 +168,13 @@ export default function Dashboard({ defaultTab = 'overview' }) {
   const [govApplications, setGovApplications] = useState([]);
   const [subsidyDraftStatus, setSubsidyDraftStatus] = useState(null); // 'drafting', 'completed', null
   const [draftProgress, setDraftProgress] = useState(0);
+  
+  // GovAssist AI States
+  const [complianceData, setComplianceData] = useState(null);
+  const [schemeEligibility, setSchemeEligibility] = useState(null);
+  const [inspectionReadiness, setInspectionReadiness] = useState(null);
+  const [reportData, setReportData] = useState(null);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   // Phase 2: High-Fidelity Realism States
   const [showUdyamModal, setShowUdyamModal] = useState(false);
@@ -791,53 +798,193 @@ export default function Dashboard({ defaultTab = 'overview' }) {
     return () => { isMounted = false; };
   }, [manualData]);
 
-  // --- Unified Simulation Engine ---
+  // ─── MASTER IoT POLLING ENGINE ────────────────────────────────────────────
+  // Polls /api/iot/live every 2.5 s and fans data out to every dashboard state.
+  // This gives EVERY section (KPIs, PdM, gauges, machines, finance…) live data.
   useEffect(() => {
     let isMounted = true;
     const intervals = [];
 
-    // Rapid Telemetry (Operations Tab) - 3s
-    intervals.push(setInterval(() => {
-      if (!isMounted || activeTab !== 'operations') return;
-      setMachineStatus(prev => Array.isArray(prev) ? prev.map(m => ({
-        ...m,
-        temp: Math.max(30, Math.min(110, m.temp + (Math.random() * 4 - 2))),
-        rpm: Math.max(500, Math.min(1200, m.rpm + (Math.random() * 20 - 10))),
-        vibration: Math.random() > 0.8 ? 'High' : (Math.random() > 0.4 ? 'Normal' : 'Low')
-      })) : prev);
-    }, 3000));
-
-    // AI Strategic Logging - 8s
-    intervals.push(setInterval(() => {
+    // ── 1. Master IoT data bus — feeds EVERY section of the dashboard ────
+    intervals.push(setInterval(async () => {
       if (!isMounted) return;
-      const logOptions = [
-        { msg: "Predictive AI: Shift rotation recommended for Sector 7 to optimize energy.", type: "info" },
-        { msg: "Quality AI: Grain thickness deviation detected on Loom 12.", type: "warning" },
-        { msg: "Supply Chain AI: Yarn shipment from Bursa delayed by 4 hours.", type: "warning" },
-        { msg: "Sustainability AI: Solar contribution peaked at 42%.", type: "success" },
-        { msg: "Finance AI: Export margin optimized via currency arbitrage.", type: "success" }
-      ];
-      const randomLog = logOptions[Math.floor(Math.random() * logOptions.length)];
-      setStrategicAiLogs(prev => {
-        const newId = Date.now() + Math.random();
-        return [{ id: newId, time: new Date().toLocaleTimeString(), ...randomLog }, ...prev.slice(0, 49)];
-      });
-    }, 8000));
+      try {
+        const { data } = await api.get("/iot/live");
+        if (!isMounted) return;
 
-    // Dynamic Context Changes - 4.5s
+        // ── Machines ──────────────────────────────────────────────────────
+        setMachineStatus(data.machines);
+
+        // ── Overview KPIs ─────────────────────────────────────────────────
+        setPei(parseFloat(data.kpis.pei.toFixed(1)));
+        setPeiTrend(data.kpis.peiTrend);
+        setMaintenanceScore(parseFloat(data.kpis.maintenanceScore.toFixed(1)));
+        setReliability(parseFloat(data.kpis.reliability.toFixed(1)));
+        setDigitalMaturity(parseFloat(data.kpis.digitalMaturity.toFixed(1)));
+        setExportScore(data.finance.exportScore);
+
+        // ── PdM ───────────────────────────────────────────────────────────
+        setAdvancedPdM(prev => ({
+          ...prev,
+          failureProbability:     parseFloat(data.pdm.failureProbability.toFixed(1)),
+          healthScore:            parseFloat(data.pdm.healthScore.toFixed(1)),
+          remainingLifeHours:     data.pdm.remainingLifeHours,
+          downtimePrevented:      `${data.pdm.downtimePrevented} Hrs`,
+          backlogItems:           data.pdm.backlogItems,
+          productionLossEstimate: data.pdm.productionLossEstimate,
+          netSavingsPotential:    data.pdm.netSavingsPotential,
+          techAvailability:       data.pdm.techAvailability,
+        }));
+        setStrategicPdM(prev => ({
+          ...prev,
+          portfolioHealth: parseFloat(data.pdm.portfolioHealth.toFixed(1)),
+          revenueAtRisk:   data.pdm.revenueAtRisk,
+          netEbitdaImpact: `₹${Math.round(data.pdm.portfolioHealth * 14000).toLocaleString('en-IN')}`,
+          pdmRoi:          `${Math.round(data.pdm.healthScore * 4.2)}%`,
+        }));
+        setFailureTrend(data.pdm.failureTrend);
+
+        // ── Live sensor gauges ────────────────────────────────────────────
+        setLiveSensors(data.liveSensors);
+        setMachineVibration(Math.round(data.gauges.vibration));
+
+        // ── Safety ────────────────────────────────────────────────────────
+        setSafety(prev => ({
+          ...prev,
+          ppeCompliance: data.safety.ppeCompliance,
+          safetyScore:   data.safety.safetyScore,
+        }));
+
+        // ── Finance / Profit ──────────────────────────────────────────────
+        setProfit(prev => ({
+          ...prev,
+          revenue:      data.finance.revenueFmt,
+          cost:         data.finance.costFmt,
+          profit:       data.finance.profitFmt,
+          margin:       `${data.finance.profitMargin}%`,
+          exportScore:  data.finance.exportScore,
+        }));
+        setCostOptimization(prev => ({
+          ...prev,
+          savings: `₹${Math.round(data.kpis.oeeScore * 1200).toLocaleString('en-IN')}`,
+          efficiency: `${data.kpis.oeeScore.toFixed(1)}%`,
+        }));
+
+        // ── Sustainability / Environment ───────────────────────────────────
+        setWater(prev => ({
+          ...prev,
+          usage: data.sustainability.waterUsage,
+          trend: data.sustainability.waterTrend,
+        }));
+        setWaterTrend(data.sustainability.waterTrend);
+        setEsg(prev => ({
+          ...prev,
+          solarUnits:   data.sustainability.solarUnits,
+          solarPercent: `${data.gauges.solarPercent.toFixed(0)}%`,
+          co2Saved:     `${data.sustainability.co2Saved.toFixed(1)} T`,
+          wasteKg:      data.sustainability.wasteKg,
+          airQuality:   data.sustainability.airQuality,
+          humidity:     data.sustainability.humidity,
+          ambientTemp:  data.sustainability.ambientTemp,
+        }));
+
+        // ── Quality ───────────────────────────────────────────────────────
+        setQuality(prev => ({
+          ...prev,
+          score:        data.quality.score,
+          passRate:     data.quality.batchPassRate,
+          defectRate:   data.quality.defectRate,
+          returnRate:   data.quality.returnRate,
+        }));
+
+        // ── Textile metrics ───────────────────────────────────────────────
+        setTextileMetrics(prev => ({
+          ...prev,
+          output:      data.kpis.outputToday,
+          oee:         data.kpis.oeeScore,
+          defectRate:  data.kpis.defectRate,
+        }));
+
+        // ── Inventory alerts from supply chain ────────────────────────────
+        const inv = data.supplyChain?.inventory;
+        if (inv) {
+          const alerts = [];
+          if (inv.cottonYarnKg < 1200) alerts.push({ item: 'Cotton Yarn', kg: inv.cottonYarnKg, level: 'critical' });
+          else if (inv.cottonYarnKg < 1800) alerts.push({ item: 'Cotton Yarn', kg: inv.cottonYarnKg, level: 'low' });
+          if (inv.dyesLiters < 200) alerts.push({ item: 'Dyes', liters: inv.dyesLiters, level: 'critical' });
+          if (inv.packagingRolls < 100) alerts.push({ item: 'Packaging Rolls', count: inv.packagingRolls, level: 'low' });
+          setInventoryAlerts(alerts);
+        }
+
+        // ── heatwave anomaly based on ambient temp ────────────────────────
+        const amb = data.sustainability?.ambientTemp ?? 31;
+        if (amb > 38) {
+          setHeatwave({ isHeatwave: true, alert: `Ambient temp ${amb}°C — heatwave risk`, recommendation: 'Activate extra ventilation on Loom cluster 3.' });
+          setAnomaly({ hasAnomaly: true, type: `High Ambient Temp (${amb}°C)` });
+        } else {
+          setHeatwave({ isHeatwave: false, alert: '', recommendation: '' });
+          setAnomaly({ hasAnomaly: false, type: 'Normal' });
+        }
+
+      } catch (err) {
+        console.error("IoT live poll error:", err);
+      }
+    }, 2500));
+
+    // ── 2. AI Strategic Logging — richer dynamic messages ───────────────
+    intervals.push(setInterval(async () => {
+      if (!isMounted) return;
+      try {
+        const { data } = await api.get("/iot/live");
+        if (!isMounted) return;
+        const m = data.machines;
+        const hotMachine    = m.find(x => x.temp > 80)?.name || "Stenter #1";
+        const warnMachine   = m.find(x => x.status === "Warning")?.name || "Rotor #1";
+        const maintMachine  = m.find(x => x.status === "Maintenance")?.name || "Draw Frame #1";
+        const logPool = [
+          { msg: `[PdM-AI] Bearing wear detected on ${hotMachine}. Temp at ${data.machines.find(x=>x.name===hotMachine)?.temp||82}°C. Scheduling lubrication.`, type: "warning" },
+          { msg: `[Brahma] Global efficiency snapshot: OEE ${data.kpis.oeeScore.toFixed(1)}% | PEI ${data.kpis.pei.toFixed(1)}% | ${data.kpis.activeWorkers} operators online.`, type: "system" },
+          { msg: `[Agent-22] Quality audit Batch-${Math.floor(Math.random()*200+100)}: Defect rate ${data.kpis.defectRate.toFixed(1)}%. ${data.kpis.defectRate < 2 ? "Within tolerance." : "Escalating to QC team."}`, type: data.kpis.defectRate < 2 ? "success" : "warning" },
+          { msg: `[Energy-AI] Solar contribution: ${data.gauges.solarPercent.toFixed(0)}%. Grid draw at ${data.gauges.gridPower.toFixed(0)} kW. Peak-shaving active.`, type: "info" },
+          { msg: `[Supply-AI] Yarn stock: ${data.supplyChain.yarnStockKg} kg (${data.supplyChain.yarnStockStatus}). Water consumption: ${data.sustainability.waterUsage} L.`, type: data.supplyChain.yarnStockStatus === "Low" ? "warning" : "info" },
+          { msg: `[Finance-AI] Today's P&L: Revenue ${data.finance.revenueFmt} | Cost ${data.finance.costFmt} | Net ${data.finance.profitFmt}`, type: "success" },
+          { msg: `[Safety-AI] PPE compliance at ${data.safety.ppeCompliance}%. ${data.safety.accidentFreeDays} accident-free days maintained.`, type: data.safety.ppeCompliance > 95 ? "success" : "warning" },
+          { msg: `[Alert] ${warnMachine} flagged: Vibration ${data.machines.find(x=>x.name===warnMachine)?.vibration||8.2}Hz — above threshold. Dispatcher notified.`, type: "warning" },
+          { msg: `[Neuro-Sync] Telemetry synced from 15 edge nodes. ${data.machineAlerts.warning} warnings, ${data.machineAlerts.maintenance} in maintenance.`, type: "system" },
+          { msg: `[Maintenance] Work order dispatched for ${maintMachine}. Technician en-route. ETA: ${Math.floor(Math.random()*15+5)} minutes.`, type: "info" },
+        ];
+        const randomLog = logPool[Math.floor(Math.random() * logPool.length)];
+        setStrategicAiLogs(prev => {
+          const newId = Date.now() + Math.random();
+          return [{ id: newId, time: new Date().toLocaleTimeString(), ...randomLog }, ...prev.slice(0, 49)];
+        });
+        // Also add to system events feed
+        setSystemEvents(prev => {
+          const newId = Date.now() + Math.random();
+          return [{ id: newId, time: new Date().toLocaleTimeString(), ...randomLog }, ...prev.slice(0, 19)];
+        });
+      } catch (err) {
+        console.error("AI log IoT error:", err);
+      }
+    }, 6000));
+
+    // ── 3. Context agent message ─────────────────────────────────────────
     intervals.push(setInterval(() => {
       if (!isMounted) return;
       const messages = [
-        "Processing demand forecast for Q3 Suiting...",
-        "Evaluating ESG impact of Loom cluster 4...",
-        "Generating executive summary for Bhilwara cluster...",
-        "Monitoring real-time yarn pricing from Global markets...",
-        "Optimizing workforce distribution for night shift..."
+        `Processing demand forecast for Q3 Suiting...`,
+        `Evaluating ESG impact of Loom cluster 4...`,
+        `Generating executive summary for Bhilwara cluster...`,
+        `Monitoring real-time yarn pricing from Global markets...`,
+        `Optimizing workforce distribution for night shift...`,
+        `Syncing telemetry with Edge Node Bhilwara-4...`,
+        `Running GA permutation cycle #${Math.floor(Math.random()*999+1)}...`,
+        `Cross-referencing buyer risk profiles against live orders...`,
       ];
       setAgentMessage(messages[Math.floor(Math.random() * messages.length)]);
     }, 4500));
 
-    // Owner Approval Polling - 3s
+    // ── 4. Owner request polling ─────────────────────────────────────────
     intervals.push(setInterval(async () => {
       if (!isMounted) return;
       try {
@@ -848,23 +995,25 @@ export default function Dashboard({ defaultTab = 'overview' }) {
       }
     }, 3000));
 
-    // CV Defect Simulation - 5s
+    // ── 5. CV defect simulation ──────────────────────────────────────────
     intervals.push(setInterval(() => {
       if (!isMounted) return;
       const defects = [
-        { label: "Broken End", color: "#ef4444", top: "20%", left: "40%" },
-        { label: "Double Pick", color: "#f59e0b", top: "60%", left: "30%" },
-        { label: "Slub", color: "#8b5cf6", top: "40%", left: "70%" },
-        { label: "Oil Stain", color: "#3b82f6", top: "15%", left: "60%" }
+        { label: "Broken End (97.2%)", color: "#ef4444", top: "20%", left: "40%" },
+        { label: "Double Pick (91.5%)", color: "#f59e0b", top: "60%", left: "30%" },
+        { label: "Slub Detected (88.1%)", color: "#8b5cf6", top: "40%", left: "70%" },
+        { label: "Oil Stain (94.3%)", color: "#3b82f6", top: "15%", left: "60%" },
+        { label: `Yarn Breakage (${(90+Math.random()*9).toFixed(1)}%)`, color: "#f43f5e", top: "45%", left: "45%" },
+        { label: `Weave Distortion (${(85+Math.random()*10).toFixed(1)}%)`, color: "#f97316", top: "30%", left: "55%" },
       ];
       setCvDefect(defects[Math.floor(Math.random() * defects.length)]);
-    }, 5000));
+    }, 4000));
 
     return () => {
       isMounted = false;
       intervals.forEach(clearInterval);
     };
-  }, [activeTab]);
+  }, []);
 
   const handleVoiceAction = () => {
     setVoiceStep(1);
@@ -1157,6 +1306,50 @@ export default function Dashboard({ defaultTab = 'overview' }) {
     }, 1000);
   };
 
+  const handleGovAssistReport = async (type) => {
+    setIsGeneratingReport(true);
+    try {
+      const { data } = await api.get(`/govassist/generate-report?type=${type}`);
+      setReportData(data);
+      if (setSystemEvents) {
+        setSystemEvents(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), msg: `AI Report ${data.reportId} generated for ${type.toUpperCase()}.`, type: 'success' }, ...prev]);
+      }
+      
+      setTimeout(() => {
+        alert(`${type.toUpperCase()} Report Generated Successfully.\nReport ID: ${data.reportId}\nTimestamp: ${data.timestamp}`);
+        setIsGeneratingReport(false);
+      }, 1500);
+    } catch (err) {
+      console.error("Report generation error:", err);
+      setIsGeneratingReport(false);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    if (activeTab === 'govassist') {
+      const fetchGovAssist = async () => {
+        try {
+          const [compliance, eligibility, readiness] = await Promise.all([
+            api.get('/govassist/compliance-status'),
+            api.get('/govassist/scheme-eligibility'),
+            api.get('/govassist/inspection-readiness')
+          ]);
+          if (isMounted) {
+            setComplianceData(compliance.data);
+            setSchemeEligibility(eligibility.data);
+            setInspectionReadiness(readiness.data);
+          }
+        } catch (err) {
+          console.error("GovAssist fetch error:", err);
+        }
+      };
+      fetchGovAssist();
+      const interval = setInterval(fetchGovAssist, 10000); 
+      return () => { clearInterval(interval); isMounted = false; };
+    }
+  }, [activeTab]);
+
   const handleDownloadReport = () => {
     setAgentMessage("Generating Compliance Report...");
     setTimeout(() => {
@@ -1404,6 +1597,14 @@ export default function Dashboard({ defaultTab = 'overview' }) {
             <li className={`sidebar-link ${activeTab === 'agents' ? 'active' : ''}`} onClick={() => setActiveTab('agents')}>
               <Bot size={20} />
               {lang === 'EN' ? 'AI Agent Library (52)' : ' '}
+            </li>
+          )}
+
+
+          {userRole === 'Owner' && (
+            <li className={`sidebar-link ${activeTab === 'govassist' ? 'active' : ''}`} onClick={() => setActiveTab('govassist')} style={{ color: '#ec4899', fontWeight: 'bold' }}>
+              <ShieldCheck size={18} />
+              {lang === 'EN' ? 'GovAssist AI' : '  '}
             </li>
           )}
 
@@ -2349,10 +2550,10 @@ export default function Dashboard({ defaultTab = 'overview' }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                 {[
                   { label: 'Loom Vibration', value: machineVibration, max: 120, unit: 'Hz', warn: 80, color: '#6366f1', icon: Activity },
-                  { label: 'Avg Temp', value: 68, max: 110, unit: '\u00B0C', warn: 85, color: '#f59e0b', icon: Thermometer },
-                  { label: 'Production Speed', value: 87, max: 100, unit: '%', warn: 50, color: '#10b981', icon: TrendingUp },
-                  { label: 'Grid Power Draw', value: 42, max: 80, unit: 'kW', warn: 65, color: '#0ea5e9', icon: Zap },
-                  { label: 'Yarn Tension', value: 3.2, max: 6, unit: 'N/m', warn: 4.5, color: '#a855f7', icon: Layers },
+                  { label: 'Avg Temp', value: liveSensors.temp ?? 68, max: 110, unit: '\u00B0C', warn: 85, color: '#f59e0b', icon: Thermometer },
+                  { label: 'Production Speed', value: Math.round(80 + (liveSensors.power ?? 12) * 0.5), max: 100, unit: '%', warn: 50, color: '#10b981', icon: TrendingUp },
+                  { label: 'Grid Power Draw', value: liveSensors.power ?? 42, max: 30, unit: 'kW', warn: 24, color: '#0ea5e9', icon: Zap },
+                  { label: 'Yarn Tension', value: liveSensors.vibration ? parseFloat((liveSensors.vibration / 2).toFixed(1)) : 3.2, max: 6, unit: 'N/m', warn: 4.5, color: '#a855f7', icon: Layers },
                   { label: 'Safety Score', value: renderSafeValue(safety.ppeCompliance, 95), max: 100, unit: '%', warn: 80, color: '#ef4444', icon: ShieldCheck },
                 ].map(({ label, value, max, unit, warn, color, icon: Icon }) => {
                   const numVal = parseFloat(value) || 0;
@@ -2661,35 +2862,66 @@ export default function Dashboard({ defaultTab = 'overview' }) {
               </div>
 
               {/* ======================================================================================
-                  LIVE MACHINE STATUS \u2014 DETAILED CARDS
+                  LIVE MACHINE STATUS — DETAILED CARDS
               ===================================================================================== */}
               <div style={{ background: '#0a0f1e', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
                 <h3 style={{ margin: '0 0 1rem', fontSize: '0.85rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Activity size={16} /> Live Machine Telemetry
+                  <Activity size={16} /> Live IoT Machine Telemetry (Simulated Cloud Stream)
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                   {Array.isArray(machineStatus) && machineStatus.map(m => (
-                    <div key={m.id} style={{ background: '#0d1117', border: `1px solid ${m.status === 'Running' ? (m.temp > 85 ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.2)') : 'rgba(245,158,11,0.3)'}`, borderRadius: '12px', padding: '1rem', position: 'relative', overflow: 'hidden', transition: 'all 0.3s' }}>
+                    <div key={m.id} style={{ background: '#0d1117', border: `1px solid ${m.status === 'Running' ? (m.temp > 85 ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.2)') : (m.status === 'Warning' ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.4)')}`, borderRadius: '12px', padding: '1rem', position: 'relative', overflow: 'hidden', transition: 'all 0.3s' }}>
                       {m.status === 'Running' && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, transparent, ${m.temp > 85 ? '#ef4444' : '#10b981'}, transparent)`, animation: 'scan 2s infinite linear' }} />}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: '700', color: 'white' }}>{m.name}</span>
-                        <span style={{ fontSize: '0.55rem', padding: '2px 6px', borderRadius: '3px', fontWeight: 'bold', letterSpacing: '0.5px', background: m.status === 'Running' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)', color: m.status === 'Running' ? '#10b981' : '#f59e0b', border: `1px solid ${m.status === 'Running' ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}` }}>{m.status?.toUpperCase()}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'white' }}>{m.name || 'Machine'}</span>
+                          <span style={{ fontSize: '0.55rem', color: '#64748b' }}>Asset: {m.id}</span>
+                        </div>
+                        <span style={{ 
+                          fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', letterSpacing: '0.5px', 
+                          background: m.status === 'Running' ? 'rgba(16,185,129,0.15)' : m.status === 'Warning' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)', 
+                          color: m.status === 'Running' ? '#10b981' : m.status === 'Warning' ? '#f59e0b' : '#ef4444', 
+                          border: `1px solid ${m.status === 'Running' ? 'rgba(16,185,129,0.3)' : m.status === 'Warning' ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.3)'}` 
+                        }}>
+                          {m.status?.toUpperCase()}
+                        </span>
                       </div>
-                      <div style={{ marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: '#475569', marginBottom: '3px' }}>
-                          <span>Health</span><span style={{ color: m.health > 70 ? '#10b981' : '#ef4444' }}>{m.health}%</span>
+                      
+                      <div style={{ marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: '#94a3b8', marginBottom: '4px' }}>
+                          <span>Operational Health</span>
+                          <span style={{ color: m.health > 85 ? '#10b981' : m.health > 70 ? '#f59e0b' : '#ef4444', fontWeight: 'bold' }}>{m.health}%</span>
                         </div>
                         <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px' }}>
-                          <div style={{ height: '100%', width: `${m.health}%`, background: m.health > 70 ? '#10b981' : '#ef4444', borderRadius: '2px', boxShadow: `0 0 6px ${m.health > 70 ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'}` }} />
+                          <div style={{ 
+                            height: '100%', width: `${m.health}%`, 
+                            background: m.health > 85 ? '#10b981' : m.health > 70 ? '#f59e0b' : '#ef4444', 
+                            borderRadius: '2px', 
+                            boxShadow: `0 0 8px ${m.health > 85 ? 'rgba(16,185,129,0.4)' : m.health > 70 ? 'rgba(245,158,11,0.4)' : 'rgba(239,68,68,0.4)'}` 
+                          }} />
                         </div>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px' }}>
-                        {[['TEMP', `${m.temp}\u00B0C`, m.temp > 85 ? '#ef4444' : '#94a3b8'], ['RPM', m.rpm, '#6366f1'], ['VIB', m.vibration, m.vibration === 'High' ? '#ef4444' : '#10b981']].map(([l, v, c]) => (
-                          <div key={l} style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '6px', padding: '5px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.7rem', fontWeight: '800', color: c }}>{v}</div>
-                            <div style={{ fontSize: '0.45rem', color: '#334155', letterSpacing: '0.5px' }}>{l}</div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', marginBottom: '6px' }}>
+                        {[
+                          ['TEMP', `${m.temp}°C`, m.temp > 85 ? '#ef4444' : '#94a3b8'],
+                          ['VIB', `${m.vibration}Hz`, m.vibration > 7 ? '#ef4444' : '#10b981'],
+                          ['POWER', `${m.power}kW`, '#0ea5e9'],
+                          ['OUTPUT', `${m.output}m/h`, '#a855f7']
+                        ].map(([l, v, c]) => (
+                          <div key={l} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', padding: '6px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.45rem', color: '#64748b', textTransform: 'uppercase', marginBottom: '2px' }}>{l}</div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '800', color: c }}>{v}</div>
                           </div>
                         ))}
+                      </div>
+
+                      <div style={{ 
+                        marginTop: '8px', padding: '4px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.4)', 
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                      }}>
+                        <span style={{ fontSize: '0.5rem', color: '#64748b', textTransform: 'uppercase' }}>Failure Prob:</span>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 'bold', color: m.failureProb > 10 ? '#ef4444' : '#94a3b8' }}>{m.failureProb}%</span>
                       </div>
                     </div>
                   ))}
@@ -4932,6 +5164,193 @@ export default function Dashboard({ defaultTab = 'overview' }) {
             </div>
 
             <AgentGrid categories={['Finance']} title="Finance & Sector Analytics AI" focusedAgent={focusedAgent} setFocusedAgent={setFocusedAgent} />
+          </div>
+        )}
+
+        {activeTab === 'govassist' && (
+          <div className="gov-panel animate-fade-in" style={{ padding: '0 1.5rem 3rem 1.5rem' }}>
+            {/* HERO HEADER */}
+            <div style={{ marginBottom: '2rem', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', padding: '2.5rem', borderRadius: '24px', border: '1px solid rgba(236, 72, 153, 0.2)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <h1 style={{ fontSize: '2.4rem', fontWeight: '900', margin: 0, color: 'white', letterSpacing: '-1px' }}>GovAssist AI <span style={{ color: '#ec4899' }}>Intelligence Module</span></h1>
+                <p style={{ fontSize: '1rem', color: '#a5b4fc', marginTop: '10px', maxWidth: '600px' }}>
+                  Advanced AI layer for Bhilwara textile factories to master compliance, maximize subsidies, and ensure inspection readiness through real-time telemetry analysis.
+                </p>
+                <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.8rem', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div> System Active
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.8rem', color: 'white' }}>
+                    Policy Version: RIPS 2024 (v4.2)
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+              
+              {/* 1. AI Compliance Assistant */}
+              <div className="industrial-panel" style={{ padding: '2rem', borderTop: '4px solid #10b981', background: 'rgba(15, 23, 42, 0.4)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h3 className="section-title" style={{ margin: 0, color: '#10b981', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <ShieldCheck size={24} /> AI Compliance Assistant
+                  </h3>
+                  <div style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', border: '1px solid rgba(16,185,129,0.3)' }}>
+                    {complianceData?.complianceScore || '92'}% COMPLIANCE
+                  </div>
+                </div>
+                
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1.5rem' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Live Compliance Risk Stream</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {(complianceData?.risks || []).map((risk, i) => (
+                      <div key={i} style={{ borderLeft: `3px solid ${risk.risk === 'High' ? '#ef4444' : '#f59e0b'}`, paddingLeft: '15px' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#f8fafc' }}>{risk.issue}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px', lineHeight: '1.4' }}>{risk.action}</div>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                          <span style={{ fontSize: '0.6rem', color: risk.risk === 'High' ? '#ef4444' : '#f59e0b', fontWeight: '900', textTransform: 'uppercase' }}>{risk.risk} RISK</span>
+                          <span style={{ fontSize: '0.6rem', color: '#475569', fontWeight: 'bold' }}>• {risk.category.toUpperCase()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <button className="gov-apply-btn" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.4)', width: '100%' }} onClick={() => alert("Initializing Real-Time Compliance Audit...")}>
+                  Initiate Full Facility Scan →
+                </button>
+              </div>
+
+              {/* 2. Inspection Readiness AI */}
+              <div className="industrial-panel" style={{ padding: '2rem', borderTop: '4px solid #0ea5e9', background: 'rgba(15, 23, 42, 0.4)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h3 className="section-title" style={{ margin: 0, color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Eye size={24} /> Inspection Readiness AI
+                  </h3>
+                  <div style={{ background: 'rgba(14,165,233,0.1)', color: '#0ea5e9', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', border: '1px solid rgba(14,165,233,0.3)' }}>
+                    PASSIBILITY: {inspectionReadiness?.probabilityOfPass || '94'}%
+                  </div>
+                </div>
+                
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem', background: 'rgba(14,165,233,0.05)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(14,165,233,0.1)' }}>
+                  <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#f8fafc', marginBottom: '4px' }}>
+                    {inspectionReadiness?.status || 'Inspection Ready'}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#0ea5e9', fontWeight: '700' }}>AI Readiness Score: {inspectionReadiness?.readinessScore || '88'}/100</div>
+                </div>
+
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1.5rem' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Readiness Deficiency Log</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {(inspectionReadiness?.issuesDetected || []).map((issue, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <div style={{ width: '8px', height: '8px', background: '#0ea5e9', borderRadius: '2px', marginTop: '6px', flexShrink: 0 }}></div>
+                        <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: '1.4' }}>{issue}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <button className="gov-apply-btn" style={{ background: '#0ea5e9', color: 'white', border: 'none' }} onClick={() => alert("Activating Virtual Inspection Drill...")}>
+                    Live Mock Drill
+                  </button>
+                  <button className="gov-apply-btn" style={{ background: 'rgba(14,165,233,0.1)', color: '#0ea5e9', border: '1px solid rgba(14,165,233,0.4)' }} onClick={() => alert("Downloading Inspection Preparation Blueprint...")}>
+                    Get Blueprint
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. Government Scheme Eligibility AI */}
+              <div className="industrial-panel" style={{ padding: '2rem', borderTop: '4px solid #6366f1', gridColumn: 'span 2', background: 'rgba(15, 23, 42, 0.4)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                  <h3 className="section-title" style={{ margin: 0, color: '#6366f1', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Zap size={24} /> Government Scheme Eligibility AI
+                  </h3>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '8px' }}>FACTORY CAPEX: ₹{renderSafeValue(manualData?.investmentCr, '12')} Cr</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '8px' }}>TURNOVER: ₹{renderSafeValue(manualData?.turnoverCr, '45')} Cr</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
+                  {(schemeEligibility?.schemes || [
+                    { name: "RIPS-2024", fullName: "Rajasthan Investment Promotion", benefit: "₹1.2 Cr Subsidy", eligibility: 92, status: "Eligible", color: "#10b981", features: ["Capital Subsidy", "Duty Waiver"] },
+                    { name: "AMTUFS", fullName: "Textile Tech Upgradation", benefit: "15% Subsidy", eligibility: 85, status: "Eligible", color: "#3b82f6", features: ["Machinery Link", "Online Status"] },
+                    { name: "Solar Rebate", fullName: "Renewable Energy Grant", benefit: "₹85k / Mo", eligibility: 78, status: "Approved", color: "#fbbf24", features: ["Net Metering", "Capital Grant"] },
+                    { name: "ZED Certification", fullName: "Zero Defect Support", benefit: "₹5 Lakh Grant", eligibility: 70, status: "Not Applied", color: "#f59e0b", features: ["Fee Refund", "Audit Support"] }
+                  ]).map((scheme, i) => (
+                    <div key={i} className="policy-card" style={{ borderTop: `3px solid ${scheme.color}`, background: 'rgba(0,0,0,0.2)', margin: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        <div style={{ fontSize: '1rem', fontWeight: '900', color: scheme.color }}>{scheme.name}</div>
+                        <span style={{ fontSize: '0.6rem', fontWeight: '800', padding: '2px 6px', background: `${scheme.color}20`, color: scheme.color, borderRadius: '4px' }}>{scheme.status}</span>
+                      </div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: '900', color: 'white', marginBottom: '4px' }}>{scheme.benefit}</div>
+                      <div style={{ fontSize: '0.65rem', color: '#64748b', marginBottom: '16px', minHeight: '30px' }}>{scheme.fullName}</div>
+                      
+                      <div style={{ marginBottom: '16px' }}>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', marginBottom: '4px' }}>
+                           <span style={{ color: '#94a3b8' }}>AI Probability</span>
+                           <span style={{ color: scheme.color, fontWeight: '800' }}>{scheme.eligibility}%</span>
+                         </div>
+                         <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px' }}>
+                           <div style={{ width: `${scheme.eligibility}%`, height: '100%', background: scheme.color, borderRadius: '2px' }}></div>
+                         </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
+                        {scheme.features.map((f, fi) => (
+                          <span key={fi} style={{ fontSize: '0.6rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{f}</span>
+                        ))}
+                      </div>
+
+                      <button className="gov-apply-btn" style={{ background: `${scheme.color}15`, color: scheme.color, border: `1px solid ${scheme.color}50`, width: '100%' }} onClick={() => alert(`Starting application for ${scheme.name}...`)}>
+                        Apply Instantly
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. AI Auto Report Generator */}
+              <div className="industrial-panel" style={{ padding: '2rem', borderTop: '4px solid #ec4899', gridColumn: 'span 2', background: 'rgba(15, 23, 42, 0.4)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                  <h3 className="section-title" style={{ margin: 0, color: '#ec4899', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <FileText size={24} /> AI Auto Report Generator
+                  </h3>
+                  <div style={{ color: '#ec4899', fontSize: '0.75rem', fontWeight: '800', letterSpacing: '1px' }}>SYSTEM: GEN-AI ENGINE IDLE</div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
+                  {[
+                    { type: 'environmental', title: 'PCB / Environmental', icon: <Droplets size={22} />, color: '#10b981', desc: 'Auto-calculates water recycling efficiency (ZLD), sludge output, and carbon credits.' },
+                    { type: 'labor', title: 'Compliance & Safety', icon: <Users size={22} />, color: '#3b82f6', desc: 'Aggregates shift logs, PPE violation counts, and employee benefit submissions.' },
+                    { type: 'production', title: 'DIC Production Audit', icon: <BarChart3 size={22} />, color: '#6366f1', desc: 'Certified production capacity vs actual throughput reports for RIPS verification.' }
+                  ].map((report, i) => (
+                    <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '1.8rem', position: 'relative' }}>
+                      <div style={{ padding: '12px', background: `${report.color}15`, color: report.color, borderRadius: '12px', width: 'fit-content', marginBottom: '1.2rem' }}>{report.icon}</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white', marginBottom: '8px' }}>{report.title}</div>
+                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.5', marginBottom: '2rem', minHeight: '60px' }}>{report.desc}</p>
+                      
+                      <button 
+                        disabled={isGeneratingReport}
+                        className="gov-apply-btn" 
+                        style={{ 
+                          background: isGeneratingReport ? 'rgba(255,255,255,0.05)' : 'white', 
+                          color: isGeneratingReport ? '#64748b' : 'black', 
+                          border: 'none', 
+                          fontWeight: '900', 
+                          width: '100%',
+                          cursor: isGeneratingReport ? 'not-allowed' : 'pointer'
+                        }} 
+                        onClick={() => handleGovAssistReport(report.type)}
+                      >
+                        {isGeneratingReport ? 'ENGINE GENERATING...' : 'Generate & Export →'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

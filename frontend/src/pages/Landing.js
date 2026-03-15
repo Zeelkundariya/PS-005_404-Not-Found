@@ -11,6 +11,24 @@ const Landing = () => {
     const navigate = useNavigate();
     const [scrolled, setScrolled] = useState(false);
 
+    const [livePulse, setLivePulse] = useState({ oee: 78.5, active: 18 });
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            try {
+                // We'll use a fetch directly here to avoid potential circular/missing api import issues if it's not exported
+                // but usually api.js is standard. Let's try fetching from the origin
+                const res = await fetch('http://localhost:3001/api/iot/live');
+                const data = await res.json();
+                setLivePulse({
+                    oee: data.kpis.oeeScore,
+                    active: data.machines.filter(m => m.status === 'Running').length
+                });
+            } catch (err) { /* silent on landing */ }
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
@@ -128,6 +146,20 @@ const features = [
                 }}></div>
 
                 <div style={{ position: 'relative', zIndex: 1, maxWidth: '900px' }}>
+                    <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(16, 185, 129, 0.1)', padding: '6px 16px', borderRadius: '100px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                            <div style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', animate: 'pulse 1s infinite' }}></div>
+                            <span style={{ fontSize: '0.7rem', fontWeight: '900', color: '#10b981', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                                LIVE OEE: {livePulse.oee.toFixed(1)}%
+                            </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(99, 102, 241, 0.1)', padding: '6px 16px', borderRadius: '100px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                            <span style={{ fontSize: '0.7rem', fontWeight: '900', color: '#818cf8', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                                RELIABILITY: {(livePulse.oee + 5).toFixed(1)}%
+                            </span>
+                        </div>
+                    </div>
+
                     <span style={{
                         display: 'inline-block',
                         padding: '6px 16px',
@@ -137,7 +169,7 @@ const features = [
                         color: '#818cf8',
                         fontSize: '0.85rem',
                         fontWeight: '700',
-                        marginBottom: '2rem',
+                        marginBottom: '1rem',
                         textTransform: 'uppercase',
                         letterSpacing: '1px'
                     }}>

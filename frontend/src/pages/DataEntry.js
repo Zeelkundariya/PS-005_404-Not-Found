@@ -36,6 +36,21 @@ const DataEntry = () => {
         localStorage.setItem('sf_root_lang', lang);
     }, [lang]);
 
+    const [liveSignal, setLiveSignal] = useState({ vibration: 42, temp: 38 });
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            try {
+                const { data } = await api.get('/iot/live');
+                setLiveSignal({
+                    vibration: data.gauges.vibration,
+                    temp: data.gauges.avgTemp
+                });
+            } catch (err) { console.error(err); }
+        }, 2000);
+        return () => clearInterval(interval);
+    }, []);
+
     useEffect(() => {
         const saved = localStorage.getItem('manualFactoryData');
         if (saved) setFormData(JSON.parse(saved));
@@ -130,6 +145,21 @@ const DataEntry = () => {
                             {lang === 'EN' ? 'Industrial Data Hub' : 'इंडस्ट्रियल डेटा हब'}
                         </h1>
                         <p style={{ opacity: 0.6, fontSize: '1.1rem' }}>{lang === 'EN' ? 'Precision Telemetry Input for Bhilwara Cluster AI' : 'भीलवाड़ा क्लस्टर AI के लिए सटीक टेलीमेट्री इनपुट'}</p>
+                        
+                        {/* Live Signal Preview */}
+                        <div style={{ marginTop: '1.5rem', display: 'flex', gap: '20px' }}>
+                            <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '8px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%', animation: 'pulse 1s infinite' }}></span>
+                                <span style={{ fontSize: '0.7rem', fontWeight: '900', color: '#3b82f6', letterSpacing: '1px' }}>VIB: {liveSignal.vibration.toFixed(1)} Hz</span>
+                            </div>
+                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '8px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></span>
+                                <span style={{ fontSize: '0.7rem', fontWeight: '900', color: '#10b981', letterSpacing: '1px' }}>TEMP: {liveSignal.temp.toFixed(1)}°C</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '10px' }}>
+                                <span style={{ fontSize: '0.65rem', fontWeight: '700', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Live Signal Sync Active</span>
+                            </div>
+                        </div>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         <button onClick={() => setLang(lang === 'EN' ? 'HI' : 'EN')} className="mini-btn">
