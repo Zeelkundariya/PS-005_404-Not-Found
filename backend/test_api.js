@@ -1,1 +1,0 @@
-fetch('http://localhost:5000/api/ai/executive-summary', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({})}).then(async r => console.log(r.status, await r.text())).catch(console.error);

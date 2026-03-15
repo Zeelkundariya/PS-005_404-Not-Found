@@ -790,63 +790,40 @@ router.post("/scheduler/optimize", async (req, res) => {
   try {
     const { jobs, machines } = req.body;
 
-    // Use default machines if none provided
-    const defaultMachines = await Machine.find();
-    const formattedMachines = (machines && machines.length > 0) ? machines : defaultMachines.map(m => ({
-      id: m._id.toString(),
-      name: m.name,
-      color: m.color || "#6366f1"
-    }));
+    // 1. Resolve Machines: Use request body, otherwise use seeded FYP Machines
+    let finalMachines = machines;
+    if (!finalMachines || finalMachines.length === 0) {
+      const dbMachines = await FYPMachine.find();
+      finalMachines = dbMachines.map(m => ({
+        id: m.machineId,
+        name: m.machineName,
+        color: m.color || "#6366f1"
+      }));
+    }
 
-    // If no jobs provided, create some realistic defaults for the demo
-    const formattedJobs = (jobs && jobs.length > 0) ? jobs : [
-      {
-        id: "JOB-101",
-        name: "Premium Cotton Batch A",
-        priority: 3,
-        color: "#6366f1",
-        operations: [
-          { machineId: formattedMachines[0]?.id || "M1", duration: 4, task: "Yarn Prep" },
-          { machineId: formattedMachines[1]?.id || "M2", duration: 6, task: "Weaving" },
-          { machineId: formattedMachines[2]?.id || "M3", duration: 2, task: "QC" }
-        ]
-      },
-      {
-        id: "JOB-102",
-        name: "Synthetic Blend B",
-        priority: 1,
-        color: "#10b981",
-        operations: [
-          { machineId: formattedMachines[1]?.id || "M2", duration: 8, task: "Weaving" },
-          { machineId: formattedMachines[0]?.id || "M1", duration: 3, task: "Finishing" }
-        ]
-      },
-      {
-        id: "JOB-103",
-        name: "Silk Export Grade",
-        priority: 5,
-        color: "#f59e0b",
-        operations: [
-          { machineId: formattedMachines[0]?.id || "M1", duration: 5, task: "Yarn Prep" },
-          { machineId: formattedMachines[2]?.id || "M3", duration: 4, task: "Special Weave" },
-          { machineId: formattedMachines[3]?.id || "M4", duration: 3, task: "Softening" }
-        ]
-      },
-      {
-        id: "JOB-104",
-        name: "Denim Rugged",
-        priority: 2,
-        color: "#ec4899",
-        operations: [
-          { machineId: formattedMachines[2]?.id || "M3", duration: 7, task: "Heavy Dyeing" },
-          { machineId: formattedMachines[1]?.id || "M2", duration: 5, task: "Finishing" }
-        ]
-      }
-    ];
+    // 2. Resolve Jobs: Use request body, otherwise use seeded FYP Jobs
+    let finalJobs = jobs;
+    if (!finalJobs || finalJobs.length === 0) {
+      const dbJobs = await FYPJob.find();
+      finalJobs = dbJobs.map(j => ({
+        id: j.jobId,
+        name: j.jobName,
+        priority: j.priority,
+        color: j.color,
+        operations: j.operations
+      }));
+    }
 
-    const result = optimizeScheduling({ jobs: formattedJobs, machines: formattedMachines });
+    if (!finalMachines.length || !finalJobs.length) {
+      return res.status(400).json({ 
+        error: "Insufficient data for optimization. No machines or jobs found in database or request." 
+      });
+    }
+
+    const result = optimizeScheduling({ jobs: finalJobs, machines: finalMachines });
     res.json(result);
   } catch (err) {
+    console.error("Scheduling Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
